@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Собственный профиль — создаётся один раз при первом входе, доступен
+    // только самому пользователю.
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if false;
+
+      // Данные разделов (проекты, история фокуса, ранг, трофеи, настройки) —
+      // см. src/firebase/firestoreStorage.js. Доступ только владельцу.
+      match /appData/{key} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // Соответствие email -> uid, чтобы заявку в друзья можно было отправить
+    // по одной только почте. Читать может любой авторизованный пользователь,
+    // писать/обновлять — только владелец соответствующего email.
+    match /userDirectory/{email} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Заявки в друзья, id = `${fromUid}_${toUid}`. После принятия (status
+    // меняется на 'accepted') этот же документ и есть запись о дружбе —
+    // отдельного списка друзей на пользователя нет, чтобы не требовать
+    // взаимной записи от обеих сторон без бэкенда.
+    match /friendRequests/{id} {
+      // `resource == null` lets a client check "does this id exist" (e.g.
+      // before sending a request) without a permission-denied on a get()
+      // against a document that simply hasn't been created yet.
+      allow read: if isSignedIn() &&
+        (resource == null || request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+      allow create: if isSignedIn() &&
+        request.resource.data.fromUid == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      // Принять/отклонить может только получатель.
+      allow update: if isSignedIn() && request.auth.uid == resource.data.toUid;
+      allow delete: if isSignedIn() &&
+        (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+    }
+
+    // Живые соревнования между двумя друзьями.
+    match /competitions/{id} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participants;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow delete: if false;
+
+      // Каждый участник пишет только свой собственный документ с часами.
+      match /participantHours/{uid} {
+        allow read: if isSignedIn() &&
+          request.auth.uid in get(/databases/$(database)/documents/competitions/$(id)).data.participants;
+        allow write: if isSignedIn() && request.auth.uid == uid &&
+          request.auth.uid in get(/databases/$(database)/documents/competitions/$(id)).data.participants;
+      }
+    }
+  }
+}
