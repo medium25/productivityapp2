@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "Productivity Hub"
+  },
+  "sections": {
+    "focus": "Focus",
+    "tasks": "Tasks & Goals",
+    "thoughts": "Thoughts",
+    "habits": "Habits",
+    "fitness": "Fitness",
+    "finance": "Finance"
+  },
+  "sidebar": {
+    "ariaLabel": "Sections"
+  },
+  "topbar": {
+    "toggleTheme": "Toggle theme"
+  },
+  "settings": {
+    "heading": "Settings",
+    "theme": {
+      "heading": "Theme",
+      "toLight": "Light theme",
+      "toDark": "Dark theme"
+    },
+    "visibleSections": {
+      "heading": "Visible sections"
+    },
+    "language": {
+      "heading": "Language",
+      "ru": "Русский",
+      "en": "English",
+      "uz": "Oʻzbekcha"
+    }
+  },
+  "common": {
+    "inDevelopment": "This section is under development."
+  },
+  "fitness": {
+    "heading": "Fitness",
+    "form": {
+      "type": "Workout type",
+      "date": "Date",
+      "duration": "Duration (min)",
+      "calories": "Calories",
+      "notes": "Notes"
+    },
+    "types": {
+      "run": "Running",
+      "walk": "Walking",
+      "gym": "Gym",
+      "cycling": "Cycling",
+      "swim": "Swimming",
+      "other": "Other"
+    },
+    "table": {
+      "type": "Type",
+      "date": "Date",
+      "duration": "Duration",
+      "calories": "Calories",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "actions": {
+      "add": "Add entry",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "stats": {
+      "totalWorkouts": "Total workouts",
+      "totalDuration": "Total duration",
+      "totalCalories": "Total calories",
+      "thisWeek": "This week",
+      "thisMonth": "This month"
+    },
+    "filters": {
+      "heading": "Filters",
+      "byType": "By type",
+      "byDateRange": "By date range",
+      "all": "All",
+      "from": "From",
+      "to": "To"
+    }
+  }
+}

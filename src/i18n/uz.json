@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "Productivity Hub"
+  },
+  "sections": {
+    "focus": "Fokus",
+    "tasks": "Vazifalar va maqsadlar",
+    "thoughts": "Fikrlar",
+    "habits": "Odatlar",
+    "fitness": "Fitnes",
+    "finance": "Moliyaviy hisob"
+  },
+  "sidebar": {
+    "ariaLabel": "Boʻlimlar"
+  },
+  "topbar": {
+    "toggleTheme": "Mavzuni almashtirish"
+  },
+  "settings": {
+    "heading": "Sozlamalar",
+    "theme": {
+      "heading": "Mavzu",
+      "toLight": "Yorugʻ mavzu",
+      "toDark": "Qorongʻi mavzu"
+    },
+    "visibleSections": {
+      "heading": "Koʻrinadigan boʻlimlar"
+    },
+    "language": {
+      "heading": "Til",
+      "ru": "Русский",
+      "en": "English",
+      "uz": "Oʻzbekcha"
+    }
+  },
+  "common": {
+    "inDevelopment": "Ushbu boʻlim ishlab chiqilmoqda."
+  },
+  "fitness": {
+    "heading": "Fitnes",
+    "form": {
+      "type": "Mashgʻulot turi",
+      "date": "Sana",
+      "duration": "Davomiyligi (daqiqa)",
+      "calories": "Kaloriyalar",
+      "notes": "Izohlar"
+    },
+    "types": {
+      "run": "Yugurish",
+      "walk": "Yurish",
+      "gym": "Trenajyor zali",
+      "cycling": "Velosiped",
+      "swim": "Suzish",
+      "other": "Boshqa"
+    },
+    "table": {
+      "type": "Turi",
+      "date": "Sana",
+      "duration": "Davomiyligi",
+      "calories": "Kaloriyalar",
+      "notes": "Izohlar",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "add": "Yozuv qoʻshish",
+      "edit": "Tahrirlash",
+      "delete": "Oʻchirish",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish"
+    },
+    "stats": {
+      "totalWorkouts": "Jami mashgʻulotlar",
+      "totalDuration": "Jami davomiylik",
+      "totalCalories": "Jami kaloriyalar",
+      "thisWeek": "Shu hafta",
+      "thisMonth": "Shu oy"
+    },
+    "filters": {
+      "heading": "Filtrlar",
+      "byType": "Turi boʻyicha",
+      "byDateRange": "Sana oraligʻi boʻyicha",
+      "all": "Barchasi",
+      "from": "Dan",
+      "to": "Gacha"
+    }
+  }
+}

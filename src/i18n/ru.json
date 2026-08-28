@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "Productivity Hub"
+  },
+  "sections": {
+    "focus": "Фокус",
+    "tasks": "Задачи и цели",
+    "thoughts": "Мысли",
+    "habits": "Привычки",
+    "fitness": "Фитнес",
+    "finance": "Финансовый учёт"
+  },
+  "sidebar": {
+    "ariaLabel": "Разделы"
+  },
+  "topbar": {
+    "toggleTheme": "Переключить тему"
+  },
+  "settings": {
+    "heading": "Настройки",
+    "theme": {
+      "heading": "Тема",
+      "toLight": "Светлая тема",
+      "toDark": "Тёмная тема"
+    },
+    "visibleSections": {
+      "heading": "Видимые разделы"
+    },
+    "language": {
+      "heading": "Язык",
+      "ru": "Русский",
+      "en": "English",
+      "uz": "Oʻzbekcha"
+    }
+  },
+  "common": {
+    "inDevelopment": "Этот раздел в разработке."
+  },
+  "fitness": {
+    "heading": "Фитнес",
+    "form": {
+      "type": "Тип тренировки",
+      "date": "Дата",
+      "duration": "Длительность (мин)",
+      "calories": "Калории",
+      "notes": "Заметки"
+    },
+    "types": {
+      "run": "Бег",
+      "walk": "Ходьба",
+      "gym": "Тренажёрный зал",
+      "cycling": "Велосипед",
+      "swim": "Плавание",
+      "other": "Другое"
+    },
+    "table": {
+      "type": "Тип",
+      "date": "Дата",
+      "duration": "Длительность",
+      "calories": "Калории",
+      "notes": "Заметки",
+      "actions": "Действия"
+    },
+    "actions": {
+      "add": "Добавить запись",
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "save": "Сохранить",
+      "cancel": "Отмена"
+    },
+    "stats": {
+      "totalWorkouts": "Всего тренировок",
+      "totalDuration": "Общая длительность",
+      "totalCalories": "Всего калорий",
+      "thisWeek": "На этой неделе",
+      "thisMonth": "В этом месяце"
+    },
+    "filters": {
+      "heading": "Фильтры",
+      "byType": "По типу",
+      "byDateRange": "По периоду",
+      "all": "Все",
+      "from": "С",
+      "to": "По"
+    }
+  }
+}

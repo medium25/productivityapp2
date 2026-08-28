@@ -1,36 +1,37 @@
 // Configuration for the 6 top-level sections ("miry") of the app.
-// `label` is a plain Russian string for now — task T3 (i18n) will replace
-// this with translation keys resolved via react-i18next.
+// `labelKey` is a react-i18next translation key (see src/i18n/*.json,
+// `sections.*`) — resolve it with `t(section.labelKey)` wherever a section's
+// display name is needed.
 export const SECTIONS = [
   {
     id: 'focus',
     path: '/',
-    label: 'Фокус',
+    labelKey: 'sections.focus',
   },
   {
     id: 'tasks',
     path: '/tasks',
-    label: 'Задачи и цели',
+    labelKey: 'sections.tasks',
   },
   {
     id: 'thoughts',
     path: '/thoughts',
-    label: 'Мысли',
+    labelKey: 'sections.thoughts',
   },
   {
     id: 'habits',
     path: '/habits',
-    label: 'Привычки',
+    labelKey: 'sections.habits',
   },
   {
     id: 'fitness',
     path: '/fitness',
-    label: 'Фитнес',
+    labelKey: 'sections.fitness',
   },
   {
     id: 'finance',
     path: '/finance',
-    label: 'Финансовый учёт',
+    labelKey: 'sections.finance',
   },
 ]
 

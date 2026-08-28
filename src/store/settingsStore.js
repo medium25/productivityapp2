@@ -10,8 +10,9 @@ const defaultVisibleSections = SECTIONS.reduce((acc, section) => {
 
 // Settings store: language, theme and per-section visibility.
 // Persisted to localStorage so preferences survive a reload.
-// Note: `language` only stores the chosen value for now — actual i18n
-// wiring (react-i18next) happens in a later task.
+// `language` is the source of truth for the UI locale; App.jsx syncs
+// react-i18next to it on load, and Settings.jsx calls i18n.changeLanguage()
+// alongside setLanguage() whenever the user switches languages.
 export const useSettingsStore = create(
   persist(
     (set) => ({
