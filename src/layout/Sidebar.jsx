@@ -1,11 +1,20 @@
 import { NavLink } from 'react-router-dom'
 import { SECTIONS } from '../constants/sections.js'
+import { useSettingsStore } from '../store/settingsStore.js'
 
 export default function Sidebar() {
+  const visibleSections = useSettingsStore((state) => state.visibleSections)
+  // Hidden sections (toggled off in Settings) are dropped from the nav,
+  // but their routes stay registered in App.jsx and still work if visited
+  // directly.
+  const visibleNavSections = SECTIONS.filter(
+    (section) => visibleSections[section.id] !== false,
+  )
+
   return (
     <nav className="sidebar" aria-label="Разделы">
       <ul className="sidebar-list">
-        {SECTIONS.map((section) => (
+        {visibleNavSections.map((section) => (
           <li key={section.id}>
             <NavLink
               to={section.path}

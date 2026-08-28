@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Sidebar from './layout/Sidebar.jsx'
 import TopBar from './layout/TopBar.jsx'
@@ -8,8 +9,17 @@ import Habits from './pages/Habits.jsx'
 import Fitness from './pages/Fitness.jsx'
 import Finance from './pages/Finance.jsx'
 import Settings from './pages/Settings.jsx'
+import { useSettingsStore } from './store/settingsStore.js'
 
 export default function App() {
+  const theme = useSettingsStore((state) => state.theme)
+
+  // Reflect the current theme on the root element so CSS (see index.css)
+  // can style the whole app via `:root[data-theme="dark"]`.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   return (
     <div className="app-shell">
       <Sidebar />
