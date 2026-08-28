@@ -118,6 +118,160 @@ body {
   font-style: italic;
 }
 
+.fitness-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.fitness-stat-card {
+  flex: 1 1 220px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+}
+
+.fitness-stat-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.fitness-stat-card dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fitness-stat-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.fitness-stat-card dt {
+  opacity: 0.7;
+}
+
+.fitness-stat-card dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.fitness-form-section {
+  margin-bottom: 1.5rem;
+}
+
+.fitness-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.fitness-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fitness-form-row-notes {
+  flex: 1 1 220px;
+}
+
+.fitness-form-row label {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.fitness-form-row input,
+.fitness-form-row select,
+.fitness-form-row textarea {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+.fitness-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fitness-form-actions button,
+.fitness-actions-cell button {
+  border: 1px solid #ddd;
+  background: transparent;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.fitness-filters {
+  margin-bottom: 1.5rem;
+}
+
+.fitness-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.fitness-filters-range-label {
+  opacity: 0.7;
+  margin-left: 0.5rem;
+}
+
+.fitness-filters-row select,
+.fitness-filters-row input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+.fitness-table-wrapper {
+  overflow-x: auto;
+}
+
+.fitness-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fitness-table th,
+.fitness-table td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.fitness-table td:nth-child(5) {
+  white-space: normal;
+}
+
+.fitness-actions-cell {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.fitness-empty {
+  opacity: 0.7;
+  font-style: italic;
+}
+
 /* Minimal dark theme override, applied via data-theme on <html>.
    Later per-page styles can add their own dark-mode rules as needed. */
 :root[data-theme='dark'] {
@@ -140,4 +294,29 @@ body {
 
 :root[data-theme='dark'] .topbar-theme-toggle {
   border-color: #444;
+}
+
+:root[data-theme='dark'] .fitness-stat-card,
+:root[data-theme='dark'] .fitness-form {
+  border-color: #333;
+  background: #1f1f1f;
+}
+
+:root[data-theme='dark'] .fitness-form-row input,
+:root[data-theme='dark'] .fitness-form-row select,
+:root[data-theme='dark'] .fitness-form-row textarea,
+:root[data-theme='dark'] .fitness-filters-row select,
+:root[data-theme='dark'] .fitness-filters-row input {
+  border-color: #444;
+  background: #262626;
+}
+
+:root[data-theme='dark'] .fitness-form-actions button,
+:root[data-theme='dark'] .fitness-actions-cell button {
+  border-color: #444;
+}
+
+:root[data-theme='dark'] .fitness-table th,
+:root[data-theme='dark'] .fitness-table td {
+  border-bottom-color: #333;
 }
