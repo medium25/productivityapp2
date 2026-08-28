@@ -1,0 +1,16 @@
+{
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "index.js",
+    "index.css",
+    "index-*.js",
+    "index-*.css",
+    "index.es.js",
+    "index.es-*.js",
+    "html2canvas.js",
+    "html2canvas-*.js",
+    "purify.es.js",
+    "purify.es-*.js"
+  ]
+}
