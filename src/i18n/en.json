@@ -84,6 +84,11 @@
       "from": "From",
       "to": "To"
     },
+    "export": {
+      "pdf": "Export to PDF",
+      "word": "Export to Word",
+      "excel": "Export to Excel"
+    },
     "list": {
       "empty": "No entries yet."
     }

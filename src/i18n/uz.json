@@ -84,6 +84,11 @@
       "from": "Dan",
       "to": "Gacha"
     },
+    "export": {
+      "pdf": "PDF ga eksport",
+      "word": "Word ga eksport",
+      "excel": "Excel ga eksport"
+    },
     "list": {
       "empty": "Hozircha yozuvlar yoʻq."
     }

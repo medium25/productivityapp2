@@ -241,6 +241,22 @@ body {
   background: transparent;
 }
 
+.fitness-export-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.fitness-export-actions button {
+  border: 1px solid #ddd;
+  background: transparent;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
 .fitness-table-wrapper {
   overflow-x: auto;
 }
@@ -312,7 +328,8 @@ body {
 }
 
 :root[data-theme='dark'] .fitness-form-actions button,
-:root[data-theme='dark'] .fitness-actions-cell button {
+:root[data-theme='dark'] .fitness-actions-cell button,
+:root[data-theme='dark'] .fitness-export-actions button {
   border-color: #444;
 }
 

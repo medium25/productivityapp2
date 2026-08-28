@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFitnessStore } from '../store/fitnessStore.js'
 import { WORKOUT_TYPES } from '../constants/workoutTypes.js'
+import { exportFitnessToExcel, exportFitnessToPDF, exportFitnessToWord } from '../export/fitness.js'
 
 const EMPTY_FORM = {
   type: WORKOUT_TYPES[0],
@@ -298,6 +299,18 @@ export default function Fitness() {
             onChange={(event) => setDateTo(event.target.value)}
           />
         </div>
+      </section>
+
+      <section className="fitness-export-actions">
+        <button type="button" onClick={() => exportFitnessToPDF(filteredWorkouts, t)}>
+          {t('fitness.export.pdf')}
+        </button>
+        <button type="button" onClick={() => exportFitnessToWord(filteredWorkouts, t)}>
+          {t('fitness.export.word')}
+        </button>
+        <button type="button" onClick={() => exportFitnessToExcel(filteredWorkouts, t)}>
+          {t('fitness.export.excel')}
+        </button>
       </section>
 
       <section className="fitness-table-wrapper">
