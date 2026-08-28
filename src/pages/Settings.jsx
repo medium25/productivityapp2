@@ -69,12 +69,6 @@ export default function Settings() {
           ))}
         </ul>
       </section>
-
-      {/*
-        Placeholder: per-section export controls go here (T6 — PDF/Word/
-        Excel export buttons per section, e.g. Fitness export via
-        src/export/fitness.js).
-      */}
     </div>
   )
 }
