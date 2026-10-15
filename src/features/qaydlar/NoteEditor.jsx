@@ -1,4 +1,5 @@
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { saveLocalMedia, deleteLocalMedia, getLocalMedia } from '../../storage/localMedia'
 import { serializeBlocks } from './noteBlocks'
@@ -185,6 +186,10 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
   const lastSerialized = useRef(null)
   const lastRange = useRef(null)
   const urls = useRef(new Map())
+  // Floating text-style control shown over a selection: { top, left, level }.
+  const [bar, setBar] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const barTimer = useRef(null)
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
   const strings = useRef({})
@@ -192,6 +197,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     unavailable: t('insights.mediaUnavailable'),
     remove: t('qaydlar.removePhoto'),
     copy: t('qaydlar.copyPhoto'),
+    heading: [t('qaydlar.normalText'), t('qaydlar.heading1'), t('qaydlar.heading2'), t('qaydlar.heading3')],
     confirm: t('qaydlar.confirmRemovePhoto'),
     yes: t('tasks.yes'),
     no: t('tasks.no'),
@@ -357,6 +363,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     const onSelectionChange = () => {
       const root = rootRef.current
       const sel = window.getSelection()
+      refreshBar()
       if (!root || !sel.rangeCount) return
       const range = sel.getRangeAt(0)
       if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -374,7 +381,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
 
   useEffect(() => {
     const map = urls.current
-    return () => { map.forEach((u) => URL.revokeObjectURL(u)); map.clear() }
+    return () => { map.forEach((u) => URL.revokeObjectURL(u)); map.clear(); clearTimeout(barTimer.current) }
   }, [])
 
   const insertImage = (id, range) => {
@@ -425,23 +432,55 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
 
   // Selected text lines (photos skipped) -> heading level; the same level
   // again, or 0, turns them back into plain text.
-  const applyHeading = (level) => {
+  const selectedLines = (range) => {
     const root = rootRef.current
-    const sel = window.getSelection()
-    if (!sel.rangeCount || !root.contains(sel.anchorNode)) return
-    const range = sel.getRangeAt(0)
     const first = topLevelChild(root, range.startContainer)
     const last = topLevelChild(root, range.endContainer)
-    if (!first || !last) return
     const lines = []
+    if (!first || !last) return lines
     for (let el = first; el; el = el.nextElementSibling) {
       if (!el.dataset?.id) lines.push(el)
       if (el === last) break
     }
+    return lines
+  }
+
+  // Position the style control above the current selection (debounced so it
+  // does not chase the pointer while a drag-selection is still going).
+  const refreshBar = () => {
+    clearTimeout(barTimer.current)
+    barTimer.current = setTimeout(() => {
+      const root = rootRef.current
+      const sel = window.getSelection()
+      if (!root || !sel.rangeCount || sel.isCollapsed || !root.contains(sel.anchorNode) || !root.contains(sel.focusNode)) {
+        setBar(null)
+        setMenuOpen(false)
+        return
+      }
+      const range = sel.getRangeAt(0)
+      const lines = selectedLines(range)
+      if (!lines.length) { setBar(null); return }
+      const rect = range.getBoundingClientRect()
+      if (!rect.width && !rect.height) return
+      const levels = new Set(lines.map((el) => Number(el.dataset.level) || 0))
+      setBar({
+        top: Math.max(8, rect.top - 40),
+        left: Math.min(window.innerWidth - 150, Math.max(8, rect.left)),
+        level: levels.size === 1 ? [...levels][0] : -1,
+      })
+    }, 120)
+  }
+
+  const applyHeading = (level) => {
+    const root = rootRef.current
+    const sel = window.getSelection()
+    if (!sel.rangeCount || !root.contains(sel.anchorNode)) return
+    const lines = selectedLines(sel.getRangeAt(0))
     if (!lines.length) return
     const target = level && lines.every((el) => Number(el.dataset.level) === level) ? 0 : level
     lines.forEach((el) => setLevel(el, target))
     emit()
+    refreshBar()
   }
 
   const onKeyDown = (e) => {
@@ -501,7 +540,47 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     if (cut) document.execCommand('delete')
   }
 
+  const styleControl = bar && createPortal(
+    <div
+      className="note-fmt"
+      style={{ top: bar.top, left: bar.left }}
+      onMouseDown={(e) => e.preventDefault()}
+      onPointerDown={(e) => e.preventDefault()}
+    >
+      <button
+        type="button"
+        className="note-fmt__toggle"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        aria-label={t('qaydlar.textStyle')}
+        title={t('qaydlar.textStyle')}
+        onClick={() => setMenuOpen((v) => !v)}
+      >
+        <span className="note-fmt__aa">Aa</span>
+        <span className={'note-fmt__chev' + (menuOpen ? ' note-fmt__chev--open' : '')} aria-hidden="true">▾</span>
+      </button>
+      {menuOpen && (
+        <div className="note-fmt__menu" role="menu">
+          {[1, 2, 3, 0].map((level) => (
+            <button
+              key={level}
+              type="button"
+              role="menuitem"
+              className={'note-fmt__item note-fmt__item--h' + level + (bar.level === level ? ' note-fmt__item--on' : '')}
+              onClick={() => { applyHeading(level); setMenuOpen(false) }}
+            >
+              <span>{strings.current.heading[level]}</span>
+              <kbd>{level ? `⌘${level}` : '⌘0'}</kbd>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>,
+    document.body
+  )
+
   return (
+    <>
     <div
       ref={rootRef}
       className="note-body note-doc is-empty"
@@ -529,6 +608,8 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
         sel.addRange(range)
       }}
     />
+    {styleControl}
+    </>
   )
 })
 
