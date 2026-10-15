@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { saveLocalMedia, deleteLocalMedia, getLocalMedia } from '../../storage/localMedia'
 import { serializeBlocks } from './noteBlocks'
 
+// Headings: Cmd/Ctrl+1/2/3 turn the selected lines into a large / medium /
+// small heading (Cmd+0 or the same key again turns it back). Stored as a
+// markdown-style prefix on the line ("# ", "## ", "### ").
+//
 // The body of a note: ONE contenteditable document — lines of text with small
 // photo thumbnails on lines of their own — so a drag/shift-selection can span
 // text and screenshots together and Cmd+C copies both at once (per user
@@ -37,9 +41,21 @@ async function prepareImage(file) {
 
 const imageFiles = (list) => [...(list || [])].filter((f) => f.type.startsWith('image/'))
 
-function lineDiv(text) {
+const HEADING_PREFIX = /^(#{1,3}) /
+const levelPrefix = (level) => (level ? `${'#'.repeat(level)} ` : '')
+
+function setLevel(div, level) {
+  div.className = 'note-line' + (level ? ` note-line--h${level}` : '')
+  if (level) div.dataset.level = String(level)
+  else delete div.dataset.level
+}
+
+// `stored` is a line as kept in the note text, heading prefix included.
+function lineDiv(stored) {
+  const match = HEADING_PREFIX.exec(stored || '')
+  const text = match ? stored.slice(match[0].length) : stored
   const div = document.createElement('div')
-  div.className = 'note-line'
+  setLevel(div, match ? match[1].length : 0)
   if (text) div.textContent = text
   else div.appendChild(document.createElement('br'))
   return div
@@ -60,10 +76,11 @@ function domToItems(root) {
     return s
   }
   root.childNodes.forEach((child) => {
+    const level = Number(child.dataset?.level) || 0
     if (child.nodeType === 3) child.nodeValue.split('\n').forEach((line) => items.push({ line }))
     else if (child.dataset?.id) items.push({ img: child.dataset.id })
     else if (child.nodeName === 'BR') items.push({ line: '' })
-    else inlineText(child).split('\n').forEach((line) => items.push({ line }))
+    else inlineText(child).split('\n').forEach((line) => items.push({ line, level }))
   })
   return items
 }
@@ -74,7 +91,7 @@ function itemsToBlocks(items) {
   let lines = []
   const flush = () => { blocks.push({ type: 'text', value: lines.join('\n') }); lines = [] }
   items.forEach((it) => {
-    if (it.img) { flush(); blocks.push({ type: 'img', id: it.img }) } else lines.push(it.line)
+    if (it.img) { flush(); blocks.push({ type: 'img', id: it.img }) } else lines.push(levelPrefix(it.level) + it.line)
   })
   flush()
   return blocks
@@ -129,7 +146,8 @@ async function writeRichClipboard(fragment) {
       const found = blobs.find((b) => b.id === it.img)?.blob
       return found ? `<p><img src="${await blobToDataUrl(found)}"></p>` : ''
     }
-    return `<p>${it.line ? escapeHtml(it.line) : '<br>'}</p>`
+    const tag = it.level ? `h${it.level}` : 'p'
+    return `<${tag}>${it.line ? escapeHtml(it.line) : '<br>'}</${tag}>`
   }))).join('')
   const text = items.filter((it) => it.line !== undefined).map((it) => it.line).join('\n')
   const payload = {
@@ -405,6 +423,54 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
   }
   useImperativeHandle(ref, () => ({ insertFiles }))
 
+  // Selected text lines (photos skipped) -> heading level; the same level
+  // again, or 0, turns them back into plain text.
+  const applyHeading = (level) => {
+    const root = rootRef.current
+    const sel = window.getSelection()
+    if (!sel.rangeCount || !root.contains(sel.anchorNode)) return
+    const range = sel.getRangeAt(0)
+    const first = topLevelChild(root, range.startContainer)
+    const last = topLevelChild(root, range.endContainer)
+    if (!first || !last) return
+    const lines = []
+    for (let el = first; el; el = el.nextElementSibling) {
+      if (!el.dataset?.id) lines.push(el)
+      if (el === last) break
+    }
+    if (!lines.length) return
+    const target = level && lines.every((el) => Number(el.dataset.level) === level) ? 0 : level
+    lines.forEach((el) => setLevel(el, target))
+    emit()
+  }
+
+  const onKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && !e.shiftKey && /^[0-3]$/.test(e.key)) {
+      // Cmd+1..3 may be taken by the browser (tab switching) — Cmd/Ctrl+Alt+1..3
+      // is the same thing; macOS reports Alt+digit as a symbol, so read e.code.
+      e.preventDefault()
+      applyHeading(Number(e.key))
+      return
+    }
+    if ((e.metaKey || e.ctrlKey) && e.altKey && /^Digit[0-3]$/.test(e.code)) {
+      e.preventDefault()
+      applyHeading(Number(e.code.slice(5)))
+      return
+    }
+    // Enter at the end of a heading starts a plain line, not another heading.
+    if (e.key === 'Enter' && !e.shiftKey) {
+      setTimeout(() => {
+        const sel = window.getSelection()
+        const line = sel.rangeCount ? topLevelChild(rootRef.current, sel.anchorNode) : null
+        const prev = line?.previousElementSibling
+        if (line?.dataset?.level && prev?.dataset?.level === line.dataset.level && !line.textContent) {
+          setLevel(line, 0)
+          emit()
+        }
+      }, 0)
+    }
+  }
+
   const onPaste = (e) => {
     const files = imageFiles(e.clipboardData?.files)
     if (files.length) { e.preventDefault(); insertFiles(files); return }
@@ -446,6 +512,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
       aria-multiline="true"
       data-placeholder={placeholder}
       onInput={emit}
+      onKeyDown={onKeyDown}
       onPaste={onPaste}
       onDrop={onDrop}
       onCopy={(e) => copySelection(e, false)}

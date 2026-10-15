@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { NOTE_STORES } from '../store/useQaydlarStore'
 import { IconBack, IconImage, IconPin } from '../icons/Icons'
 import NoteEditor from '../features/qaydlar/NoteEditor'
-import { parseBlocks, serializeBlocks, imageIds } from '../features/qaydlar/noteBlocks'
+import { parseBlocks, serializeBlocks, imageIds, stripHeadings } from '../features/qaydlar/noteBlocks'
 import { deleteLocalMedia } from '../storage/localMedia'
 
 // A note as its own page (per user request — not a modal), so the sidebar
@@ -42,7 +42,7 @@ export default function QaydlarNotePage({ collection = 'notes' }) {
     const { title: tt, text: body } = latest.current
     if (tt === lastSaved.current.title && body === lastSaved.current.text) return
     lastSaved.current = { title: tt, text: body }
-    const finalTitle = tt.trim() || body.trim().split('\n')[0].slice(0, 80)
+    const finalTitle = tt.trim() || stripHeadings(body).trim().split('\n')[0].slice(0, 80)
     if (!idRef.current) {
       if (!finalTitle && !body.trim()) return
       idRef.current = addCard(finalTitle, body)

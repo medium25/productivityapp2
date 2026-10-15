@@ -37,5 +37,10 @@ export function imageIds(text) {
 
 // Plain text for card previews: markers dropped.
 export function stripImages(text) {
-  return (text || '').replace(MARKER, '\n').trim()
+  return stripHeadings((text || '').replace(MARKER, '\n')).trim()
+}
+
+// Heading lines are stored with a "# " / "## " / "### " prefix.
+export function stripHeadings(text) {
+  return (text || '').replace(/^#{1,3} /gm, '')
 }
