@@ -1,36 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0A84FF"/>
-      <stop offset="1" stop-color="#30D158"/>
-    </linearGradient>
-    <linearGradient id="ringShade" x1="512" y1="120" x2="512" y2="904" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#F2FBF5"/>
-    </linearGradient>
-  </defs>
-
-  <!-- macOS icons live on a transparent 1024x1024 canvas but only fill ~80%
-       of it (Apple's "safe area" convention) — everything else on the Dock
-       (Finder, Clock, etc.) follows that padding, so a glyph drawn edge to
-       edge reads visibly larger than its neighbors. Shrinking + centering
-       the whole design here matches that convention instead of redrawing
-       every coordinate. -->
-  <g transform="translate(100,100) scale(0.8047)">
-    <!-- macOS-style squircle background -->
-    <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
-
-    <!-- subtle inner glow for depth -->
-    <circle cx="512" cy="380" r="420" fill="#FFFFFF" opacity="0.06"/>
-
-    <!-- focus ring: a clock/progress dial standing in for the Pomodoro timer -->
-    <circle cx="512" cy="512" r="286" fill="none" stroke="url(#ringShade)" stroke-width="54" opacity="0.95"/>
-    <!-- progress arc, ~78% around the ring, echoing an in-progress focus session -->
-    <path d="M 512 226 A 286 286 0 1 1 249.5 397.5" fill="none" stroke="#FFFFFF" stroke-width="54" stroke-linecap="round"/>
-    <!-- 12 o'clock tick -->
-    <rect x="497" y="150" width="30" height="64" rx="15" fill="#0A84FF"/>
-
-    <!-- GTD checkmark: task done, centered inside the dial -->
-    <path d="M378 522 L472 616 L656 412" fill="none" stroke="#FFFFFF" stroke-width="70" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="225" fill="#4c5fd6"/>
+  <rect x="277" y="560" width="130" height="220" rx="26" fill="#ffffff"/>
+  <rect x="447" y="420" width="130" height="360" rx="26" fill="#ffffff"/>
+  <rect x="617" y="260" width="130" height="520" rx="26" fill="#ffffff"/>
 </svg>
