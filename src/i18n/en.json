@@ -56,6 +56,10 @@
       "title": "Data",
       "description": "Facts and numbers to look up later."
     },
+    "myDay": {
+      "title": "My day",
+      "description": "Today’s tasks."
+    },
     "upcoming": {
       "title": "Tasks",
       "description": "Tasks coming up soon."
@@ -724,7 +728,7 @@
   "tasksHub": {
     "cycleNone": "No repeat",
     "cycleTitle": "Repeat",
-    "today": "Today’s tasks",
+    "today": "My day",
     "close": "Close",
     "open": "Open"
   },

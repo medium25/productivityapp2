@@ -3,7 +3,6 @@ import { Routes, parsePath, UNSAFE_NavigationContext as NavigationContext, UNSAF
 import { useTranslation } from 'react-i18next'
 import { SECTIONS, getSectionTitle } from '../constants/sections'
 import { useSettingsStore } from '../store/useSettingsStore'
-import { IconTasks } from '../icons/Icons'
 import { SIDEBAR_ICONS, SideIconSettings } from './sidebarIcons'
 import { pageRoutes } from './pageRoutes'
 
@@ -55,10 +54,10 @@ function useChoices() {
     }
     return [
       fromSection('myFocus'),
+      fromSection('myDay'),
       fromSection('upcoming'),
       fromSection('referenceInfo'),
       fromSection('projects'),
-      { id: 'today', route: '/upcoming/today', title: t('tasksHub.today'), Icon: IconTasks },
       fromSection('insights'),
       fromSection('principles'),
       fromSection('habits'),

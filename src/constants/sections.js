@@ -32,6 +32,8 @@ export const SECTIONS = [
   // doesn't fit the whenDate-based task model at all. Styled to match a
   // reference screenshot exactly per user request (see HabitsPage.jsx).
   // Ordered under Data/Tasks per user request (sidebar order = array order).
+  // Today's list as its own sidebar button (it is also still a card on the Tasks hub).
+  { id: 'myDay', route: '/upcoming/today', Icon: IconClock, titleKey: 'sections.myDay.title', descKey: 'sections.myDay.description' },
   { id: 'upcoming', route: '/upcoming', Icon: IconTasks, titleKey: 'sections.upcoming.title', descKey: 'sections.upcoming.description' },
   { id: 'habits', route: '/habits', Icon: IconFlame, titleKey: 'sections.habits.title', descKey: 'sections.habits.description' },
   { id: 'sometime', route: '/sometime', Icon: IconSomeday, titleKey: 'sections.sometime.title', descKey: 'sections.sometime.description' },

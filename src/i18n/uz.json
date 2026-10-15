@@ -56,6 +56,10 @@
       "title": "Ma'lumotlar",
       "description": "Keyinroq qarash uchun faktlar va raqamlar."
     },
+    "myDay": {
+      "title": "Mening kunim",
+      "description": "Bugungi vazifalar."
+    },
     "upcoming": {
       "title": "Vazifalar",
       "description": "Yaqin kunlardagi vazifalar."
@@ -709,7 +713,7 @@
   "tasksHub": {
     "cycleNone": "Takrorlanmasin",
     "cycleTitle": "Takrorlash",
-    "today": "Bugungi vazifalar",
+    "today": "Mening kunim",
     "close": "Yopish",
     "open": "Ochish"
   },

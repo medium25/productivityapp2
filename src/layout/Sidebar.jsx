@@ -15,7 +15,7 @@ import { SIDEBAR_ICONS, SideIconSettings } from './sidebarIcons'
 // isn't in here either — it's not a sidebar destination at all anymore (per
 // earlier user request: only reachable from the Tasks hub's own Projects
 // card now — see UpcomingPage.jsx).
-const ACTIONS_IDS = ['upcoming', 'habits']
+const ACTIONS_IDS = ['myDay', 'upcoming', 'habits']
 
 // Which sections a task can be dragged onto to move it there (see
 // useDragReorder.js's onCrossDropSection, taskLogic.js's
@@ -51,6 +51,7 @@ const SECTION_ICON_CLASS = {
 // pick, variant E) — the active row fills the circle with it.
 const SECTION_HUE = {
   myFocus: '#5b8def',
+  myDay: '#f0a23a',
   upcoming: '#8a7bf0',
   insights: '#e56fa8',
   principles: '#e8a93a',
@@ -118,6 +119,7 @@ function RenamableNavLink({ to, Icon, iconClassName, hue, name, onRename, onDele
     >
       <NavLink
         to={to}
+        end={to === '/upcoming'}
         className={({ isActive }) => 'sidebar__link' + (hue ? ' sidebar__link--hue' : '') + (isActive ? ' active' : '')}
         style={hue ? { '--h': hue } : undefined}
         onDoubleClick={startEditing}
@@ -259,9 +261,14 @@ export default function Sidebar() {
       const def = remaining.get(id)
       if (def) { ordered.push(def); remaining.delete(id) }
     })
-    orderableSections.forEach((d) => {
+    // A section added after the user saved their order (e.g. myDay) goes
+    // right before the next default-order neighbour already placed, not at
+    // the far end of the list.
+    orderableSections.forEach((d, i) => {
       if (!remaining.has(d.id)) return
-      ordered.push(d)
+      const nextId = orderableSections.slice(i + 1).map((x) => x.id).find((id) => ordered.some((o) => o.id === id))
+      const at = nextId ? ordered.findIndex((o) => o.id === nextId) : ordered.length
+      ordered.splice(at, 0, d)
     })
     return ordered
   }, [orderableSections, sidebarOrder])

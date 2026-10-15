@@ -24,6 +24,17 @@ function Glyph({ className, size = 22, children }) {
 const fillProps = { fill: 'currentColor', fillOpacity: 0.2, stroke: 'none' }
 const dotProps = { fill: 'currentColor', stroke: 'none' }
 
+// Мой день — sun
+export function SideIconMyDay(props) {
+  return (
+    <Glyph {...props}>
+      <circle {...fillProps} cx="12" cy="12" r="4.2" />
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6" />
+    </Glyph>
+  )
+}
+
 // Фокус — pomodoro timer
 export function SideIconFocus(props) {
   return (
@@ -119,6 +130,7 @@ export function SideIconBook(props) {
 }
 
 export const SIDEBAR_ICONS = {
+  myDay: SideIconMyDay,
   myFocus: SideIconFocus,
   upcoming: SideIconTasks,
   insights: SideIconInsights,
