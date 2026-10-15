@@ -3,6 +3,10 @@ import { suppressSelectionForPointer } from './suppressSelection'
 import { createPortal } from 'react-dom'
 
 const THRESHOLD_PX = 6
+// Touch: hold this long without moving to pick a row up; moving further than
+// LONG_PRESS_SLOP_PX first means the finger is scrolling, not dragging.
+const LONG_PRESS_MS = 350
+const LONG_PRESS_SLOP_PX = 8
 const PROJECT_ATTR = 'data-drop-project-id'
 const NEW_PROJECT_ATTR = 'data-drop-new-project'
 const SECTION_ATTR = 'data-drop-section'
@@ -137,7 +141,7 @@ export function useDragReorder(ids, onReorder, crossDrop = {}) {
     const info = dragInfo.current
     if (!info) return
     if (!info.dragging) {
-      if (Math.hypot(e.clientX - info.startX, e.clientY - info.startY) < THRESHOLD_PX) return
+      if (!info.force && Math.hypot(e.clientX - info.startX, e.clientY - info.startY) < THRESHOLD_PX) return
       info.dragging = true
       // Row midpoints in the ORIGINAL layout, captured once. Target slot is
       // derived from these, not from the live (already reshuffled) DOM —
@@ -258,12 +262,59 @@ export function useDragReorder(ids, onReorder, crossDrop = {}) {
 
   // `label` is optional (e.g. project reordering doesn't pass one) — the
   // ghost just doesn't render without it.
+  // Touch: pick a row up with a long press (a plain swipe must keep
+  // scrolling). Once picked up, page scroll is vetoed through a
+  // non-passive touchmove listener registered up front — iOS only honours
+  // preventDefault on listeners that already existed when the touch began.
+  const startTouchDrag = (e, id, label) => {
+    let active = false
+    let last = { x: e.clientX, y: e.clientY }
+    const origin = { x: e.clientX, y: e.clientY }
+    const onTouchMove = (ev) => { if (active) ev.preventDefault() }
+    const onContextMenu = (ev) => ev.preventDefault()
+    const cleanup = () => {
+      clearTimeout(timer)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onEnd)
+      window.removeEventListener('pointercancel', onEnd)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('contextmenu', onContextMenu)
+    }
+    const onMove = (ev) => {
+      last = { x: ev.clientX, y: ev.clientY }
+      if (!active && Math.hypot(last.x - origin.x, last.y - origin.y) > LONG_PRESS_SLOP_PX) cleanup()
+    }
+    const onEnd = () => {
+      cleanup()
+      if (active) handleUp()
+    }
+    const timer = setTimeout(() => {
+      active = true
+      navigator.vibrate?.(15)
+      suppressSelectionForPointer(e)
+      dragInfo.current = { id, label, startX: last.x, startY: last.y, dragging: false, force: true, baseIds: ids }
+      window.addEventListener('pointermove', handleMove)
+      window.addEventListener('pointerup', handleUp)
+      handleMove({ clientX: last.x, clientY: last.y })
+    }, LONG_PRESS_MS)
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onEnd)
+    window.addEventListener('pointercancel', onEnd)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('contextmenu', onContextMenu)
+  }
+
   const bindHandle = (id, label) => ({
     ref: setNodeRef(id),
     onPointerDown: (e) => {
       if (e.button != null && e.button !== 0) return
-      // Touch swipes must scroll the page, not start a row drag/selection.
-      if (e.pointerType === 'touch') return
+      if (e.pointerType === 'touch') {
+        // Sections in the bottom tab bar scroll sideways; reordering there is
+        // a vertical-list gesture, so leave them alone on touch.
+        if (e.target.closest?.('input, textarea, select, .sidebar')) return
+        startTouchDrag(e, id, label)
+        return
+      }
       suppressSelectionForPointer(e)
       dragInfo.current = { id, label, startX: e.clientX, startY: e.clientY, dragging: false, baseIds: ids }
       window.addEventListener('pointermove', handleMove)
