@@ -136,6 +136,7 @@ export default function FinanceBudgetTab() {
         <button type="button" onClick={() => setMonthKey(nextMonthKey(monthKey))}>›</button>
       </div>
 
+      <div className="finance-budget-scroll">
       <table className="finance-budget-table">
         <thead>
           <tr>
@@ -235,6 +236,7 @@ export default function FinanceBudgetTab() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <form
         className="finance-add-category"

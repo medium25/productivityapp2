@@ -2886,31 +2886,6 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   margin: 0 0 4px;
 }
 
-@media (max-width: 720px) {
-  .app-shell { flex-direction: column; }
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 10px;
-  }
-  .sidebar__brand-slot { display: none; }
-  .sidebar__nav { flex-direction: row; }
-  .sidebar__bottom-group { flex-direction: row; }
-  .sidebar__divider { display: none; }
-  .sidebar__link {
-    border-left: none;
-    border-bottom: 2px solid transparent;
-  }
-  .sidebar__link.active { border-bottom-color: var(--accent); }
-  .sidebar__link span.sidebar__label { display: none; }
-  .sidebar__count { display: none; }
-  .page-content { padding: 24px; }
-}
-
 .auth-loading {
   height: 100vh;
   display: flex;
@@ -9822,3 +9797,99 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .finance-tx-table .finance-tx-row--editing .finance-category-picker__option { display: flex; padding: 6px 8px; color: #e9eaee; }
 .finance-tx-table .finance-tx-row--editing .finance-category-picker__option:hover { background: #33363d; }
 .finance-tx-table .finance-tx-row--editing > button { height: 36px; border: 0; border-radius: 10px; background: #6fa0ff; color: #0c1424; font: inherit; font-weight: 800; padding: 0 16px; cursor: pointer; }
+
+
+/* ---- iPhone / narrow screens (web version) ------------------------------
+   Sections move from the left rail to a bottom tab bar (thumb reach), the
+   split window is desktop-only, and everything respects the notch/home
+   indicator via env(safe-area-inset-*) (index.html sets viewport-fit=cover). */
+@media (max-width: 720px) {
+  html, body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  .app-shell { flex-direction: column-reverse; height: 100vh; height: 100dvh; }
+  .main-column { flex: 1; min-height: 0; }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-right: none;
+    border-top: 1px solid var(--glass-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar__brand-slot, .sidebar__divider { display: none; }
+  .sidebar__nav {
+    flex: none;
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .sidebar__bottom-group { flex: none; flex-direction: row; }
+  .sidebar__custom-row { display: flex; }
+  .sidebar__link:not(.sidebar__link--project),
+  .sidebar__link.sidebar__link--hue {
+    width: 68px;
+    min-width: 68px;
+    margin: 0;
+    flex-shrink: 0;
+    padding: 9px 4px 7px;
+    gap: 3px;
+    font-size: 10.5px;
+    background: transparent;
+    border: none;
+    border-top: 2px solid transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .sidebar__link.sidebar__link--hue:hover { background: transparent; border-color: transparent; }
+  .sidebar__link.active,
+  .sidebar__link.sidebar__link--hue.active { background: transparent; border-top-color: var(--accent); }
+
+  .topbar {
+    height: calc(var(--topbar-height) + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
+  }
+  .topbar__split-btn { display: none; }
+  .split-view > .split-col:first-child { display: none; }
+
+  .page-content { padding: 12px 14px 20px; }
+
+  /* Full-bleed pages claim back .page-content's padding with negative
+     margins — re-pointed at the phone padding above (12px 14px 20px). */
+  .tasks-page--edge-to-edge {
+    height: calc(100% + 32px);
+    width: calc(100% + 28px);
+    margin: -12px -14px -20px;
+  }
+
+  /* Today list: tighter time column, no drag grip (dragging is a mouse
+     gesture), smaller history dots so the title gets the room. */
+  .timed-row { gap: 6px; padding: 3px 10px; }
+  .timed-row__time { flex-basis: 48px; padding-right: 8px; }
+  .timed-row__body { gap: 6px; padding: 6px 8px; }
+  .timed-row__body > .drag-grip { display: none; }
+  .cycle-dots { gap: 3px; }
+  .cycle-dots__dot { width: 6px; height: 6px; }
+  .cycle-picker { margin-left: 54px; }
+
+  /* Fixed floating buttons sit above the bottom tab bar, not under it. */
+  .tasks-table__pomodoro-btn--floating {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    right: 16px;
+  }
+
+  /* Wide data tables scroll sideways inside their own box instead of
+     squeezing six columns into 340px. */
+  .finance-budget-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -14px; padding: 0 14px; }
+  .finance-budget-scroll .finance-budget-table { min-width: 640px; }
+
+  .auth-card__mode-switch button { min-width: 0; padding-left: 8px; padding-right: 8px; font-size: 0.9rem; }
+
+  /* iOS Safari zooms the page when a focused field is under 16px. */
+  input, textarea, select { font-size: 16px; }
+}
