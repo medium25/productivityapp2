@@ -545,6 +545,7 @@
     "close": "Close",
     "addPhoto": "Add photo",
     "removePhoto": "Remove photo",
+    "copyPhoto": "Copy photo",
     "confirmRemovePhoto": "Delete this photo?",
     "hubNotes": "Notes",
     "hubKnowledge": "Knowledge",

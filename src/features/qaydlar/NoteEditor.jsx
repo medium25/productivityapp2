@@ -1,14 +1,19 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { saveLocalMedia, deleteLocalMedia } from '../../storage/localMedia'
-import { useLocalMediaUrl } from '../tasks/useLocalMediaUrl'
-import { useAutoGrowTextarea } from '../tasks/useAutoGrowTextarea'
-import { IconClose } from '../../icons/Icons'
+import { saveLocalMedia, deleteLocalMedia, getLocalMedia } from '../../storage/localMedia'
+import { serializeBlocks } from './noteBlocks'
 
-// The body of a note: text blocks with photos between them (per user request —
-// photos can sit between the texts). `blocks` comes from noteBlocks.js. A photo
-// is added at the caret of the text block that was last in focus — from the
-// "add photo" button (insertFiles via ref), a paste, or a drop.
+// The body of a note: ONE contenteditable document — lines of text with small
+// photo thumbnails on lines of their own — so a drag/shift-selection can span
+// text and screenshots together and Cmd+C copies both at once (per user
+// request, for pasting a screenshot + text into Claude in one go).
+//
+// `blocks` still comes from / goes to noteBlocks.js (text blocks with images
+// between them), so the stored format ([[img:id]] markers) is unchanged. The
+// DOM inside the editor is managed by hand (React renders only the empty
+// root): every `input` is read back into blocks, and the DOM is rebuilt from
+// props only when they differ from what the DOM already says (a different
+// note was opened) — rebuilding on every keystroke would reset the caret.
 
 const MAX_SIDE = 1800
 
@@ -30,109 +35,362 @@ async function prepareImage(file) {
   }
 }
 
-function TextBlock({ index, value, placeholder, onChange, onCaret, onFiles, setRef }) {
-  const grow = useAutoGrowTextarea(value)
-  // Re-fit when the column width changes (window resize, split view): wrapping
-  // changes the height the text needs even though the text itself did not.
-  useEffect(() => {
-    const el = grow.current
-    if (!el || typeof ResizeObserver === 'undefined') return undefined
-    let width = el.clientWidth
-    const observer = new ResizeObserver(() => {
-      if (el.clientWidth === width) return
-      width = el.clientWidth
-      el.style.height = 'auto'
-      el.style.height = `${el.scrollHeight}px`
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [grow])
-  const caret = (e) => onCaret(index, e.target.selectionStart)
-  const imageFiles = (list) => [...(list || [])].filter((f) => f.type.startsWith('image/'))
-  return (
-    <textarea
-      ref={(el) => { grow.current = el; setRef(index, el) }}
-      className="note-block__text"
-      rows={1}
-      value={value}
-      placeholder={placeholder}
-      onChange={(e) => { onChange(index, e.target.value); caret(e) }}
-      onFocus={caret}
-      onClick={caret}
-      onKeyUp={caret}
-      onSelect={caret}
-      onPaste={(e) => {
-        const files = imageFiles(e.clipboardData?.files)
-        if (files.length) { e.preventDefault(); onFiles(files) }
-      }}
-      onDrop={(e) => {
-        const files = imageFiles(e.dataTransfer?.files)
-        if (files.length) { e.preventDefault(); onFiles(files) }
-      }}
-    />
-  )
+const imageFiles = (list) => [...(list || [])].filter((f) => f.type.startsWith('image/'))
+
+function lineDiv(text) {
+  const div = document.createElement('div')
+  div.className = 'note-line'
+  if (text) div.textContent = text
+  else div.appendChild(document.createElement('br'))
+  return div
 }
 
-function ImageBlock({ id, onRemove }) {
-  const { t } = useTranslation()
-  const url = useLocalMediaUrl(id)
-  const [waited, setWaited] = useState(false)
-  const [confirming, setConfirming] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => setWaited(true), 1500)
-    return () => clearTimeout(timer)
-  }, [])
-  return (
-    <div className="note-block__image">
-      {url ? (
-        <img src={url} alt="" draggable={false} />
-      ) : (
-        <div className="note-block__missing">{waited ? t('insights.mediaUnavailable') : ''}</div>
-      )}
-      {confirming ? (
-        <div className="note-block__confirm" role="alertdialog">
-          <span>{t('qaydlar.confirmRemovePhoto')}</span>
-          <button type="button" className="note-block__confirm-yes" onClick={() => onRemove(id)}>{t('tasks.yes')}</button>
-          <button type="button" onClick={() => setConfirming(false)} autoFocus>{t('tasks.no')}</button>
-        </div>
-      ) : (
-        <button type="button" className="modal-close note-block__remove" onClick={() => setConfirming(true)} aria-label={t('qaydlar.removePhoto')} title={t('qaydlar.removePhoto')}>
-          <IconClose size={14} />
-        </button>
-      )}
-    </div>
-  )
+// DOM -> flat list of { line } / { img } items. Tolerates what browsers
+// produce while typing: <div> per line, bare text nodes, <br> inside lines
+// (a <br> that ends its block is only the empty-line placeholder).
+function domToItems(root) {
+  const items = []
+  const inlineText = (node) => {
+    let s = ''
+    node.childNodes.forEach((c, i) => {
+      if (c.nodeType === 3) s += c.nodeValue
+      else if (c.nodeName === 'BR') { if (i !== node.childNodes.length - 1) s += '\n' }
+      else s += inlineText(c)
+    })
+    return s
+  }
+  root.childNodes.forEach((child) => {
+    if (child.nodeType === 3) child.nodeValue.split('\n').forEach((line) => items.push({ line }))
+    else if (child.dataset?.id) items.push({ img: child.dataset.id })
+    else if (child.nodeName === 'BR') items.push({ line: '' })
+    else inlineText(child).split('\n').forEach((line) => items.push({ line }))
+  })
+  return items
+}
+
+// items -> blocks with a text block before, between and after every photo.
+function itemsToBlocks(items) {
+  const blocks = []
+  let lines = []
+  const flush = () => { blocks.push({ type: 'text', value: lines.join('\n') }); lines = [] }
+  items.forEach((it) => {
+    if (it.img) { flush(); blocks.push({ type: 'img', id: it.img }) } else lines.push(it.line)
+  })
+  flush()
+  return blocks
+}
+
+function topLevelChild(root, node) {
+  let n = node
+  while (n && n.parentNode !== root) n = n.parentNode
+  return n
+}
+
+// Fragment (a clone of the selection) -> plain text, photos left out.
+function fragmentText(fragment) {
+  const holder = document.createElement('div')
+  holder.appendChild(fragment.cloneNode(true))
+  return domToItems(holder).filter((it) => it.line !== undefined).map((it) => it.line).join('\n')
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function toPng(blob) {
+  if (blob.type === 'image/png') return blob
+  const bitmap = await createImageBitmap(blob)
+  const canvas = document.createElement('canvas')
+  canvas.width = bitmap.width
+  canvas.height = bitmap.height
+  canvas.getContext('2d').drawImage(bitmap, 0, 0)
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+}
+
+const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+// Puts text + photos on the clipboard together: plain text, HTML with the
+// photos embedded, and the first photo as image/png (what most chat inputs
+// take as an attachment).
+async function writeRichClipboard(fragment) {
+  const holder = document.createElement('div')
+  holder.appendChild(fragment.cloneNode(true))
+  const items = domToItems(holder)
+  const ids = items.filter((it) => it.img).map((it) => it.img)
+  if (!ids.length || !navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return
+  const blobs = (await Promise.all(ids.map((id) => getLocalMedia(id)))).map((b, i) => ({ id: ids[i], blob: b }))
+  const html = (await Promise.all(items.map(async (it) => {
+    if (it.img) {
+      const found = blobs.find((b) => b.id === it.img)?.blob
+      return found ? `<p><img src="${await blobToDataUrl(found)}"></p>` : ''
+    }
+    return `<p>${it.line ? escapeHtml(it.line) : '<br>'}</p>`
+  }))).join('')
+  const text = items.filter((it) => it.line !== undefined).map((it) => it.line).join('\n')
+  const payload = {
+    'text/plain': new Blob([text], { type: 'text/plain' }),
+    'text/html': new Blob([html], { type: 'text/html' }),
+  }
+  const first = blobs.find((b) => b.blob)?.blob
+  if (first) payload['image/png'] = await toPng(first)
+  await navigator.clipboard.write([new ClipboardItem(payload)])
+}
+
+async function copyImageToClipboard(id) {
+  const blob = await getLocalMedia(id)
+  if (!blob || !navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return false
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': await toPng(blob) })])
+  return true
+}
+
+function openLightbox(url) {
+  const overlay = document.createElement('div')
+  overlay.className = 'note-lightbox'
+  const img = document.createElement('img')
+  img.src = url
+  overlay.appendChild(img)
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey, true) }
+  const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close() } }
+  overlay.addEventListener('click', close)
+  document.addEventListener('keydown', onKey, true)
+  document.body.appendChild(overlay)
 }
 
 const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholder, autoFocus }, ref) {
-  const latest = useRef(blocks)
-  latest.current = blocks
-  const caretRef = useRef({ index: 0, pos: null })
-  const areas = useRef({})
-  const pendingFocus = useRef(autoFocus ? 0 : null)
+  const { t } = useTranslation()
+  const rootRef = useRef(null)
+  const lastSerialized = useRef(null)
+  const lastRange = useRef(null)
+  const urls = useRef(new Map())
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+  const strings = useRef({})
+  strings.current = {
+    unavailable: t('insights.mediaUnavailable'),
+    remove: t('qaydlar.removePhoto'),
+    copy: t('qaydlar.copyPhoto'),
+    confirm: t('qaydlar.confirmRemovePhoto'),
+    yes: t('tasks.yes'),
+    no: t('tasks.no'),
+  }
 
-  // The caret of whichever text block has focus, kept up to date as it moves
-  // (typing, arrows, mouse), so a photo lands exactly where the cursor was.
+  const refreshEmpty = () => {
+    const root = rootRef.current
+    if (!root) return
+    const items = domToItems(root)
+    root.classList.toggle('is-empty', items.length <= 1 && !items.some((it) => it.img || it.line))
+  }
+
+  // Photos that follow each other share one row, so an empty line between two
+  // of them is dropped (unless the caret is in it); the document always starts
+  // and ends with an editable line.
+  const normalizeRows = () => {
+    const root = rootRef.current
+    const sel = window.getSelection()
+    const kids = [...root.children]
+    kids.forEach((el, i) => {
+      if (el.dataset?.id) return
+      if (kids[i - 1]?.dataset?.id && kids[i + 1]?.dataset?.id && !el.textContent && !(sel.rangeCount && el.contains(sel.anchorNode))) el.remove()
+    })
+    if (root.firstElementChild?.dataset?.id) root.prepend(lineDiv(''))
+    if (root.lastElementChild?.dataset?.id) root.append(lineDiv(''))
+  }
+
+  const emit = () => {
+    const root = rootRef.current
+    // Bare text nodes at the top level (typing into an empty editor) become lines.
+    root.childNodes.forEach((n) => {
+      if (n.nodeType === 3 && n.nodeValue !== '') {
+        const wrap = document.createElement('div')
+        wrap.className = 'note-line'
+        root.insertBefore(wrap, n)
+        wrap.appendChild(n)
+        const sel = window.getSelection()
+        if (sel.rangeCount && sel.anchorNode === n) sel.collapse(n, sel.anchorOffset)
+      }
+    })
+    if (!root.firstChild) root.appendChild(lineDiv(''))
+    normalizeRows()
+    const next = itemsToBlocks(domToItems(root))
+    lastSerialized.current = serializeBlocks(next)
+    refreshEmpty()
+    onChangeRef.current(next)
+  }
+
+  const removeImageLine = (line) => {
+    const id = line.dataset.id
+    const url = urls.current.get(id)
+    if (url) { URL.revokeObjectURL(url); urls.current.delete(id) }
+    line.remove()
+    deleteLocalMedia(id)
+    emit()
+  }
+
+  const buildImageLine = (id) => {
+    const line = document.createElement('div')
+    line.className = 'note-line note-line--img'
+    line.contentEditable = 'false'
+    line.dataset.id = id
+    const wrap = document.createElement('span')
+    wrap.className = 'note-thumb'
+    line.appendChild(wrap)
+    const showImage = (url) => {
+      wrap.replaceChildren()
+      const img = document.createElement('img')
+      img.src = url
+      img.alt = ''
+      img.draggable = false
+      img.addEventListener('click', () => openLightbox(url))
+      const x = document.createElement('button')
+      x.type = 'button'
+      x.className = 'note-thumb__x'
+      x.textContent = '×'
+      x.title = strings.current.remove
+      x.setAttribute('aria-label', strings.current.remove)
+      x.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const bar = document.createElement('span')
+        bar.className = 'note-thumb__confirm'
+        bar.setAttribute('role', 'alertdialog')
+        const label = document.createElement('span')
+        label.textContent = strings.current.confirm
+        const yes = document.createElement('button')
+        yes.type = 'button'
+        yes.className = 'note-thumb__yes'
+        yes.textContent = strings.current.yes
+        yes.addEventListener('click', () => removeImageLine(line))
+        const no = document.createElement('button')
+        no.type = 'button'
+        no.textContent = strings.current.no
+        no.addEventListener('click', () => { bar.remove(); x.hidden = false })
+        bar.append(label, yes, no)
+        x.hidden = true
+        wrap.appendChild(bar)
+        no.focus()
+      })
+      const copy = document.createElement('button')
+      copy.type = 'button'
+      copy.className = 'note-thumb__copy'
+      copy.textContent = '⧉'
+      copy.title = strings.current.copy
+      copy.setAttribute('aria-label', strings.current.copy)
+      copy.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        try {
+          if (await copyImageToClipboard(id)) {
+            copy.textContent = '✓'
+            setTimeout(() => { copy.textContent = '⧉' }, 1200)
+          }
+        } catch (err) { console.error('Copy photo failed', err) }
+      })
+      wrap.append(img, copy, x)
+    }
+    const existing = urls.current.get(id)
+    if (existing) showImage(existing)
+    else {
+      wrap.textContent = '…'
+      getLocalMedia(id).then((blob) => {
+        if (!line.isConnected && !wrap.isConnected) return
+        if (!blob) { wrap.textContent = strings.current.unavailable; wrap.classList.add('note-thumb--missing'); return }
+        const url = URL.createObjectURL(blob)
+        urls.current.set(id, url)
+        showImage(url)
+      })
+    }
+    return line
+  }
+
+  // Props -> DOM, only when they say something the DOM does not already.
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root || serializeBlocks(blocks) === lastSerialized.current) return
+    root.replaceChildren()
+    blocks.forEach((b, i) => {
+      if (b.type === 'img') root.appendChild(buildImageLine(b.id))
+      else if (b.value === '' && blocks[i - 1]?.type === 'img' && blocks[i + 1]?.type === 'img') return
+      else (b.value === '' ? [''] : b.value.split('\n')).forEach((l) => root.appendChild(lineDiv(l)))
+    })
+    normalizeRows()
+    lastSerialized.current = serializeBlocks(blocks)
+    refreshEmpty()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks])
+
+  useEffect(() => {
+    if (!autoFocus) return
+    const root = rootRef.current
+    root.focus()
+    const range = document.createRange()
+    range.selectNodeContents(root.firstChild)
+    range.collapse(true)
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }, [autoFocus])
+
+  // Remember the caret so the "add photo" button (which steals focus) still
+  // lands the photo where the user was; mark photos inside a selection.
   useEffect(() => {
     const onSelectionChange = () => {
-      const active = document.activeElement
-      const entry = Object.entries(areas.current).find(([, el]) => el === active)
-      if (entry) caretRef.current = { index: Number(entry[0]), pos: active.selectionStart }
+      const root = rootRef.current
+      const sel = window.getSelection()
+      if (!root || !sel.rangeCount) return
+      const range = sel.getRangeAt(0)
+      if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+        root.querySelectorAll('.note-line--img.is-selected').forEach((el) => el.classList.remove('is-selected'))
+        return
+      }
+      lastRange.current = range.cloneRange()
+      root.querySelectorAll('.note-line--img').forEach((el) => {
+        el.classList.toggle('is-selected', !range.collapsed && sel.containsNode(el, true))
+      })
     }
     document.addEventListener('selectionchange', onSelectionChange)
     return () => document.removeEventListener('selectionchange', onSelectionChange)
   }, [])
 
   useEffect(() => {
-    const target = pendingFocus.current
-    if (target == null) return
-    pendingFocus.current = null
-    const el = areas.current[target]
-    if (el) { el.focus(); el.setSelectionRange(0, 0) }
-  }, [blocks])
+    const map = urls.current
+    return () => { map.forEach((u) => URL.revokeObjectURL(u)); map.clear() }
+  }, [])
 
-  const updateText = (index, value) => {
-    onChange(latest.current.map((b, i) => (i === index ? { ...b, value } : b)))
+  const insertImage = (id, range) => {
+    const root = rootRef.current
+    let line = range && root.contains(range.startContainer) ? topLevelChild(root, range.startContainer) : null
+    if (range && !range.collapsed) range.deleteContents()
+    const imgLine = buildImageLine(id)
+    let after
+    if (line && line.dataset?.id === undefined && line.nodeType === 1) {
+      // Split the current line at the caret: [before][photo][after].
+      const tail = document.createRange()
+      tail.setStart(range.startContainer, range.startOffset)
+      tail.setEndAfter(line.lastChild || line)
+      const rest = tail.extractContents()
+      after = document.createElement('div')
+      after.className = 'note-line'
+      after.appendChild(rest)
+      if (!after.textContent) { after.replaceChildren(document.createElement('br')) }
+      if (!line.textContent && !line.querySelector('br')) line.appendChild(document.createElement('br'))
+      line.after(imgLine, after)
+    } else {
+      line = root.lastElementChild
+      after = lineDiv('')
+      if (line) line.after(imgLine, after)
+      else root.append(imgLine, after)
+    }
+    const caret = document.createRange()
+    caret.setStart(after, 0)
+    caret.collapse(true)
+    root.focus()
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(caret)
+    emit()
   }
 
   const insertFiles = async (files) => {
@@ -140,59 +398,70 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
       const id = crypto.randomUUID()
       const blob = await prepareImage(file)
       await saveLocalMedia(id, blob)
-      const current = latest.current
-      let target = caretRef.current.index
-      if (current[target]?.type !== 'text') target = current.length - 1
-      const block = current[target]
-      const at = Math.min(caretRef.current.pos ?? block.value.length, block.value.length)
-      const next = [
-        ...current.slice(0, target),
-        { type: 'text', value: block.value.slice(0, at).replace(/\n$/, '') },
-        { type: 'img', id },
-        { type: 'text', value: block.value.slice(at).replace(/^\n/, '') },
-        ...current.slice(target + 1),
-      ]
-      caretRef.current = { index: target + 2, pos: 0 }
-      pendingFocus.current = target + 2
-      latest.current = next
-      onChange(next)
+      const sel = window.getSelection()
+      const live = sel.rangeCount && rootRef.current.contains(sel.getRangeAt(0).startContainer) ? sel.getRangeAt(0) : lastRange.current
+      insertImage(id, live)
     }
   }
   useImperativeHandle(ref, () => ({ insertFiles }))
 
-  const removeImage = (id) => {
-    const current = latest.current
-    const at = current.findIndex((b) => b.type === 'img' && b.id === id)
-    if (at < 1) return
-    const before = current[at - 1]
-    const after = current[at + 1]
-    const merged = { type: 'text', value: [before.value, after.value].filter((v) => v !== '').join('\n') }
-    deleteLocalMedia(id)
-    caretRef.current = { index: at - 1, pos: before.value.length }
-    onChange([...current.slice(0, at - 1), merged, ...current.slice(at + 2)])
+  const onPaste = (e) => {
+    const files = imageFiles(e.clipboardData?.files)
+    if (files.length) { e.preventDefault(); insertFiles(files); return }
+    const text = e.clipboardData?.getData('text/plain')
+    if (text != null) { e.preventDefault(); document.execCommand('insertText', false, text) }
   }
 
-  const lastText = blocks.length - 1
+  const onDrop = (e) => {
+    const files = imageFiles(e.dataTransfer?.files)
+    if (files.length) { e.preventDefault(); insertFiles(files); return }
+    const text = e.dataTransfer?.getData('text/plain')
+    e.preventDefault()
+    if (!text) return
+    const range = document.caretRangeFromPoint?.(e.clientX, e.clientY)
+    if (range) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range) }
+    document.execCommand('insertText', false, text)
+  }
+
+  const copySelection = (e, cut) => {
+    const sel = window.getSelection()
+    if (!sel.rangeCount || sel.isCollapsed) return
+    const fragment = sel.getRangeAt(0).cloneContents()
+    e.preventDefault()
+    // Synchronous text first (always works); the async write below replaces it
+    // with text + photos when the browser allows it.
+    e.clipboardData.setData('text/plain', fragmentText(fragment))
+    writeRichClipboard(fragment).catch((err) => console.error('Rich copy failed', err))
+    if (cut) document.execCommand('delete')
+  }
+
   return (
     <div
-      className="note-body"
-      onClick={(e) => { if (e.target === e.currentTarget) areas.current[lastText]?.focus() }}
-    >
-      {blocks.map((b, i) => (b.type === 'img' ? (
-        <ImageBlock key={'i' + b.id} id={b.id} onRemove={removeImage} />
-      ) : (
-        <TextBlock
-          key={'t' + i}
-          index={i}
-          value={b.value}
-          placeholder={blocks.length === 1 ? placeholder : ''}
-          onChange={updateText}
-          onCaret={(index, pos) => { caretRef.current = { index, pos } }}
-          onFiles={insertFiles}
-          setRef={(index, el) => { if (el) areas.current[index] = el; else delete areas.current[index] }}
-        />
-      )))}
-    </div>
+      ref={rootRef}
+      className="note-body note-doc is-empty"
+      contentEditable
+      suppressContentEditableWarning
+      spellCheck
+      role="textbox"
+      aria-multiline="true"
+      data-placeholder={placeholder}
+      onInput={emit}
+      onPaste={onPaste}
+      onDrop={onDrop}
+      onCopy={(e) => copySelection(e, false)}
+      onCut={(e) => copySelection(e, true)}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) return
+        const last = e.currentTarget.lastElementChild
+        if (!last) return
+        const range = document.createRange()
+        range.selectNodeContents(last.dataset?.id ? e.currentTarget : last)
+        range.collapse(false)
+        const sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }}
+    />
   )
 })
 
