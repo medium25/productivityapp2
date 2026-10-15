@@ -55,9 +55,7 @@ function useChoices() {
     return [
       fromSection('myFocus'),
       fromSection('myDay'),
-      fromSection('upcoming'),
       fromSection('referenceInfo'),
-      fromSection('projects'),
       fromSection('insights'),
       fromSection('principles'),
       fromSection('habits'),

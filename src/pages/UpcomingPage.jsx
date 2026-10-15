@@ -2,19 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import { useUiPreferencesStore } from '../store/useUiPreferencesStore'
-import { useSettingsStore } from '../store/useSettingsStore'
-import { SECTIONS, getSectionTitle } from '../constants/sections'
 import TaskFormModal from '../features/tasks/TaskFormModal'
-import HubCards from '../features/tasks/HubCards'
 import DueRequiredPrompt from '../features/tasks/DueRequiredPrompt'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import MyDayTimer from '../features/focus/MyDayTimer'
 import { isoFromDate, todayISO, WEEKDAYS } from '../features/tasks/taskLogic'
 import { ROUTINE_TASKS } from '../features/tasks/dailyRoutineTasks'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
-import { IconFocus, IconClock, IconBack, IconTasks, IconInboxTray, IconFolder } from '../icons/Icons'
+import { IconFocus, IconClock } from '../icons/Icons'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -688,36 +685,15 @@ export default function UpcomingPage() {
         />
   )
 
-  // The Tasks section is a small hub of cards: today's tasks and the inbox
-  // (the inbox card moved here from the sidebar, per user request).
   const { view } = useParams()
-  const navigate = useNavigate()
-  const sectionNameOverrides = useSettingsStore((s) => s.sectionNameOverrides)
-  const inboxSection = SECTIONS.find((sec) => sec.id === 'referenceInfo')
-  const projectsSection = SECTIONS.find((sec) => sec.id === 'projects')
-  const doneToday = todayRows.filter((r) => r.status === 'done').length
-  const pctToday = todayRows.length ? Math.round((doneToday / todayRows.length) * 100) : 0
-  const HUB = [
-    ...(inboxSection ? [{ key: 'inbox', to: inboxSection.route, color: '#ff8a7a', colorLight: '#c0392b', Icon: IconInboxTray, name: getSectionTitle(inboxSection, sectionNameOverrides, t), meta: t(inboxSection.descKey), progress: 0 }] : []),
-    ...(projectsSection ? [{ key: 'projects', to: projectsSection.route, color: '#6fd39b', colorLight: '#2e8b57', Icon: IconFolder, name: getSectionTitle(projectsSection, sectionNameOverrides, t), meta: t(projectsSection.descKey), progress: 0 }] : []),
-    { key: 'today', to: '/upcoming/today', color: '#8c9bff', colorLight: '#4a5bd0', Icon: IconTasks, name: t('tasksHub.today'), meta: t('projectsPage.taskCount', { count: todayRows.length }), progress: pctToday },
-  ]
-
+  // «Мой день» is its own sidebar button now; the old Tasks hub (cards for
+  // Inbox/Projects/Today) is gone, so any other /upcoming path lands here.
   let body
   if (view !== 'today') {
-    body = (
-      <div className="projects-page">
-        <HubCards items={HUB} />
-      </div>
-    )
+    body = <Navigate to="/upcoming/today" replace />
   } else {
     body = (
       <div className="tasks-page tasks-page--edge-to-edge">
-        <div className="tasks-hub__back">
-          <button type="button" className="page-back" onClick={() => navigate('/upcoming')}>
-            <IconBack size={14} /> {t('sections.upcoming.title')}
-          </button>
-        </div>
         <div className="tasks-board tasks-board--fill tasks-board--stacked">{todayNode}</div>
       </div>
     )

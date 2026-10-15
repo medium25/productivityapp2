@@ -65,7 +65,7 @@ export default function FloatingTimerWidget() {
 
   const onDoubleClick = () => {
     if (sourceType === 'task') {
-      navigate('/upcoming')
+      navigate('/upcoming/today')
     } else {
       setSelectedProjectId(projectId)
       navigate('/focus')

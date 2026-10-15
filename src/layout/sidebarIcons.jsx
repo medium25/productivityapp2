@@ -24,6 +24,16 @@ function Glyph({ className, size = 22, children }) {
 const fillProps = { fill: 'currentColor', fillOpacity: 0.2, stroke: 'none' }
 const dotProps = { fill: 'currentColor', stroke: 'none' }
 
+// Входящие — inbox tray
+export function SideIconInbox(props) {
+  return (
+    <Glyph {...props}>
+      <path {...fillProps} d="M4 13.5l2.2-7.2A1.5 1.5 0 0 1 7.6 5.2h8.8a1.5 1.5 0 0 1 1.4 1.1L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z" />
+      <path d="M4 13.5l2.2-7.2A1.5 1.5 0 0 1 7.6 5.2h8.8a1.5 1.5 0 0 1 1.4 1.1L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18zM4 13.5h4.2l1 2h5.6l1-2H20" />
+    </Glyph>
+  )
+}
+
 // Мой день — sun
 export function SideIconMyDay(props) {
   return (
@@ -130,6 +140,7 @@ export function SideIconBook(props) {
 }
 
 export const SIDEBAR_ICONS = {
+  referenceInfo: SideIconInbox,
   myDay: SideIconMyDay,
   myFocus: SideIconFocus,
   upcoming: SideIconTasks,

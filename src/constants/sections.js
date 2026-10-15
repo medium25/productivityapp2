@@ -1,4 +1,4 @@
-import { IconFocus, IconFolder, IconInboxTray, IconTasks, IconSomeday, IconThoughts, IconFlame, IconBarChart, IconStar, IconClock, IconDumbbell, IconNoteCard, IconWallet } from '../icons/Icons'
+import { IconFocus, IconInboxTray, IconSomeday, IconThoughts, IconFlame, IconBarChart, IconStar, IconClock, IconDumbbell, IconNoteCard, IconWallet } from '../icons/Icons'
 
 // Intentionally just these two — the other four ("Мысли", "Привычки",
 // "Фитнес", "Финансовый учёт") were never built beyond a placeholder page,
@@ -34,7 +34,6 @@ export const SECTIONS = [
   // Ordered under Data/Tasks per user request (sidebar order = array order).
   // Today's list as its own sidebar button (it is also still a card on the Tasks hub).
   { id: 'myDay', route: '/upcoming/today', Icon: IconClock, titleKey: 'sections.myDay.title', descKey: 'sections.myDay.description' },
-  { id: 'upcoming', route: '/upcoming', Icon: IconTasks, titleKey: 'sections.upcoming.title', descKey: 'sections.upcoming.description' },
   { id: 'habits', route: '/habits', Icon: IconFlame, titleKey: 'sections.habits.title', descKey: 'sections.habits.description' },
   { id: 'sometime', route: '/sometime', Icon: IconSomeday, titleKey: 'sections.sometime.title', descKey: 'sections.sometime.description' },
   // A proper SECTIONS entry (not a special-cased sidebar widget) per user
@@ -44,7 +43,6 @@ export const SECTIONS = [
   // (see Sidebar.jsx) as plain, always-visible sub-rows — no collapse
   // toggle anymore, and each one doubles as a drag-and-drop target for
   // assigning a task to that project from any task list in the app.
-  { id: 'projects', route: '/projects', Icon: IconFolder, titleKey: 'sections.projects.title', descKey: 'sections.projects.description' },
   // Moved back down next to Settings per user request, and back to a plain
   // icon ("без звездочек") instead of the colored star — Result &
   // Statistics reads as a utility page, not a nav highlight.
