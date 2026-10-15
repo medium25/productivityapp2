@@ -621,9 +621,19 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
       onInput={emit}
       onKeyDown={onKeyDown}
       onMouseDown={(e) => {
-        // The fold arrow lives in the left gutter of a heading line.
         const line = e.target.closest?.('.note-line[data-level]')
-        if (line && e.target.parentNode === rootRef.current && e.clientX < line.getBoundingClientRect().left) {
+        if (!line || e.target.parentNode !== rootRef.current) return
+        // Arrow in the left gutter, or the "•••" pill after a collapsed
+        // heading's last word, toggles the fold.
+        let hit = e.clientX < line.getBoundingClientRect().left
+        if (!hit && line.dataset.fold) {
+          const range = document.createRange()
+          range.selectNodeContents(line)
+          const rects = range.getClientRects()
+          const last = rects[rects.length - 1]
+          hit = !last || e.clientX > last.right + 2
+        }
+        if (hit) {
           e.preventDefault()
           toggleFold(line)
         }

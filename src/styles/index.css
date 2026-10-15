@@ -7979,28 +7979,47 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .note-line--h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.4; margin: 0.4em 0 0.1em; }
 .note-line--h1, .note-line--h2, .note-line--h3 { position: relative; }
 .note-line--folded { display: none; }
-/* Fold arrow in the gutter left of a heading; hover-revealed (always on touch). */
+/* Fold control: a thin chevron in the gutter (hover-revealed, always on
+   touch) and, on a collapsed heading, a "•••" pill after the text. */
 .note-line[data-level]::before {
-  content: '▾';
+  content: '›';
   position: absolute;
   left: -22px;
-  top: 0.3em;
+  top: 0.05em;
   width: 20px;
   text-align: center;
-  font-size: 1.05rem;
-  line-height: 1;
+  font-size: 1.3em;
+  line-height: 1.2;
   font-weight: 400;
   color: var(--text-muted);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s;
+  transform: rotate(90deg);
+  transition: opacity 0.15s, transform 0.15s;
   -webkit-user-select: none;
   user-select: none;
 }
 .note-doc:hover .note-line[data-level]::before { opacity: 0.7; }
 .note-line[data-level]:hover::before { opacity: 1; }
-.note-line[data-fold]::before { content: '▸'; opacity: 1; }
-.note-line[data-fold]::after { content: ' …'; color: var(--text-muted); font-weight: 400; }
+.note-line[data-fold]::before { opacity: 0.9; transform: none; }
+.note-line[data-fold]::after {
+  content: '•••';
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 0 0.55em;
+  border-radius: 0.35em;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  color: var(--text-muted);
+  font-size: 0.55em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.note-line[data-fold]:hover::after { background: color-mix(in srgb, var(--text) 20%, transparent); }
 @media (pointer: coarse) { .note-line[data-level]::before { opacity: 0.7; } }
 .note-line--h1:first-child, .note-line--h2:first-child, .note-line--h3:first-child { margin-top: 0; }
 .note-line--img { display: inline-block; vertical-align: top; min-height: 0; margin: 6px 8px 6px 0; white-space: normal; }
