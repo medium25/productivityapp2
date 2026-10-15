@@ -42,5 +42,5 @@ export function stripImages(text) {
 
 // Heading lines are stored with a "# " / "## " / "### " prefix.
 export function stripHeadings(text) {
-  return (text || '').replace(/^#{1,3} /gm, '')
+  return (text || '').replace(/^#{1,3}~? /gm, '')
 }

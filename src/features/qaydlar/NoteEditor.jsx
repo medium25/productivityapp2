@@ -42,13 +42,14 @@ async function prepareImage(file) {
 
 const imageFiles = (list) => [...(list || [])].filter((f) => f.type.startsWith('image/'))
 
-const HEADING_PREFIX = /^(#{1,3}) /
-const levelPrefix = (level) => (level ? `${'#'.repeat(level)} ` : '')
+// A "~" after the hashes marks a collapsed heading ("#~ Title").
+const HEADING_PREFIX = /^(#{1,3})(~?) /
+const levelPrefix = (level, fold) => (level ? `${'#'.repeat(level)}${fold ? '~' : ''} ` : '')
 
 function setLevel(div, level) {
   div.className = 'note-line' + (level ? ` note-line--h${level}` : '')
   if (level) div.dataset.level = String(level)
-  else delete div.dataset.level
+  else { delete div.dataset.level; delete div.dataset.fold }
 }
 
 // `stored` is a line as kept in the note text, heading prefix included.
@@ -57,6 +58,7 @@ function lineDiv(stored) {
   const text = match ? stored.slice(match[0].length) : stored
   const div = document.createElement('div')
   setLevel(div, match ? match[1].length : 0)
+  if (match && match[2]) div.dataset.fold = '1'
   if (text) div.textContent = text
   else div.appendChild(document.createElement('br'))
   return div
@@ -78,10 +80,11 @@ function domToItems(root) {
   }
   root.childNodes.forEach((child) => {
     const level = Number(child.dataset?.level) || 0
+    const fold = !!child.dataset?.fold
     if (child.nodeType === 3) child.nodeValue.split('\n').forEach((line) => items.push({ line }))
     else if (child.dataset?.id) items.push({ img: child.dataset.id })
     else if (child.nodeName === 'BR') items.push({ line: '' })
-    else inlineText(child).split('\n').forEach((line) => items.push({ line, level }))
+    else inlineText(child).split('\n').forEach((line) => items.push({ line, level, fold }))
   })
   return items
 }
@@ -92,7 +95,7 @@ function itemsToBlocks(items) {
   let lines = []
   const flush = () => { blocks.push({ type: 'text', value: lines.join('\n') }); lines = [] }
   items.forEach((it) => {
-    if (it.img) { flush(); blocks.push({ type: 'img', id: it.img }) } else lines.push(levelPrefix(it.level) + it.line)
+    if (it.img) { flush(); blocks.push({ type: 'img', id: it.img }) } else lines.push(levelPrefix(it.level, it.fold) + it.line)
   })
   flush()
   return blocks
@@ -225,6 +228,27 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     if (root.lastElementChild?.dataset?.id) root.append(lineDiv(''))
   }
 
+  // Hide what sits under a collapsed heading, up to the next heading of the
+  // same or a higher level (H1 folds H2/H3/text, H2 folds H3/text, ...).
+  const applyFolds = () => {
+    let foldLevel = null
+    ;[...rootRef.current.children].forEach((el) => {
+      const level = Number(el.dataset.level) || 0
+      let hide = false
+      if (level) {
+        if (foldLevel !== null && level > foldLevel) hide = true
+        else foldLevel = el.dataset.fold ? level : null
+      } else if (foldLevel !== null) hide = true
+      el.classList.toggle('note-line--folded', hide)
+    })
+  }
+
+  const toggleFold = (line) => {
+    if (line.dataset.fold) delete line.dataset.fold
+    else line.dataset.fold = '1'
+    emit()
+  }
+
   const emit = () => {
     const root = rootRef.current
     // Bare text nodes at the top level (typing into an empty editor) become lines.
@@ -240,6 +264,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     })
     if (!root.firstChild) root.appendChild(lineDiv(''))
     normalizeRows()
+    applyFolds()
     const next = itemsToBlocks(domToItems(root))
     lastSerialized.current = serializeBlocks(next)
     refreshEmpty()
@@ -340,6 +365,7 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
       else (b.value === '' ? [''] : b.value.split('\n')).forEach((l) => root.appendChild(lineDiv(l)))
     })
     normalizeRows()
+    applyFolds()
     lastSerialized.current = serializeBlocks(blocks)
     refreshEmpty()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -498,6 +524,8 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
     }
     // Enter at the end of a heading starts a plain line, not another heading.
     if (e.key === 'Enter' && !e.shiftKey) {
+      const here = window.getSelection().rangeCount ? topLevelChild(rootRef.current, window.getSelection().anchorNode) : null
+      if (here?.dataset?.fold) { delete here.dataset.fold; applyFolds() }
       setTimeout(() => {
         const sel = window.getSelection()
         const line = sel.rangeCount ? topLevelChild(rootRef.current, sel.anchorNode) : null
@@ -592,6 +620,14 @@ const NoteEditor = forwardRef(function NoteEditor({ blocks, onChange, placeholde
       data-placeholder={placeholder}
       onInput={emit}
       onKeyDown={onKeyDown}
+      onMouseDown={(e) => {
+        // The fold arrow lives in the left gutter of a heading line.
+        const line = e.target.closest?.('.note-line[data-level]')
+        if (line && e.target.parentNode === rootRef.current && e.clientX < line.getBoundingClientRect().left) {
+          e.preventDefault()
+          toggleFold(line)
+        }
+      }}
       onPaste={onPaste}
       onDrop={onDrop}
       onCopy={(e) => copySelection(e, false)}
