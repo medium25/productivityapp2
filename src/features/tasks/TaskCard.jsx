@@ -143,7 +143,7 @@ export default function TaskCard({
   // anywhere else still works normally; only an actual drag beyond the
   // threshold moves the task.
   const handlePointerDown = (e) => {
-    if (!onCardPointerDown || done) return
+    if (!onCardPointerDown || done || e.pointerType === 'touch') return
     if (e.target.closest('.project-row__menu, .project-row__confirm, .task-card__checkbox')) return
     suppressSelectionForPointer(e)
     onCardPointerDown(task.id, e)

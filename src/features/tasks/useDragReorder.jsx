@@ -262,6 +262,8 @@ export function useDragReorder(ids, onReorder, crossDrop = {}) {
     ref: setNodeRef(id),
     onPointerDown: (e) => {
       if (e.button != null && e.button !== 0) return
+      // Touch swipes must scroll the page, not start a row drag/selection.
+      if (e.pointerType === 'touch') return
       suppressSelectionForPointer(e)
       dragInfo.current = { id, label, startX: e.clientX, startY: e.clientY, dragging: false, baseIds: ids }
       window.addEventListener('pointermove', handleMove)
