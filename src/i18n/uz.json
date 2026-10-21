@@ -87,6 +87,10 @@
     "fitness": {
       "title": "Fitnes",
       "description": "Jihoz, vaqt va maqsadlarga mos mashq dasturlari."
+    },
+    "tokovinin": {
+      "title": "Tokovinin",
+      "description": "Mixail Tokovinin postlari: g‘oyalar va jarayon."
     }
   },
   "settings": {
@@ -728,5 +732,18 @@
     "close": "Bitta oynaga qaytish",
     "sections": "Bo'limlar",
     "pick": "Chap yarmi uchun bo'limni tanlang"
+  },
+  "tokovinin": {
+    "postOf": "{{total}} tadan {{n}}-post",
+    "read": "{{pct}}% o‘qildi",
+    "markRead": "O‘qilgan deb belgilash",
+    "markUnread": "Belgini olib tashlash",
+    "hadMedia": "postda rasm yoki video bor edi",
+    "ideas": "Muallifning 5 g‘oyasi",
+    "ideasPending": "Bu post uchun g‘oyalar tayyorlanmoqda.",
+    "prev": "Orqaga",
+    "next": "Keyingi",
+    "readNext": "O‘qildi ✓ keyingi",
+    "noIdeas": "Bu postda faqat havola yoki e’lon bor — qayta aytadigan fikr yo‘q."
   }
 }

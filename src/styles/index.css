@@ -10038,3 +10038,38 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .note-fmt__item--h2 span { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
 .note-fmt__item--h3 span { font-size: 1rem; font-weight: 700; line-height: 1.2; }
 @media (pointer: coarse) { .note-fmt__kbd, .note-fmt__item kbd { display: none; } }
+
+/* Токовинин — reader, one post per screen. */
+.tok-page { max-width: 760px; margin: 0 auto; padding-bottom: 32px; }
+.tok-loading { color: var(--text-muted); }
+.tok-reader { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px 26px 20px; scroll-margin-top: 12px; }
+.tok-reader__meta { display: flex; justify-content: space-between; gap: 12px; font-size: 0.8rem; color: var(--text-muted); }
+.tok-reader__bar { height: 3px; border-radius: 2px; background: var(--border); margin: 8px 0 16px; overflow: hidden; }
+.tok-reader__bar span { display: block; height: 100%; background: var(--accent); transition: width 0.3s; }
+.tok-reader__head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tok-check {
+  width: 26px; height: 26px; flex: none; display: grid; place-items: center;
+  border-radius: 8px; border: 2px solid var(--text-muted); background: transparent;
+  color: #fff; font-size: 0.85rem; font-weight: 800; cursor: pointer;
+}
+.tok-check--on { background: var(--accent); border-color: var(--accent); }
+.tok-media { font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
+.tok-post { white-space: pre-wrap; overflow-wrap: anywhere; font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; line-height: 1.65; color: var(--text); }
+.tok-post a { color: var(--accent); }
+.tok-post blockquote { margin: 0.4em 0; padding-left: 12px; border-left: 3px solid var(--border); }
+.tok-post--done { text-decoration: line-through; text-decoration-thickness: 1px; color: var(--text-muted); }
+.tok-ideas { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 14px; }
+.tok-ideas h3 { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin: 0 0 10px; text-transform: none; }
+.tok-ideas ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.tok-ideas li { display: flex; gap: 10px; background: var(--control-bg); border-radius: 12px; padding: 10px 12px; }
+.tok-ideas li p { margin: 0; font-size: 0.95rem; line-height: 1.55; }
+.tok-ideas__n { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); font-size: 0.75rem; font-weight: 700; margin-top: 1px; }
+.tok-ideas__empty { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+.tok-reader__nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.tok-btn { padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+.tok-btn:disabled { opacity: 0.4; cursor: default; }
+.tok-btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (max-width: 720px) {
+  .tok-reader { padding: 16px 14px; border-radius: 14px; }
+  .tok-post { font-size: 1.05rem; }
+}

@@ -87,6 +87,10 @@
     "fitness": {
       "title": "Fitness",
       "description": "Workout plans based on equipment, time and goals."
+    },
+    "tokovinin": {
+      "title": "Tokovinin",
+      "description": "Mikhail Tokovinin’s posts with ideas and progress."
     }
   },
   "settings": {
@@ -743,5 +747,18 @@
     "close": "Back to one window",
     "sections": "Sections",
     "pick": "Pick a section for the left half"
+  },
+  "tokovinin": {
+    "postOf": "Post {{n}} of {{total}}",
+    "read": "{{pct}}% read",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "hadMedia": "this post had a photo or video",
+    "ideas": "5 ideas from the author",
+    "ideasPending": "Ideas for this post are on the way.",
+    "prev": "Back",
+    "next": "Next",
+    "readNext": "Read ✓ next",
+    "noIdeas": "This post is just a link or an announcement — nothing to retell."
   }
 }

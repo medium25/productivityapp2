@@ -59,6 +59,7 @@ function useChoices() {
       fromSection('insights'),
       fromSection('principles'),
       fromSection('habits'),
+      fromSection('tokovinin'),
       fromSection('sport'),
       fromSection('finance'),
       fromSection('qaydlar'),

@@ -20,6 +20,7 @@ import ProjectFlowPage from '../pages/ProjectFlowPage'
 import CompletedPage from '../pages/CompletedPage'
 import TrashPage from '../pages/TrashPage'
 import SettingsPage from '../pages/SettingsPage'
+import TokovininPage from '../pages/TokovininPage'
 
 // The app's page routes, shared by the main router (App.jsx) and the left
 // half of the split window (SplitPane.jsx), which renders the same pages
@@ -49,6 +50,7 @@ export const pageRoutes = (
       <Route path="/custom/:sectionId" element={<GtdBoardPage />} />
       <Route path="/completed" element={<CompletedPage />} />
       <Route path="/trash" element={<TrashPage />} />
+      <Route path="/tokovinin" element={<TokovininPage />} />
       <Route path="/settings" element={<SettingsPage />} />
   </>
 )

@@ -34,6 +34,16 @@ export function SideIconInbox(props) {
   )
 }
 
+// Токовинин — open book with a bookmark
+export function SideIconReader(props) {
+  return (
+    <Glyph {...props}>
+      <path {...fillProps} d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z" />
+      <path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5v13M15.5 5.6V10l1.5-1 1.5 1V5.3" />
+    </Glyph>
+  )
+}
+
 // Мой день — sun
 export function SideIconMyDay(props) {
   return (
@@ -141,6 +151,7 @@ export function SideIconBook(props) {
 
 export const SIDEBAR_ICONS = {
   referenceInfo: SideIconInbox,
+  tokovinin: SideIconReader,
   myDay: SideIconMyDay,
   myFocus: SideIconFocus,
   upcoming: SideIconTasks,

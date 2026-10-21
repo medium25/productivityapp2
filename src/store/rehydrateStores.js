@@ -10,6 +10,7 @@ import { useInsightsStore } from './useInsightsStore'
 import { useInsightsReminderStore } from './useInsightsReminderStore'
 import { useHabitsStore } from './useHabitsStore'
 import { useChatColorsStore } from './useChatColorsStore'
+import { useTokovininStore } from './useTokovininStore'
 import { useFinanceStore } from './useFinanceStore'
 import { usePrinciplesStore } from './usePrinciplesStore'
 import { useReferenceInfoStore } from './useReferenceInfoStore'
@@ -37,6 +38,7 @@ const PERSISTED_STORES = [
   useInsightsReminderStore,
   useHabitsStore,
   useChatColorsStore,
+  useTokovininStore,
   useFinanceStore,
   usePrinciplesStore,
   useReferenceInfoStore,

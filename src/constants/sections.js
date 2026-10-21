@@ -61,6 +61,8 @@ export const SECTIONS = [
   { id: 'qaydlar', route: '/qaydlar', Icon: IconNoteCard, titleKey: 'sections.qaydlar.title', descKey: 'sections.qaydlar.description' },
   // Replaces the user's manual monthly Numbers-file budget tracking — see
   // docs/superpowers/specs/2026-10-05-finance-section-design.md.
+  // Mikhail Tokovinin's channel as a reader with progress (see TokovininPage).
+  { id: 'tokovinin', route: '/tokovinin', Icon: IconStar, titleKey: 'sections.tokovinin.title', descKey: 'sections.tokovinin.description' },
   { id: 'finance', route: '/finance', Icon: IconWallet, titleKey: 'sections.finance.title', descKey: 'sections.finance.description' },
 ]
 
