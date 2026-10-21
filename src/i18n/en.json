@@ -759,6 +759,7 @@
     "prev": "Back",
     "next": "Next",
     "readNext": "Read ✓ next",
-    "noIdeas": "This post is just a link or an announcement — nothing to retell."
+    "noIdeas": "This post is just a link or an announcement — nothing to retell.",
+    "copyIdea": "Copy idea"
   }
 }

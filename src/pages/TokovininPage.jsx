@@ -7,6 +7,27 @@ import { useTokovininStore } from '../store/useTokovininStore'
 // a checkbox that strikes the post through. Opening the section always lands
 // right after the last post checked off.
 
+// Copies one idea's text; the icon turns into a check for a moment.
+function CopyIdea({ text, label }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      className={'tok-ideas__copy' + (copied ? ' tok-ideas__copy--done' : '')}
+      title={label}
+      aria-label={label}
+      onClick={() => {
+        navigator.clipboard?.writeText(text).then(() => {
+          setCopied(true)
+          setTimeout(() => setCopied(false), 1200)
+        }).catch(() => {})
+      }}
+    >
+      {copied ? '✓' : '⧉'}
+    </button>
+  )
+}
+
 const dateLabel = (iso, lang) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -96,7 +117,7 @@ export default function TokovininPage() {
           {ideas === null ? (
             <p className="tok-ideas__empty">{t('tokovinin.noIdeas')}</p>
           ) : ideas?.length ? (
-            <ol>{ideas.map((idea, i) => <li key={i}><span className="tok-ideas__n">{i + 1}</span><p>{idea}</p></li>)}</ol>
+            <ol>{ideas.map((idea, i) => <li key={i}><span className="tok-ideas__n">{i + 1}</span><p>{idea}</p><CopyIdea text={idea} label={t('tokovinin.copyIdea')} /></li>)}</ol>
           ) : (
             <p className="tok-ideas__empty">{t('tokovinin.ideasPending')}</p>
           )}

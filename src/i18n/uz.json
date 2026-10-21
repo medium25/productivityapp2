@@ -744,6 +744,7 @@
     "prev": "Orqaga",
     "next": "Keyingi",
     "readNext": "O‘qildi ✓ keyingi",
-    "noIdeas": "Bu postda faqat havola yoki e’lon bor — qayta aytadigan fikr yo‘q."
+    "noIdeas": "Bu postda faqat havola yoki e’lon bor — qayta aytadigan fikr yo‘q.",
+    "copyIdea": "G‘oyani nusxalash"
   }
 }
