@@ -237,3 +237,29 @@
 }
 :root[data-skin='neon'] .auth-form .timer-controls__primary:disabled { opacity: 0.5; }
 :root[data-skin='neon'] .auth-card__mode-switch button { border-radius: 999px; }
+
+/* Chat bubbles (Входящие, Знания, Дневник, Спорт): one hue per bubble (--bh)
+   drawn as a dark tinted fill, bright text and a glowing rim. A bubble's
+   custom color (InsightsChat.jsx) sets --bh inline; defaults per chat below. */
+:root[data-skin='neon'] .insights-chat__bubble { --bh: var(--neon-b); }
+:root[data-skin='neon'] .insights-chat--reference .insights-chat__bubble { --bh: #2bff88; }
+:root[data-skin='neon'] .insights-chat--analysis .insights-chat__bubble { --bh: #2bd47a; }
+:root[data-skin='neon'] .insights-chat--sport-mon .insights-chat__bubble { --bh: #7fa7c9; }
+:root[data-skin='neon'] .insights-chat--sport-tue .insights-chat__bubble { --bh: #2be0d8; }
+:root[data-skin='neon'] .insights-chat--sport-wed .insights-chat__bubble { --bh: #ff9a4a; }
+:root[data-skin='neon'] .insights-chat--sport-thu .insights-chat__bubble { --bh: #ff5fa8; }
+:root[data-skin='neon'] .insights-chat--sport-fri .insights-chat__bubble { --bh: #ff4d5e; }
+:root[data-skin='neon'] .insights-chat--sport-sat .insights-chat__bubble { --bh: #6f8bff; }
+:root[data-skin='neon'] .insights-chat--sport-sun .insights-chat__bubble { --bh: #ffd84a; }
+:root[data-skin='neon'] .insights-chat .insights-chat__bubble--task { --bh: #ffd84a; }
+:root[data-skin='neon'] .insights-chat .insights-chat__bubble--reminder { --bh: #2be0d8; }
+:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media),
+:root[data-skin='neon'] .insights-chat__color-preview-bubble {
+  background: color-mix(in srgb, var(--bh) 15%, #0b1018);
+  color: color-mix(in srgb, var(--bh) 40%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--bh) 50%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--bh) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) .insights-chat__meta { color: color-mix(in srgb, var(--bh) 55%, #7b8aa3); opacity: 1; }
+:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) a { color: color-mix(in srgb, var(--bh) 70%, #ffffff); }
+:root[data-skin='neon'] .insights-chat__bubble--media { background: var(--panel2); border: 1px solid var(--line); }

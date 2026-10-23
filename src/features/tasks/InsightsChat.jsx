@@ -43,6 +43,30 @@ function readableBubbleTextColor(hex) {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return luminance > 0.6 ? '#2a2110' : '#ffffff'
 }
+
+// Web version's neon skin (styles/neon.css): a bubble is drawn from one hue
+// (--bh) as a dark tinted fill, bright text and a glowing rim. A custom color
+// is pushed to a saturated, mid-light version of its own hue first, so soft
+// pastels still read as neon. The stored color itself is left untouched — it
+// is shared with the Mac app.
+const isNeonSkin = () => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'neon'
+function neonHue(hex) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
+  if (!m) return hex
+  const [r, g, b] = m.slice(1).map((h) => parseInt(h, 16) / 255)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const d = max - min
+  let h = 0
+  if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  h = Math.round(h * 60 + 360) % 360
+  const sat = d === 0 ? 0 : 90
+  return `hsl(${h} ${sat}% 62%)`
+}
+function bubbleColorStyle(color) {
+  if (!color) return null
+  return isNeonSkin() ? { '--bh': neonHue(color) } : { background: color, color: readableBubbleTextColor(color) }
+}
 import EmptyStateCelebration from './EmptyStateCelebration'
 
 // Full "14 August 2026"-style date for a sent voice message (per user
@@ -315,7 +339,7 @@ function MessageBubble({ message, onEdit, onDelete, onToggleDone, onToggleTaskLi
           ...(editing && editSize ? editSize : null),
           ...((() => {
             const custom = isReminder ? bubbleColors?.reminder : isTask ? bubbleColors?.task : bubbleColors?.normal
-            return custom ? { background: custom, color: readableBubbleTextColor(custom) } : null
+            return bubbleColorStyle(custom)
           })()),
         }}
         className={
@@ -789,7 +813,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
               )}
             </div>
             <div className="insights-chat__color-preview-row">
-              <div className="insights-chat__bubble insights-chat__color-preview-bubble" style={{ background: draftColor, color: readableBubbleTextColor(draftColor) }}>
+              <div className="insights-chat__bubble insights-chat__color-preview-bubble" style={bubbleColorStyle(draftColor)}>
                 {t('insights.bubbleColorSample')}
               </div>
             </div>
