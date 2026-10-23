@@ -54,6 +54,16 @@ export function rehydrateAllPersistedStores() {
   PERSISTED_STORES.forEach((store) => store.persist.rehydrate())
 }
 
+// Re-read every store from Firestore without signing out — pulls in changes
+// made on another device (stores only read their document once, at login).
+// The focus timer is skipped: it runs a live countdown/sound in this tab and
+// this tab's copy is the one being written, not a stale one.
+export function refreshPersistedStores() {
+  return Promise.all(
+    PERSISTED_STORES.filter((store) => store !== useFocusTimerStore).map((store) => store.persist.rehydrate()),
+  )
+}
+
 export function resetAllStores() {
   // useFocusTimerStore keeps a live setInterval/ambient sound/ringtone
   // running outside React — a plain setState wouldn't stop any of that, so
