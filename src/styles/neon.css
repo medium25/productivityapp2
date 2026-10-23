@@ -1,0 +1,239 @@
+/* ---- Neon skin (web version) ----------------------------------------------
+   The look of the "Учёт" dashboard app: near-black blue background with soft
+   green/blue glows, gradient panels with large radii, neon green for "on"
+   states, electric blue for actions, red for danger. Applied on top of the
+   regular dark theme (App.jsx sets data-theme="dark" + data-skin="neon" on
+   the web build), so every existing dark-mode rule still applies and only
+   the palette and a few surfaces change here. */
+:root[data-skin='neon'] {
+  --neon-g: #2bff88;
+  --neon-b: #3d8bff;
+  --neon-r: #ff4d5e;
+  --panel: #0e131c;
+  --panel2: #111826;
+  --line: #1b2433;
+  --line2: #2c3a52;
+
+  --bg: #070a10;
+  --surface: #0e131c;
+  --surface-hover: #151d2b;
+  --control-bg: #111826;
+  --border: #1b2433;
+  --text: #e8eef7;
+  --text-muted: #7b8aa3;
+  --accent: #3d8bff;
+  --accent-rgb: 61, 139, 255;
+  --accent-contrast: #ffffff;
+  --success: #2bff88;
+  --success-rgb: 43, 255, 136;
+  --danger: #ff4d5e;
+  --warning: #ffb84a;
+  --lime: #2bff88;
+  --track-bg: rgba(255, 255, 255, 0.08);
+  --task-milk: #111826;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --radius-card: 18px;
+
+  --glass-bg: rgba(10, 14, 21, 0.78);
+  --glass-bg-strong: rgba(14, 19, 28, 0.94);
+  --glass-border: #1b2433;
+  --glass-highlight: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
+
+  --finance-card-blue-bg: #0f1b33;
+  --finance-card-blue-border: #1f3a66;
+  --finance-card-blue-bar: #3d8bff;
+  --finance-card-green-bg: #0b2018;
+  --finance-card-green-border: #1b4d33;
+  --finance-card-green-bar: #2bff88;
+
+  color-scheme: dark;
+  background: #070a10;
+}
+
+:root[data-skin='neon'] body {
+  background:
+    radial-gradient(900px 500px at 85% -10%, #12304a55, transparent),
+    radial-gradient(700px 420px at -5% 10%, #0f3a2a44, transparent),
+    #070a10;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+:root[data-skin='neon'] .app-backdrop {
+  background:
+    radial-gradient(900px 500px at 85% -10%, #12304a55, transparent),
+    radial-gradient(700px 420px at -5% 10%, #0f3a2a44, transparent),
+    #070a10;
+}
+
+/* Headings: tight, heavy, like the dashboard's numbers. */
+:root[data-skin='neon'] h1,
+:root[data-skin='neon'] h2 { font-weight: 800; letter-spacing: -0.03em; }
+
+/* Navigation rail / bottom tab bar. */
+:root[data-skin='neon'] .sidebar {
+  background: rgba(7, 10, 16, 0.86);
+  border-color: var(--line);
+}
+:root[data-skin='neon'] .sidebar__link.active,
+:root[data-skin='neon'] .sidebar__link.sidebar__link--hue.active {
+  color: var(--neon-g);
+  background: rgba(43, 255, 136, 0.07);
+  border-color: var(--neon-g);
+  text-shadow: 0 0 14px rgba(43, 255, 136, 0.45);
+}
+:root[data-skin='neon'] .sidebar__link.active .sidebar__icon { color: var(--neon-g); filter: drop-shadow(0 0 6px rgba(43, 255, 136, 0.55)); }
+:root[data-skin='neon'] .sidebar__link.sidebar__link--hue { background: linear-gradient(180deg, var(--panel2), var(--panel)); border-color: var(--line); }
+:root[data-skin='neon'] .topbar { background: linear-gradient(#070a10 70%, rgba(7, 10, 16, 0.6)); border-color: transparent; }
+
+/* Pills: the dashboard's month chips — outline, neon green when on. */
+:root[data-skin='neon'] .segmented { background: transparent; gap: 6px; padding: 0; }
+:root[data-skin='neon'] .segmented__item {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-weight: 500;
+}
+:root[data-skin='neon'] .segmented__item:hover:not(.active) { border-color: var(--line2); }
+:root[data-skin='neon'] .segmented__item.active {
+  background: var(--neon-g);
+  border-color: var(--neon-g);
+  color: #04120a;
+  font-weight: 700;
+  box-shadow: 0 0 22px rgba(43, 255, 136, 0.27);
+}
+:root[data-skin='neon'] .focus-tabs { border-bottom: 0; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+:root[data-skin='neon'] .focus-tabs::-webkit-scrollbar { display: none; }
+:root[data-skin='neon'] .focus-tabs__item {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transform: none;
+  font-weight: 500;
+}
+:root[data-skin='neon'] .focus-tabs__item.active {
+  background: var(--neon-g);
+  border-color: var(--neon-g);
+  color: #04120a;
+  font-weight: 700;
+  box-shadow: 0 0 22px rgba(43, 255, 136, 0.27);
+}
+
+/* Panels: gradient fill, hairline border, big radius — the dashboard card. */
+:root[data-skin='neon'] .task-modal,
+:root[data-skin='neon'] .habits-modal,
+:root[data-skin='neon'] .tok-reader,
+:root[data-skin='neon'] .focus-rank,
+:root[data-skin='neon'] .focus-rank-card,
+:root[data-skin='neon'] .tasks-hub-card,
+:root[data-skin='neon'] .settings-section,
+:root[data-skin='neon'] .habits-card,
+:root[data-skin='neon'] .finance-card {
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border-color: var(--line);
+}
+:root[data-skin='neon'] .task-card,
+:root[data-skin='neon'] .project-card--accent {
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+}
+
+/* Fields: dark wells, blue focus ring. */
+:root[data-skin='neon'] input:not([type='checkbox']):not([type='radio']):not([type='range']),
+:root[data-skin='neon'] textarea,
+:root[data-skin='neon'] select {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--line);
+  color: var(--text);
+}
+:root[data-skin='neon'] input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+:root[data-skin='neon'] textarea:focus,
+:root[data-skin='neon'] select:focus {
+  border-color: var(--neon-b);
+  box-shadow: 0 0 0 3px rgba(61, 139, 255, 0.2);
+  outline: none;
+}
+:root[data-skin='neon'] ::placeholder { color: #3b4a63; }
+
+/* Bottom sheets on the phone: the dashboard's entry sheet. */
+@media (max-width: 720px) {
+  :root[data-skin='neon'] .task-modal-overlay > *,
+  :root[data-skin='neon'] .habits-modal-backdrop > .habits-modal {
+    background: linear-gradient(180deg, #131a28, #0d121b);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 28px 28px 0 0;
+  }
+  :root[data-skin='neon'] .task-modal-overlay > *::before,
+  :root[data-skin='neon'] .habits-modal-backdrop > .habits-modal::before { background: var(--line2); }
+  :root[data-skin='neon'] .task-modal-overlay,
+  :root[data-skin='neon'] .habits-modal-backdrop { background: rgba(0, 0, 0, 0.66); }
+}
+
+/* Токовинин reader. */
+:root[data-skin='neon'] .tok-reader__bar span { background: var(--neon-g); box-shadow: 0 0 10px rgba(43, 255, 136, 0.6); }
+:root[data-skin='neon'] .tok-check--on { background: var(--neon-g); border-color: var(--neon-g); color: #04120a; box-shadow: 0 0 14px rgba(43, 255, 136, 0.4); }
+:root[data-skin='neon'] .tok-ideas li { background: rgba(255, 255, 255, 0.03); border: 1px solid #121a27; }
+:root[data-skin='neon'] .tok-ideas__n { background: rgba(43, 255, 136, 0.12); color: var(--neon-g); }
+:root[data-skin='neon'] .tok-ideas h3 { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+:root[data-skin='neon'] .tok-btn { border-radius: 14px; min-height: 44px; background: rgba(255, 255, 255, 0.03); border-color: var(--line); font-weight: 700; }
+:root[data-skin='neon'] .tok-btn--primary { background: var(--neon-b); border-color: var(--neon-b); color: #fff; }
+:root[data-skin='neon'] .tok-post { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; }
+
+/* Phone helpers' pills/hints in the same palette. */
+:root[data-skin='neon'] .ptr { background: #16213a; color: #9dc0ff; border-color: rgba(61, 139, 255, 0.33); }
+:root[data-skin='neon'] .install-hint {
+  background: linear-gradient(135deg, #16213a, #101828);
+  border-color: rgba(61, 139, 255, 0.4);
+  color: #cfe0ff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(61, 139, 255, 0.13);
+}
+:root[data-skin='neon'] .install-hint b { color: #fff; }
+:root[data-skin='neon'] .install-hint button { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+/* Sign-in screen. */
+:root[data-skin='neon'] .auth-card {
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border-color: var(--line);
+  border-radius: 24px;
+}
+:root[data-skin='neon'] .auth-card__mode-switch button.active { background: var(--neon-g); border-color: var(--neon-g); color: #04120a; font-weight: 700; }
+
+/* Scrollbars that blend in. */
+:root[data-skin='neon'] * { scrollbar-color: #1b2433 transparent; }
+:root[data-skin='neon'] .tok-reader__nav .tok-btn { white-space: nowrap; padding: 0 16px; }
+:root[data-skin='neon'] .tok-reader__nav .tok-btn--primary { flex: 1; }
+
+/* Finance hero: the dashboard's "Чистая прибыль" card. */
+:root[data-skin='neon'] .finance-balance-card {
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border-color: var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: none;
+}
+:root[data-skin='neon'] .finance-balance-card::after {
+  content: '';
+  position: absolute;
+  right: -20%;
+  bottom: -60%;
+  width: 80%;
+  height: 130%;
+  background: radial-gradient(closest-side, rgba(43, 255, 136, 0.16), transparent);
+  pointer-events: none;
+}
+:root[data-skin='neon'] .finance-balance-card__value { letter-spacing: -0.035em; font-weight: 800; text-shadow: 0 0 28px rgba(232, 238, 247, 0.25); font-variant-numeric: tabular-nums; }
+:root[data-skin='neon'] .finance-balance-card__label { letter-spacing: 0.12em; }
+:root[data-skin='neon'] .auth-form .timer-controls__primary {
+  min-height: 50px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--neon-b);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 8px 24px rgba(61, 139, 255, 0.3);
+}
+:root[data-skin='neon'] .auth-form .timer-controls__primary:disabled { opacity: 0.5; }
+:root[data-skin='neon'] .auth-card__mode-switch button { border-radius: 999px; }

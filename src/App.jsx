@@ -83,6 +83,14 @@ function useAppliedTheme() {
 
   useEffect(() => {
     const root = document.documentElement
+    // The web version always wears the neon (dark) skin — see styles/neon.css.
+    // The theme setting is synced with the Mac app, so it is left untouched
+    // and only applies in the desktop build.
+    if (!window.__TAURI_INTERNALS__) {
+      root.setAttribute('data-theme', 'dark')
+      root.setAttribute('data-skin', 'neon')
+      return
+    }
     if (theme === 'system') {
       root.removeAttribute('data-theme')
     } else {

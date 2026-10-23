@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
+import './styles/neon.css'
 import './i18n'
 import App from './App.jsx'
 import { initPhoneHelpers } from './mobile/phoneHelpers'
