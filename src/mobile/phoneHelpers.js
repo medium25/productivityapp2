@@ -127,7 +127,13 @@ function installHint() {
       «Поделиться», затем <b>«На экран „Домой“»</b>.</p>
     <button type="button">Понятно</button>`
   document.body.appendChild(box)
-  setTimeout(() => box.classList.add('install-hint--show'), 2500)
+  // Never over the sign-in screen or while typing: a fixed card near the
+  // bottom ends up on top of the form's buttons once the keyboard scrolls the
+  // page (iPhone Safari), swallowing the tap on «Войти». Wait until the user
+  // is inside the app with no keyboard up.
+  const ready = () => !document.querySelector('.auth-page, .auth-loading') && !isEditing() && !document.body.classList.contains('kb-open')
+  const tryShow = () => { if (ready()) box.classList.add('install-hint--show'); else setTimeout(tryShow, 2000) }
+  setTimeout(tryShow, 2500)
   box.querySelector('button').onclick = () => {
     box.classList.remove('install-hint--show')
     try { localStorage.setItem(HINT_KEY, '1') } catch { /* private mode */ }

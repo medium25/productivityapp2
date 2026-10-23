@@ -10187,3 +10187,7 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
   font-weight: 700;
   cursor: pointer;
 }
+/* The hint only ever takes taps on its own button; it hides while typing. */
+.install-hint { pointer-events: none; }
+.install-hint button { pointer-events: auto; }
+body.kb-open .install-hint { display: none; }
