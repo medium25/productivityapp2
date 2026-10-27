@@ -10205,3 +10205,8 @@ body.kb-open .install-hint { display: none; }
   text-align: center;
 }
 .auth-card__link:hover { text-decoration: underline; }
+
+/* Settings → Account: link a phone number for sign-in. */
+.phone-link__form { gap: 8px; }
+.phone-link__form input { flex: 1; min-width: 0; }
+.phone-link .settings-hint { margin: 6px 0 0; }

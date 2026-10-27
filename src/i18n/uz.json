@@ -151,7 +151,14 @@
       "network-request-failed": "Internet aloqasi yo'q.",
       "operation-not-allowed": "Bu kirish usuli Firebase'da o'chirilgan."
     },
-    "newPasswordPlaceholder": "Parol o'ylab toping"
+    "newPasswordPlaceholder": "Parol o'ylab toping",
+    "linkPhone": "Raqamni bog'lash",
+    "unlinkPhone": "Uzish",
+    "linkedPhone": "Kirish raqami",
+    "linkHint": "Raqamni bog'lang — u orqali shu parol bilan kira olasiz.",
+    "linkDone": "Tayyor: endi raqam va shu parol bilan kirish mumkin.",
+    "link_taken": "Bu raqam boshqa akkauntga tegishli.",
+    "linkError": "Saqlab bo'lmadi — internetni tekshirib, qayta urinib ko'ring."
   },
   "social": {
     "friends": "Do'stlar va musobaqalar",

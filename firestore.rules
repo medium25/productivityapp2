@@ -29,6 +29,22 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Номер телефона, привязанный к аккаунту с почтой: позволяет войти по
+    // «номер + тот же пароль» (см. src/features/auth/phoneLogin.js). Читать
+    // один документ можно до входа (иначе не найти почту для входа), список —
+    // никогда. Создать запись может только сам аккаунт и только на свою почту;
+    // удалить — только владелец. Изменять нельзя (отвязка = удаление).
+    match /phoneLogins/{digits} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isSignedIn() &&
+        request.resource.data.keys().hasOnly(['uid', 'email']) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.email == request.auth.token.email;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
     // Заявки в друзья, id = `${fromUid}_${toUid}`. После принятия (status
     // меняется на 'accepted') этот же документ и есть запись о дружбе —
     // отдельного списка друзей на пользователя нет, чтобы не требовать

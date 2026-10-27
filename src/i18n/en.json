@@ -151,7 +151,14 @@
       "network-request-failed": "No internet connection.",
       "operation-not-allowed": "This sign-in method is turned off in Firebase."
     },
-    "newPasswordPlaceholder": "Create a password"
+    "newPasswordPlaceholder": "Create a password",
+    "linkPhone": "Link number",
+    "unlinkPhone": "Unlink",
+    "linkedPhone": "Sign-in number",
+    "linkHint": "Link a phone number to sign in with it and this same password.",
+    "linkDone": "Done — you can now sign in with the number and this password.",
+    "link_taken": "This number already belongs to another account.",
+    "linkError": "Couldn't save — check the connection and try again."
   },
   "social": {
     "friends": "Friends & Competitions",

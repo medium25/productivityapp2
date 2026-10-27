@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/useAuthStore'
 import { phoneToEmail } from './phoneAccount'
+import { findLinkedEmail, signInWithPhone } from './phoneLogin'
 
 // Firebase reports errors as "Firebase: Error (auth/some-code)." — show a
 // plain sentence instead, falling back to the raw text for unknown codes.
@@ -45,9 +46,17 @@ export default function AuthPage() {
     setSubmitting(true)
     try {
       if (method === 'phone') {
-        const login = phoneToEmail(phone)
-        if (mode === 'signup') await signUpEmail(login, password)
-        else await signInEmail(login, password)
+        if (mode === 'signup') {
+          // A number already linked to an email account can't start a new one.
+          if (await findLinkedEmail(phone).catch(() => null)) {
+            useAuthStore.setState({ error: 'Firebase: Error (auth/email-already-in-use).' })
+            return
+          }
+          await signUpEmail(phoneToEmail(phone), password)
+        } else {
+          await signInWithPhone(phone, password, signInEmail)
+          useAuthStore.setState({ error: null })
+        }
       } else {
         await signInEmail(email.trim(), password)
       }
