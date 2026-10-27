@@ -131,7 +131,6 @@
     "phonePlaceholder": "+998 90 123 45 67",
     "loading": "Loading…",
     "signOut": "Sign out",
-    "useEmail": "Have an older email account? Sign in with email",
     "usePhone": "← Sign in with phone",
     "errors": {
       "invalid-credential": "Wrong email or password. Check the address for typos.",

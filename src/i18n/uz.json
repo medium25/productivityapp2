@@ -131,7 +131,6 @@
     "phonePlaceholder": "+998 90 123 45 67",
     "loading": "Yuklanmoqda…",
     "signOut": "Chiqish",
-    "useEmail": "Pochtali eski akkauntingiz bormi? Pochta orqali kirish",
     "usePhone": "← Telefon orqali kirish",
     "errors": {
       "invalid-credential": "Pochta yoki parol noto'g'ri. Manzilni tekshiring.",

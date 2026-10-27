@@ -131,7 +131,6 @@
     "phonePlaceholder": "+998 90 123 45 67",
     "loading": "Загрузка…",
     "signOut": "Выйти",
-    "useEmail": "Есть старый аккаунт с почтой? Войти по почте",
     "usePhone": "← Вход по номеру телефона",
     "errors": {
       "invalid-credential": "Неверная почта или пароль. Проверь адрес — например, gmail.com, а не gmail.cpm.",

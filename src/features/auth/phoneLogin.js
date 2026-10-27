@@ -7,7 +7,7 @@
 // linked, so Settings can show and remove it.
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../../firebase'
-import { normalizePhone, phoneToEmail } from './phoneAccount'
+import { normalizePhone, passwordCandidates, phoneToEmail } from './phoneAccount'
 
 const digitsOf = (raw) => normalizePhone(raw).slice(1)
 const linkRef = (digits) => doc(db, 'phoneLogins', digits)
@@ -17,16 +17,33 @@ export async function findLinkedEmail(raw) {
   return snap.exists() ? snap.data().email : null
 }
 
+const BAD_CREDENTIALS = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found']
+
 // Phone sign-in: the number's own phone account first, then — if there is
-// none — an email account that linked this number.
-export async function signInWithPhone(raw, password, signInEmail) {
+// none — an email account that linked this number. `typed` is what the user
+// entered as the password (empty = the number itself, see passwordCandidates).
+export async function signInWithPhone(raw, typed, signInEmail) {
+  const passwords = passwordCandidates(raw, typed)
+  const attempt = async (email) => {
+    let last
+    for (const password of passwords) {
+      try {
+        await signInEmail(email, password)
+        return
+      } catch (e) {
+        if (!BAD_CREDENTIALS.includes(e?.code)) throw e
+        last = e
+      }
+    }
+    throw last
+  }
   try {
-    await signInEmail(phoneToEmail(raw), password)
+    await attempt(phoneToEmail(raw))
   } catch (e) {
-    if (!['auth/invalid-credential', 'auth/user-not-found'].includes(e?.code)) throw e
+    if (!BAD_CREDENTIALS.includes(e?.code)) throw e
     const linked = await findLinkedEmail(raw).catch(() => null)
     if (!linked) throw e
-    await signInEmail(linked, password)
+    await attempt(linked)
   }
 }
 

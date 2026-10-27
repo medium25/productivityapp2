@@ -29,7 +29,9 @@ export default function AuthPage() {
   const signUpEmail = useAuthStore((s) => s.signUpEmail)
   const signInEmail = useAuthStore((s) => s.signInEmail)
 
-  const [method, setMethod] = useState('phone')
+  // Email sign-in is no longer offered on screen; opening the page with ?email
+  // brings the old email form back (a way in if a number was ever lost).
+  const [method, setMethod] = useState(() => (new URLSearchParams(window.location.search).has('email') ? 'email' : 'phone'))
   const [mode, setMode] = useState('signin')
   const [phone, setPhone] = useState('+998')
   const [email, setEmail] = useState('')
@@ -63,7 +65,7 @@ export default function AuthPage() {
           }
           await signUpEmail(phoneToEmail(phone), password || defaultPassword(phone))
         } else {
-          await signInWithPhone(phone, password || defaultPassword(phone), signInEmail)
+          await signInWithPhone(phone, password, signInEmail)
           useAuthStore.setState({ error: null })
         }
       } else {
@@ -130,9 +132,9 @@ export default function AuthPage() {
 
         {(localError || error) && <p className="auth-card__error">{localError || authErrorText(error, method, t)}</p>}
 
-        <button type="button" className="auth-card__link" onClick={switchMethod}>
-          {method === 'phone' ? t('auth.useEmail') : t('auth.usePhone')}
-        </button>
+        {method === 'email' && (
+          <button type="button" className="auth-card__link" onClick={switchMethod}>{t('auth.usePhone')}</button>
+        )}
       </div>
     </div>
   )

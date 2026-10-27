@@ -80,6 +80,21 @@ export const isCompletePhone = (raw) => {
   return local.length === country.length
 }
 
-// Default password for phone accounts: the number itself, digits only with the
-// country code (e.g. "998901234567" — 12 characters, over Firebase's minimum).
-export const defaultPassword = (raw) => normalizePhone(raw).slice(1)
+// Default password for phone accounts: the number exactly as it is typed on
+// screen — the digits after the country code ("900064544"; 6+ characters, over
+// Firebase's minimum).
+export const defaultPassword = (raw) => splitPhone(raw).local
+
+// Accounts set up before that rule used the full number with the country code
+// ("998900064544") — still accepted at sign-in.
+export const legacyPassword = (raw) => normalizePhone(raw).slice(1)
+
+// Which passwords to try for what was typed: nothing / the number in either
+// form -> both forms; anything else is a real password -> just that.
+export function passwordCandidates(raw, typed) {
+  const local = defaultPassword(raw)
+  const full = legacyPassword(raw)
+  if (!typed || typed === local) return [local, full]
+  if (typed === full) return [full, local]
+  return [typed]
+}
