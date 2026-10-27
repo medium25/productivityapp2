@@ -10191,3 +10191,17 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .install-hint { pointer-events: none; }
 .install-hint button { pointer-events: auto; }
 body.kb-open .install-hint { display: none; }
+
+/* Sign-in: quiet text link (switch to email fallback / change number). */
+.auth-card__link {
+  border: 0;
+  background: none;
+  padding: 6px 4px;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+.auth-card__link:hover { text-decoration: underline; }
