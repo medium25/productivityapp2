@@ -131,8 +131,6 @@
     "phonePlaceholder": "+998 90 123 45 67",
     "loading": "Loading…",
     "signOut": "Sign out",
-    "phoneSubtitle": "Sign in or sign up with your phone number",
-    "emailSubtitle": "Sign in to an account created earlier with email",
     "useEmail": "Have an older email account? Sign in with email",
     "usePhone": "← Sign in with phone",
     "errors": {
@@ -151,7 +149,6 @@
       "network-request-failed": "No internet connection.",
       "operation-not-allowed": "This sign-in method is turned off in Firebase."
     },
-    "newPasswordPlaceholder": "Create a password",
     "unlinkPhone": "Unlink",
     "linkedPhone": "Sign-in number",
     "link_taken": "This number already belongs to another account.",
@@ -175,9 +172,7 @@
     "shortPassword": "Password must be at least 6 characters.",
     "saved": "Saved.",
     "savedNumberPassword": "Saved. Now sign in with just the number — leave the password empty.",
-    "unlinked": "Number unlinked.",
-    "passwordOptional": "Password (unchanged — leave empty)",
-    "newPasswordOptional": "Your own password (optional)"
+    "unlinked": "Number unlinked."
   },
   "social": {
     "friends": "Friends & Competitions",

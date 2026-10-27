@@ -10258,3 +10258,8 @@ body.kb-open .install-hint { display: none; }
 .login-settings__note { margin: 2px 0 0; font-size: 0.86rem; }
 .login-settings__note--ok { color: var(--success); }
 .login-settings__note--err { color: var(--danger); }
+
+/* Sign-in: password field with a show/hide eye. */
+.auth-pw { position: relative; display: flex; }
+.auth-pw input { flex: 1; padding-right: 46px; }
+.auth-pw__eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: none; cursor: pointer; font-size: 1.05rem; }

@@ -131,8 +131,6 @@
     "phonePlaceholder": "+998 90 123 45 67",
     "loading": "Yuklanmoqda…",
     "signOut": "Chiqish",
-    "phoneSubtitle": "Telefon raqami orqali kirish va ro'yxatdan o'tish",
-    "emailSubtitle": "Avval pochta orqali ochilgan akkauntlar uchun kirish",
     "useEmail": "Pochtali eski akkauntingiz bormi? Pochta orqali kirish",
     "usePhone": "← Telefon orqali kirish",
     "errors": {
@@ -151,7 +149,6 @@
       "network-request-failed": "Internet aloqasi yo'q.",
       "operation-not-allowed": "Bu kirish usuli Firebase'da o'chirilgan."
     },
-    "newPasswordPlaceholder": "Parol o'ylab toping",
     "unlinkPhone": "Uzish",
     "linkedPhone": "Kirish raqami",
     "link_taken": "Bu raqam boshqa akkauntga tegishli.",
@@ -175,9 +172,7 @@
     "shortPassword": "Parol kamida 6 belgidan iborat bo'lsin.",
     "saved": "Saqlandi.",
     "savedNumberPassword": "Saqlandi. Endi faqat raqam bilan kiring — parol maydonini bo'sh qoldiring.",
-    "unlinked": "Raqam uzildi.",
-    "passwordOptional": "Parol (o'zgartirmagan bo'lsangiz — bo'sh qoldiring)",
-    "newPasswordOptional": "O'z parolingiz (ixtiyoriy)"
+    "unlinked": "Raqam uzildi."
   },
   "social": {
     "friends": "Do'stlar va musobaqalar",

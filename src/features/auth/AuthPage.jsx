@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/useAuthStore'
-import { defaultPassword, phoneToEmail } from './phoneAccount'
+import PhoneInput from './PhoneInput'
+import { defaultPassword, isCompletePhone, phoneToEmail } from './phoneAccount'
 import { findLinkedEmail, signInWithPhone } from './phoneLogin'
 
 // Firebase reports errors as "Firebase: Error (auth/some-code)." — show a
@@ -30,19 +31,27 @@ export default function AuthPage() {
 
   const [method, setMethod] = useState('phone')
   const [mode, setMode] = useState('signin')
-  const [phone, setPhone] = useState('+998 ')
+  const [phone, setPhone] = useState('+998')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [localError, setLocalError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const switchMethod = () => {
     setMethod(method === 'phone' ? 'email' : 'phone')
     setMode('signin')
+    setLocalError('')
     useAuthStore.setState({ error: null })
   }
 
   const submit = async (e) => {
     e.preventDefault()
+    setLocalError('')
+    if (method === 'phone' && !isCompletePhone(phone)) {
+      setLocalError(t('auth.invalidPhone'))
+      return
+    }
     setSubmitting(true)
     try {
       if (method === 'phone') {
@@ -73,7 +82,6 @@ export default function AuthPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-card__title">{t('auth.title')}</h1>
-        <p className="auth-card__subtitle">{method === 'phone' ? t('auth.phoneSubtitle') : t('auth.emailSubtitle')}</p>
 
         {method === 'phone' && (
           <div className="auth-card__mode-switch">
@@ -88,16 +96,7 @@ export default function AuthPage() {
 
         <form className="auth-form" onSubmit={submit}>
           {method === 'phone' ? (
-            <input
-              type="tel"
-              inputMode="tel"
-              className="focus-create__input"
-              placeholder={t('auth.phonePlaceholder')}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              autoComplete="username"
-            />
+            <PhoneInput value={phone} onChange={setPhone} ariaLabel={t('auth.loginPhone')} />
           ) : (
             <input
               type="email"
@@ -109,22 +108,27 @@ export default function AuthPage() {
               autoComplete="username"
             />
           )}
-          <input
-            type="password"
-            className="focus-create__input"
-            placeholder={method === 'phone' ? (signup ? t('auth.newPasswordOptional') : t('auth.passwordOptional')) : t('auth.passwordPlaceholder')}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required={method !== 'phone'}
-            minLength={password ? 6 : undefined}
-            autoComplete={signup ? 'new-password' : 'current-password'}
-          />
+          <div className="auth-pw">
+            <input
+              type={showPw ? 'text' : 'password'}
+              className="focus-create__input"
+              placeholder={t('auth.passwordPlaceholder')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required={method !== 'phone'}
+              minLength={password ? 6 : undefined}
+              autoComplete={signup ? 'new-password' : 'current-password'}
+            />
+            <button type="button" className="auth-pw__eye" onClick={() => setShowPw(!showPw)} aria-label={t('auth.showPassword')}>
+              {showPw ? '🙈' : '👁'}
+            </button>
+          </div>
           <button type="submit" className="timer-controls__primary" disabled={submitting}>
             {signup ? t('auth.signUp') : t('auth.signIn')}
           </button>
         </form>
 
-        {error && <p className="auth-card__error">{authErrorText(error, method, t)}</p>}
+        {(localError || error) && <p className="auth-card__error">{localError || authErrorText(error, method, t)}</p>}
 
         <button type="button" className="auth-card__link" onClick={switchMethod}>
           {method === 'phone' ? t('auth.useEmail') : t('auth.usePhone')}
