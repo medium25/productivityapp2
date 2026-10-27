@@ -10233,19 +10233,57 @@ body.kb-open .install-hint { display: none; }
 .phone-input__field { flex: 1; min-width: 0; font-size: 1.05rem; letter-spacing: 0.02em; }
 .phone-input--disabled { opacity: 0.6; }
 
-/* Settings → Account → sign-in by number. */
-.login-settings { display: flex; flex-direction: column; gap: 8px; padding: 14px 0 4px; }
-.login-settings__title { margin: 0 0 2px; font-size: 0.95rem; }
-.login-settings__label { margin-top: 6px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
-.login-settings .segmented { align-self: flex-start; }
-.login-settings .settings-hint { margin: 0; }
-.login-settings__linked { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.login-settings__pw { position: relative; display: flex; }
-.login-settings__pw input { flex: 1; padding-right: 44px; }
-.login-settings__eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; background: none; cursor: pointer; font-size: 1.05rem; }
-.login-settings__save {
-  margin-top: 6px;
+/* Settings → Account → sign-in by number: two rows that open an editor. */
+.login-block { margin-top: 12px; }
+.login-rows { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.login-rows > * + * { border-top: 1px solid var(--border); }
+.login-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.login-row--static { cursor: default; }
+.login-row__icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: var(--control-bg); font-size: 1rem; }
+.login-row__text { flex: 1; min-width: 0; }
+.login-row__text small { display: block; margin-bottom: 1px; color: var(--text-muted); font-size: 0.75rem; }
+.login-row__text b { font-size: 1.02rem; font-weight: 700; letter-spacing: 0.01em; }
+.login-row__todo { color: var(--accent); }
+.login-row__chev { flex: none; color: var(--text-muted); font-size: 1.3rem; line-height: 1; transition: transform 0.2s; }
+.login-row--open .login-row__chev { transform: rotate(90deg); }
+.login-edit { display: flex; flex-direction: column; gap: 10px; padding: 6px 14px 14px; background: color-mix(in srgb, var(--text) 3%, transparent); }
+.login-edit__actions { display: flex; align-items: center; gap: 12px; }
+.login-edit__hint { margin: 0; color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; }
+.login-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.login-opt:disabled { opacity: 0.5; cursor: default; }
+.login-opt b { display: block; font-size: 0.92rem; }
+.login-opt small { display: block; margin-top: 1px; color: var(--text-muted); font-size: 0.78rem; }
+.login-opt__radio { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); }
+.login-opt--on { border-color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); }
+.login-opt--on .login-opt__radio { border-color: var(--success); background: radial-gradient(circle, var(--success) 45%, transparent 50%); }
+.login-save {
   min-height: 44px;
+  padding: 0 20px;
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--accent);
@@ -10254,10 +10292,12 @@ body.kb-open .install-hint { display: none; }
   font-weight: 700;
   cursor: pointer;
 }
-.login-settings__save:disabled { opacity: 0.5; }
-.login-settings__note { margin: 2px 0 0; font-size: 0.86rem; }
-.login-settings__note--ok { color: var(--success); }
-.login-settings__note--err { color: var(--danger); }
+.login-save--full { width: 100%; }
+.login-save:disabled { opacity: 0.5; }
+.login-unlink { border: 0; background: none; padding: 6px 2px; color: var(--danger); font: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.login-note { margin: 8px 2px 0; font-size: 0.86rem; }
+.login-note--ok { color: var(--success); }
+.login-note--err { color: var(--danger); }
 
 /* Sign-in: password field with a show/hide eye. */
 .auth-pw { position: relative; display: flex; }
