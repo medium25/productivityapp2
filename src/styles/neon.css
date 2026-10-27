@@ -255,13 +255,13 @@
 :root[data-skin='neon'] .insights-chat .insights-chat__bubble--reminder { --bh: #2be0d8; }
 :root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media),
 :root[data-skin='neon'] .insights-chat__color-preview-bubble {
-  background: color-mix(in srgb, var(--bh) 15%, #0b1018) !important;
-  color: color-mix(in srgb, var(--bh) 40%, #ffffff) !important;
-  border: 1px solid color-mix(in srgb, var(--bh) 50%, transparent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--bh) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--bh) 34%, #0b1018) !important;
+  color: color-mix(in srgb, var(--bh) 22%, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--bh) 75%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--bh) 32%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
-:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) .insights-chat__meta { color: color-mix(in srgb, var(--bh) 55%, #7b8aa3); opacity: 1; }
-:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) a { color: color-mix(in srgb, var(--bh) 70%, #ffffff); }
+:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) .insights-chat__meta { color: color-mix(in srgb, var(--bh) 35%, #ffffff); opacity: 0.85; }
+:root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) a { color: #ffffff; text-decoration: underline; }
 :root[data-skin='neon'] .insights-chat__bubble--media { background: var(--panel2); border: 1px solid var(--line); }
 
 /* Phone field + sign-in settings. */
