@@ -26,5 +26,10 @@ export const auth = getAuth(app)
 // owned by default).
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  // Mobile carriers / proxies often break Firestore's streaming connection, and
+  // the SDK then sits on a long timeout before it gives up on it — the first
+  // read (and so the whole app start) waited that long. Auto-detect switches to
+  // long polling right away when streaming doesn't work.
+  experimentalAutoDetectLongPolling: true,
 })
 export const storage = getStorage(app)

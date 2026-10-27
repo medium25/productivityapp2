@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, getDocsFromCache, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getCurrentUid } from './currentUid'
 
@@ -17,12 +17,39 @@ export function invalidateAppDataCache() {
   bulk = null
 }
 
+// Keys of documents written on this device since the last full hydration. A late
+// server refresh must not overwrite a store the user has already changed.
+const dirtyKeys = new Set()
+export const clearDirtyKeys = () => dirtyKeys.clear()
+export const isDirtyKey = (key) => dirtyKeys.has(key)
+
+const toMap = (snap) => {
+  const all = new Map()
+  snap.forEach((d) => all.set(d.id, d.data()))
+  return all
+}
+
+// Instant read from the local (IndexedDB) copy — no network. null when this
+// device has nothing cached yet (first launch / cleared storage).
+export async function readCachedAppData(uid) {
+  const snap = await getDocsFromCache(collection(db, 'users', uid, 'appData'))
+  return snap.empty ? null : toMap(snap)
+}
+
+// Full read from the server (falls back to the cache when offline).
+export async function readServerAppData(uid) {
+  return toMap(await getDocs(collection(db, 'users', uid, 'appData')))
+}
+
+// Make the next store reads come from this snapshot instead of the network.
+export function primeAppData(uid, all) {
+  bulk = { uid, promise: Promise.resolve(all) }
+}
+
 function readAllAppData(uid) {
   const promise = getDocs(collection(db, 'users', uid, 'appData')).then((snap) => {
     if (snap.empty && snap.metadata.fromCache) throw new Error('appData not available yet')
-    const all = new Map()
-    snap.forEach((d) => all.set(d.id, d.data()))
-    return all
+    return toMap(snap)
   })
   promise.catch(() => { if (bulk?.promise === promise) bulk = null })
   return promise
@@ -66,6 +93,7 @@ export function createFirestoreStorage(key) {
   }
 
   return {
+    __key: key,
     getItem: async () => {
       const ref = docRef()
       if (!ref) return null
@@ -83,6 +111,7 @@ export function createFirestoreStorage(key) {
       const ref = docRef()
       if (!ref) return
       const path = ref.path
+      dirtyKeys.add(key)
       const previous = pendingWrites.get(path)
       if (previous) clearTimeout(previous.timer)
       pendingWrites.set(path, { ref, value, timer: setTimeout(() => sendWrite(path), WRITE_DELAY_MS) })

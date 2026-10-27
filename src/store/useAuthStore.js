@@ -34,7 +34,13 @@ async function ensureUserProfile(user) {
   // Lets other users find this account by email when sending a friend
   // request — see src/store/useFriendsStore.js.
   if (user.email) {
-    await setDoc(doc(db, 'userDirectory', user.email.toLowerCase()), { uid: user.uid }, { merge: true })
+    const flag = `arkad:dir:${user.uid}`
+    let done = false
+    try { done = localStorage.getItem(flag) === '1' } catch { /* private mode */ }
+    if (!done) {
+      await setDoc(doc(db, 'userDirectory', user.email.toLowerCase()), { uid: user.uid }, { merge: true })
+      try { localStorage.setItem(flag, '1') } catch { /* private mode */ }
+    }
   }
 }
 
@@ -91,19 +97,24 @@ export const useAuthStore = create((set) => ({
   signOutUser: () => signOut(auth),
 }))
 
+const START_TIMEOUT_MS = 6000
+
 onAuthStateChanged(auth, async (firebaseUser) => {
   if (firebaseUser) {
     setCurrentUid(firebaseUser.uid)
-    try {
-      await ensureUserProfile(firebaseUser)
-    } catch (e) {
-      // The user IS signed in with Firebase Auth even if the Firestore
-      // profile write failed (e.g. security rules not deployed yet) — still
-      // let them into the app rather than hanging on a blank screen.
-      console.error('ensureUserProfile failed:', e)
-    }
+    // Open the app as soon as the stores hold data — from this device's own copy
+    // when there is one (milliseconds), otherwise after the first server read.
+    // Never wait for the profile write below, and never hang here for long on a
+    // bad connection: after START_TIMEOUT_MS the app opens with what it has.
+    const { ready } = rehydrateAllPersistedStores()
+    await Promise.race([ready, new Promise((resolve) => setTimeout(resolve, START_TIMEOUT_MS))])
     useAuthStore.setState({ user: firebaseUser, status: 'ready' })
-    rehydrateAllPersistedStores()
+    // The profile is only bookkeeping (friend lookup by email) — do it in the
+    // background, once the data is in, so it doesn't compete for the connection.
+    ensureUserProfile(firebaseUser).catch((e) => {
+      // Signed in with Firebase Auth even if this write failed (e.g. rules not deployed).
+      console.error('ensureUserProfile failed:', e)
+    })
     // useFriendsStore/useCompetitionsStore are intentionally NOT started
     // here anymore — both keep permanent onSnapshot listeners open for as
     // long as they're running, which used to mean every signed-in user paid

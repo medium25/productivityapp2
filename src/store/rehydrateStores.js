@@ -1,4 +1,5 @@
-import { invalidateAppDataCache } from '../firebase/firestoreStorage'
+import { getCurrentUid } from '../firebase/currentUid'
+import { clearDirtyKeys, invalidateAppDataCache, isDirtyKey, primeAppData, readCachedAppData, readServerAppData } from '../firebase/firestoreStorage'
 import { useSettingsStore } from './useSettingsStore'
 import { useFocusStore } from './useFocusStore'
 import { useFocusHistoryStore } from './useFocusHistoryStore'
@@ -51,9 +52,46 @@ const PERSISTED_STORES = [
   ...SPORT_DAY_CHAT_STORES,
 ]
 
+// Fast start. Every store's data is first read from this device's own copy of
+// Firestore (IndexedDB — milliseconds, no network), so the app can open at once
+// with everything on screen; then the server is asked in the background and only
+// the stores whose data actually changed (e.g. edited on the other device) are
+// re-hydrated — never one the user has already touched here. On a device with
+// no local copy yet the first read has to come from the server.
+// Returns { ready, refreshed }: `ready` resolves when the stores hold data (open
+// the app then); `refreshed` when the background server sync has finished.
 export function rehydrateAllPersistedStores() {
+  const uid = getCurrentUid()
   invalidateAppDataCache()
-  PERSISTED_STORES.forEach((store) => store.persist.rehydrate())
+  clearDirtyKeys()
+
+  const hydrateAll = (stores) => Promise.allSettled(stores.map((store) => store.persist.rehydrate()))
+
+  let cached = null
+  const ready = (async () => {
+    try { cached = uid ? await readCachedAppData(uid) : null } catch { cached = null }
+    if (cached) primeAppData(uid, cached)
+    else invalidateAppDataCache() // nothing local: each store reads from the server
+    await hydrateAll(PERSISTED_STORES)
+  })()
+
+  const refreshed = ready.then(async () => {
+    if (!cached || !uid) return
+    let fresh
+    try { fresh = await readServerAppData(uid) } catch { return }
+    if (getCurrentUid() !== uid) return // signed out / switched account meanwhile
+    const changed = PERSISTED_STORES.filter((store) => {
+      if (store === useFocusTimerStore) return false // live countdown runs in this tab
+      const key = store.persist.getOptions().storage?.__key
+      if (!key || isDirtyKey(key)) return false
+      return JSON.stringify(fresh.get(key)) !== JSON.stringify(cached.get(key))
+    })
+    if (changed.length === 0) return
+    primeAppData(uid, fresh)
+    await hydrateAll(changed)
+  }).catch(() => {})
+
+  return { ready, refreshed }
 }
 
 // Re-read every store from Firestore without signing out — pulls in changes
@@ -62,6 +100,7 @@ export function rehydrateAllPersistedStores() {
 // this tab's copy is the one being written, not a stale one.
 export function refreshPersistedStores() {
   invalidateAppDataCache()
+  clearDirtyKeys()
   return Promise.all(
     PERSISTED_STORES.filter((store) => store !== useFocusTimerStore).map((store) => store.persist.rehydrate()),
   )
