@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { useInsightsStore } from '../../store/useInsightsStore'
@@ -181,7 +181,7 @@ function MediaUnavailable({ localKey }) {
   )
 }
 
-function MessageBubble({ message, onEdit, onDelete, onToggleDone, onToggleTaskLine, showCheckbox, isReminder, selecting, selected, onToggleSelected, onStartSelect, bubbleColors }) {
+function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTaskLine, showCheckbox, isReminder, selecting, selected, onToggleSelected, onStartSelect, bubbleColors }) {
   const { t, i18n } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(message.text)
@@ -456,6 +456,22 @@ function MessageBubble({ message, onEdit, onDelete, onToggleDone, onToggleTaskLi
 // same drag mechanism useDragReorder.js already gives tasks. Reordering
 // itself is a no-op here (the chat always stays in its own chronological
 // order); only the cross-drop side matters.
+// Typing in the composer updates the draft in the chat store, which re-renders
+// the whole chat; without this a chat with hundreds of messages re-rendered
+// every bubble on each keystroke (laggy input on phones). A bubble only needs
+// to redraw when its own data changes. The handler props are deliberately
+// ignored: they only close over the message itself (compared here), stable store
+// actions, or functional state updates, so a stale copy behaves the same.
+const MessageBubble = memo(MessageBubbleImpl, (a, b) =>
+  a.message === b.message
+  && a.isReminder === b.isReminder
+  && a.showCheckbox === b.showCheckbox
+  && a.selecting === b.selecting
+  && a.selected === b.selected
+  && a.bubbleColors?.normal === b.bubbleColors?.normal
+  && a.bubbleColors?.task === b.bubbleColors?.task
+  && a.bubbleColors?.reminder === b.bubbleColors?.reminder)
+
 // Scroll position per chat for THIS app session only (module memory, reset on
 // every app launch): a fresh launch opens each chat at the newest messages;
 // coming back to a chat after visiting another section returns to where the

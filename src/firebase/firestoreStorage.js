@@ -13,6 +13,7 @@ import { getCurrentUid } from './currentUid'
 let bulk = null // { uid, promise }
 
 export function invalidateAppDataCache() {
+  flushPendingWrites() // a re-read must see what was just typed
   bulk = null
 }
 
@@ -25,6 +26,31 @@ function readAllAppData(uid) {
   })
   promise.catch(() => { if (bulk?.promise === promise) bulk = null })
   return promise
+}
+
+// Every store change used to write its whole document to Firestore at once —
+// typing a chat message re-sent every message on each keystroke, which made
+// input lag on phones. Writes are now coalesced per document: only the latest
+// state is sent, a moment after the changes stop (and right away when the page
+// is hidden or closed, or before stores are re-read), so nothing is lost.
+const WRITE_DELAY_MS = 800
+const pendingWrites = new Map() // document path -> { ref, value, timer }
+
+function sendWrite(path) {
+  const entry = pendingWrites.get(path)
+  if (!entry) return
+  clearTimeout(entry.timer)
+  pendingWrites.delete(path)
+  setDoc(entry.ref, entry.value).catch((e) => console.error('Firestore write failed:', e))
+}
+
+export function flushPendingWrites() {
+  for (const path of [...pendingWrites.keys()]) sendWrite(path)
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPendingWrites() })
+  window.addEventListener('pagehide', flushPendingWrites)
 }
 
 // A zustand `persist` storage backed by Firestore instead of localStorage,
@@ -56,11 +82,16 @@ export function createFirestoreStorage(key) {
     setItem: async (_name, value) => {
       const ref = docRef()
       if (!ref) return
-      await setDoc(ref, value)
+      const path = ref.path
+      const previous = pendingWrites.get(path)
+      if (previous) clearTimeout(previous.timer)
+      pendingWrites.set(path, { ref, value, timer: setTimeout(() => sendWrite(path), WRITE_DELAY_MS) })
     },
     removeItem: async () => {
       const ref = docRef()
       if (!ref) return
+      const queued = pendingWrites.get(ref.path)
+      if (queued) { clearTimeout(queued.timer); pendingWrites.delete(ref.path) }
       await deleteDoc(ref)
     },
   }

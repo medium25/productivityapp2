@@ -10326,3 +10326,13 @@ body.kb-open .install-hint { display: none; }
 .auth-pw { position: relative; display: flex; }
 .auth-pw input { flex: 1; padding-right: 46px; }
 .auth-pw__eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: none; cursor: pointer; font-size: 1.05rem; }
+
+/* Phones: a backdrop blur behind the tab bar / top bar is re-rendered on every
+   frame of scrolling and typing and makes input lag; use solid panels instead. */
+@media (max-width: 720px) {
+  .sidebar, .topbar, .task-modal-overlay, .habits-modal-backdrop, .task-modal {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .sidebar, .topbar { background: var(--surface); }
+}
