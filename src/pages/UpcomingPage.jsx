@@ -42,20 +42,22 @@ const CALENDAR_PALETTE = [
   { bg: '#e3f6f6', border: '#0f6e7a', text: '#0b535c' },
   { bg: '#fdf6e0', border: '#c9a812', text: '#9e850e' },
 ]
-// Same hues for the web version's neon skin (styles/neon.css): dark tinted
-// fills with bright text instead of pastel fills with dark text.
+// Same hues for the web version's neon skin (styles/neon.css): a row is drawn
+// from one bright hue (--h) as a dark tinted fill with a glowing outline and
+// light text, instead of a pastel fill with dark text.
 const NEON_CALENDAR_PALETTE = [
-  { bg: '#0f1b33', border: '#3d8bff', text: '#8dbaff' },
-  { bg: '#0b2018', border: '#2bff88', text: '#6dffb0' },
-  { bg: '#2a1b0b', border: '#ffb84a', text: '#ffcf87' },
-  { bg: '#2a0f14', border: '#ff4d5e', text: '#ff8e99' },
-  { bg: '#1c1233', border: '#9d7bff', text: '#c4b0ff' },
-  { bg: '#2a0f20', border: '#ff5fa8', text: '#ff9ccb' },
-  { bg: '#0b2226', border: '#2be0d8', text: '#7cf0ea' },
-  { bg: '#262109', border: '#ffe14a', text: '#ffec8f' },
+  { border: '#3d8bff' },
+  { border: '#2bff88' },
+  { border: '#ffb84a' },
+  { border: '#ff4d5e' },
+  { border: '#9d7bff' },
+  { border: '#ff5fa8' },
+  { border: '#2be0d8' },
+  { border: '#ffe14a' },
 ]
+const isNeonSkin = () => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'neon'
 const calendarPalette = () =>
-  (typeof document !== 'undefined' && document.documentElement.dataset.skin === 'neon' ? NEON_CALENDAR_PALETTE : CALENDAR_PALETTE)
+  (isNeonSkin() ? NEON_CALENDAR_PALETTE : CALENDAR_PALETTE)
 const PX_PER_MIN = 1.4
 
 // Sequential schedule: each task starts right when the previous one ends,
@@ -288,7 +290,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         </span>
       </span>
       )}
-      <span className="timed-row__body" style={{ background: color.bg, color: color.text }}>
+      <span className="timed-row__body" style={isNeonSkin() ? { '--h': color.border } : { background: color.bg, color: color.text }}>
         <DragGrip />
         <span className="timed-row__title">
           <span className="timed-row__num">{number}.</span>
