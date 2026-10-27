@@ -42,11 +42,9 @@ export function toAccountEmail(input) {
 }
 
 // ---- Number entry: country prefix is fixed in the UI, only the rest is typed.
+// Uzbekistan only: the +998 prefix is fixed in the UI and never typed.
 export const COUNTRIES = [
   { code: '998', flag: '🇺🇿', name: 'Узбекистан', length: 9, groups: [2, 3, 2, 2], example: '90 123 45 67' },
-  { code: '7', flag: '🇷🇺', name: 'Россия / Казахстан', length: 10, groups: [3, 3, 2, 2], example: '912 345 67 89' },
-  { code: '996', flag: '🇰🇬', name: 'Кыргызстан', length: 9, groups: [3, 3, 3], example: '700 123 456' },
-  { code: '992', flag: '🇹🇯', name: 'Таджикистан', length: 9, groups: [2, 3, 4], example: '90 123 4567' },
 ]
 export const DEFAULT_COUNTRY = COUNTRIES[0]
 

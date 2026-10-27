@@ -1,41 +1,23 @@
-import { COUNTRIES, formatLocal, joinPhone, splitPhone } from './phoneAccount'
+import { formatLocal, joinPhone, splitPhone, DEFAULT_COUNTRY } from './phoneAccount'
 
-// Phone field where the country code is a fixed chip (tap to change) and only
-// the rest of the number is typed — grouped as you type ("90 123 45 67").
-// `value` / `onChange` carry the full number ("+998901234567", or "+998" while
-// empty), so it plugs straight into the helpers in phoneAccount.js.
+// Phone field for Uzbekistan: the +998 prefix is a fixed label, only the rest
+// of the number is typed — grouped as you type ("90 123 45 67"). `value` /
+// `onChange` carry the full number ("+998901234567", or "+998" while empty),
+// so it plugs straight into the helpers in phoneAccount.js. A pasted number
+// with the +998 / 998 prefix is accepted too.
 export default function PhoneInput({ value, onChange, disabled, autoFocus, id, ariaLabel }) {
-  const { country, local } = splitPhone(value)
+  const country = DEFAULT_COUNTRY
+  const { local } = splitPhone(value)
 
   const typed = (e) => {
-    const text = e.target.value
-    // A pasted full number ("+7 912…", "998 90…") picks its own country.
-    if (text.trim().startsWith('+') || text.replace(/\D/g, '').length > country.length) {
-      const next = splitPhone(text)
-      // "8 912…" style national prefix for +7.
-      const local2 = next.country.code === '7' && /^8\d{10}$/.test(text.replace(/\D/g, '')) ? text.replace(/\D/g, '').slice(1) : next.local
-      onChange(joinPhone(next.country, local2.slice(0, next.country.length)))
-      return
-    }
-    onChange(joinPhone(country, text.replace(/\D/g, '').slice(0, country.length)))
-  }
-
-  const pickCountry = (code) => {
-    const next = COUNTRIES.find((c) => c.code === code) || country
-    onChange(joinPhone(next, local.slice(0, next.length)))
+    let digits = e.target.value.replace(/\D/g, '')
+    if (digits.length > country.length && digits.startsWith(country.code)) digits = digits.slice(country.code.length)
+    onChange(joinPhone(country, digits.slice(0, country.length)))
   }
 
   return (
     <div className={'phone-input' + (disabled ? ' phone-input--disabled' : '')}>
-      <label className="phone-input__country">
-        <span>{country.flag} +{country.code}</span>
-        <i aria-hidden="true">▾</i>
-        <select value={country.code} onChange={(e) => pickCountry(e.target.value)} disabled={disabled} aria-label={ariaLabel}>
-          {COUNTRIES.map((c) => (
-            <option key={c.code} value={c.code}>{c.flag} {c.name} +{c.code}</option>
-          ))}
-        </select>
-      </label>
+      <span className="phone-input__country">{country.flag} +{country.code}</span>
       <input
         id={id}
         type="tel"
