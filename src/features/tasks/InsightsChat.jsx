@@ -44,12 +44,11 @@ function readableBubbleTextColor(hex) {
   return luminance > 0.6 ? '#2a2110' : '#ffffff'
 }
 
-// Web version's neon skin (styles/neon.css): a bubble is drawn from one hue
-// (--bh) as a dark tinted fill, bright text and a glowing rim. A custom color
-// is pushed to a saturated, mid-light version of its own hue first, so soft
-// pastels still read as neon. The stored color itself is left untouched — it
-// is shared with the Mac app.
-const isNeonSkin = () => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'neon'
+// Dark theme (styles/neon.css): a bubble is drawn from one hue (--bh) as a dark
+// tinted fill, bright text and a glowing rim. A custom color is pushed to a
+// saturated, mid-light version of its own hue first, so soft pastels still
+// read as neon. The stored color itself is left untouched, and the light theme
+// keeps using it as the bubble's own background.
 function neonHue(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
   if (!m) return hex
@@ -65,7 +64,7 @@ function neonHue(hex) {
 }
 function bubbleColorStyle(color) {
   if (!color) return null
-  return isNeonSkin() ? { '--bh': neonHue(color) } : { background: color, color: readableBubbleTextColor(color) }
+  return { background: color, color: readableBubbleTextColor(color), '--bh': neonHue(color) }
 }
 import EmptyStateCelebration from './EmptyStateCelebration'
 

@@ -78,24 +78,26 @@ function Layout() {
   )
 }
 
+// Light stays the regular white look. Dark is the neon look (styles/neon.css):
+// data-theme="dark" keeps every existing dark rule working, data-skin="neon"
+// adds the neon palette on top. "System" behaves as it always did (light).
+// The resolved choice is cached so index.html can apply it before React loads.
 function useAppliedTheme() {
   const theme = useSettingsStore((s) => s.theme)
 
   useEffect(() => {
     const root = document.documentElement
-    // The web version always wears the neon (dark) skin — see styles/neon.css.
-    // The theme setting is synced with the Mac app, so it is left untouched
-    // and only applies in the desktop build.
-    if (!window.__TAURI_INTERNALS__) {
+    const dark = theme === 'dark'
+    if (dark) {
       root.setAttribute('data-theme', 'dark')
       root.setAttribute('data-skin', 'neon')
-      return
-    }
-    if (theme === 'system') {
-      root.removeAttribute('data-theme')
     } else {
-      root.setAttribute('data-theme', theme)
+      if (theme === 'light') root.setAttribute('data-theme', 'light')
+      else root.removeAttribute('data-theme')
+      root.removeAttribute('data-skin')
     }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#070a10' : '#fbfbfd')
+    try { localStorage.setItem('arkad:dark', dark ? '1' : '0') } catch { /* private mode */ }
   }, [theme])
 }
 

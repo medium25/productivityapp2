@@ -1,13 +1,24 @@
 <!doctype html>
-<html lang="ru" data-theme="dark" data-skin="neon" style="background:#070a10">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#070a10" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#fbfbfd" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Apply the last theme before the app loads (no light/dark flash).
+      try {
+        if (localStorage.getItem('arkad:dark') === '1') {
+          var r = document.documentElement
+          r.setAttribute('data-theme', 'dark')
+          r.setAttribute('data-skin', 'neon')
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#070a10')
+        }
+      } catch (e) {}
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="ARKAD" />

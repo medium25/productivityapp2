@@ -255,8 +255,8 @@
 :root[data-skin='neon'] .insights-chat .insights-chat__bubble--reminder { --bh: #2be0d8; }
 :root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media),
 :root[data-skin='neon'] .insights-chat__color-preview-bubble {
-  background: color-mix(in srgb, var(--bh) 15%, #0b1018);
-  color: color-mix(in srgb, var(--bh) 40%, #ffffff);
+  background: color-mix(in srgb, var(--bh) 15%, #0b1018) !important;
+  color: color-mix(in srgb, var(--bh) 40%, #ffffff) !important;
   border: 1px solid color-mix(in srgb, var(--bh) 50%, transparent);
   box-shadow: 0 0 18px color-mix(in srgb, var(--bh) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
@@ -278,8 +278,8 @@
 /* "Мой день" rows (variant A, no side bar): saturated tinted fill in the task's
    hue (--h, set inline from UpcomingPage), light text, soft glow. */
 :root[data-skin='neon'] .timed-row__body {
-  background: color-mix(in srgb, var(--h, #3d8bff) 30%, #0b1018);
-  color: color-mix(in srgb, var(--h, #3d8bff) 25%, #ffffff);
+  background: color-mix(in srgb, var(--h, #3d8bff) 30%, #0b1018) !important;
+  color: color-mix(in srgb, var(--h, #3d8bff) 25%, #ffffff) !important;
   border-radius: 14px;
   box-shadow: 0 0 18px color-mix(in srgb, var(--h, #3d8bff) 24%, transparent);
 }
@@ -287,6 +287,8 @@
 :root[data-skin='neon'] .timed-row__body .cycle-sign--on { background: color-mix(in srgb, var(--h, #3d8bff) 35%, #0b1018); }
 /* Finished: back to the dashed empty slot, no glow. */
 :root[data-skin='neon'] .timed-row--done .timed-row__body {
+  background: transparent !important;
+  color: var(--text-muted) !important;
   box-shadow: none;
   border-radius: 14px;
 }

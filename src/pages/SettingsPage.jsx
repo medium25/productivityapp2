@@ -108,14 +108,13 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* The web version always uses the neon skin — theme only matters in the Mac app. */}
-      {window.__TAURI_INTERNALS__ && <div className="settings-block">
+      <div className="settings-block">
         <h2>{t('settings.theme')}</h2>
         <div className="settings-row">
           <span>{t('settings.theme')}</span>
           <SegmentedControl items={themeItems} value={theme} onChange={setTheme} ariaLabel={t('settings.theme')} />
         </div>
-      </div>}
+      </div>
 
       <div className="settings-block">
         <h2>{t('settings.visibleSections')}</h2>

@@ -31,33 +31,18 @@ const fmtTime = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${St
 
 // Today's own calendar-day palette (per user request — "каждая задача
 // разного цвета") — cycles by row index, a fill+border+text triple per
-// task so each block reads distinctly against the hour ruler.
+// task so each block reads distinctly against the hour ruler. `hue` is the
+// bright colour the dark theme (styles/neon.css) draws the same row with.
 const CALENDAR_PALETTE = [
-  { bg: '#e6ebfd', border: '#4c5fd6', text: '#3547b8' },
-  { bg: '#e9f7ee', border: '#178a3f', text: '#12692f' },
-  { bg: '#fdeee0', border: '#c96a12', text: '#a0560e' },
-  { bg: '#fde8ea', border: '#c92a2a', text: '#a12121' },
-  { bg: '#f1e8fd', border: '#7c4dff', text: '#5e35c9' },
-  { bg: '#fde8f3', border: '#d4537e', text: '#ab3f63' },
-  { bg: '#e3f6f6', border: '#0f6e7a', text: '#0b535c' },
-  { bg: '#fdf6e0', border: '#c9a812', text: '#9e850e' },
+  { bg: '#e6ebfd', border: '#4c5fd6', text: '#3547b8', hue: '#3d8bff' },
+  { bg: '#e9f7ee', border: '#178a3f', text: '#12692f', hue: '#2bff88' },
+  { bg: '#fdeee0', border: '#c96a12', text: '#a0560e', hue: '#ffb84a' },
+  { bg: '#fde8ea', border: '#c92a2a', text: '#a12121', hue: '#ff4d5e' },
+  { bg: '#f1e8fd', border: '#7c4dff', text: '#5e35c9', hue: '#9d7bff' },
+  { bg: '#fde8f3', border: '#d4537e', text: '#ab3f63', hue: '#ff5fa8' },
+  { bg: '#e3f6f6', border: '#0f6e7a', text: '#0b535c', hue: '#2be0d8' },
+  { bg: '#fdf6e0', border: '#c9a812', text: '#9e850e', hue: '#ffe14a' },
 ]
-// Same hues for the web version's neon skin (styles/neon.css): a row is drawn
-// from one bright hue (--h) as a saturated tinted fill with a soft glow and
-// light text, instead of a pastel fill with dark text.
-const NEON_CALENDAR_PALETTE = [
-  { border: '#3d8bff' },
-  { border: '#2bff88' },
-  { border: '#ffb84a' },
-  { border: '#ff4d5e' },
-  { border: '#9d7bff' },
-  { border: '#ff5fa8' },
-  { border: '#2be0d8' },
-  { border: '#ffe14a' },
-]
-const isNeonSkin = () => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'neon'
-const calendarPalette = () =>
-  (isNeonSkin() ? NEON_CALENDAR_PALETTE : CALENDAR_PALETTE)
 const PX_PER_MIN = 1.4
 
 // Sequential schedule: each task starts right when the previous one ends,
@@ -229,8 +214,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   const hasMinutes = !!task.estimateMinutes
   const start = dragPreview?.edge === 'start' ? dragPreview.value : slot.start
   const end = dragPreview?.edge === 'end' ? dragPreview.value : slot.end
-  const palette = calendarPalette()
-  const color = palette[(number - 1) % palette.length]
+  const color = CALENDAR_PALETTE[(number - 1) % CALENDAR_PALETTE.length]
 
   const startHandle = useTimeDrag(
     (delta) => setDragPreview({ edge: 'start', value: Math.max(0, Math.min(slot.end - 5, slot.start + delta)) }),
@@ -290,7 +274,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         </span>
       </span>
       )}
-      <span className="timed-row__body" style={isNeonSkin() ? { '--h': color.border } : { background: color.bg, color: color.text }}>
+      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue }}>
         <DragGrip />
         <span className="timed-row__title">
           <span className="timed-row__num">{number}.</span>

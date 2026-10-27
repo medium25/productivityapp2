@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Web version wears the neon skin (src/styles/neon.css). Many dark-mode rules
-// in index.css hard-code the desktop app's graphite greys instead of using
-// tokens; rather than editing index.css (it is kept in step with the Mac app
-// via patches), those exact greys are swapped for the neon palette at build
-// time. The Tauri build keeps the original colours.
+// The dark theme is the neon look (src/styles/neon.css). Many dark-mode rules in
+// index.css hard-code the old graphite greys instead of using tokens, so for
+// every rule that has one, a copy scoped to :root[data-skin='neon'] is added
+// with those greys swapped for the neon palette. Only the copies change colour:
+// the original rules — and so the light theme — are left exactly as they were.
 const NEON_PALETTE = {
   '#1c1d21': '#070a10',
   '#1f2024': '#0a0e15',
@@ -25,18 +25,39 @@ const NEON_PALETTE = {
   '#6fe0a0': '#2bff88',
   '#ff6595': '#ff4d5e',
 }
-const neonPalette = () => ({
-  name: 'neon-palette',
-  enforce: 'pre',
-  transform(code, id) {
-    if (process.env.TAURI_BUILD || !/[\\/]src[\\/]styles[\\/]index\.css$/.test(id.split('?')[0])) return null
-    return code.replace(/#[0-9a-fA-F]{6}\b/g, (hex) => NEON_PALETTE[hex.toLowerCase()] || hex)
+const HEX = /#[0-9a-fA-F]{6}\b/g
+const swapColors = (value) => value.replace(HEX, (hex) => NEON_PALETTE[hex.toLowerCase()] || hex)
+const neonSkin = () => ({
+  postcssPlugin: 'neon-skin',
+  Once(root) {
+    if (!/styles[\\/]index\.css$/.test(root.source?.input?.file || '')) return
+    const hits = []
+    root.walkRules((rule) => {
+      for (let p = rule.parent; p && p.type !== 'root'; p = p.parent) {
+        if (p.type === 'atrule' && /keyframes$/i.test(p.name)) return
+      }
+      let hit = false
+      rule.each((node) => { if (node.type === 'decl' && swapColors(node.value) !== node.value) hit = true })
+      if (hit) hits.push(rule)
+    })
+    for (const rule of hits) {
+      const copy = rule.clone()
+      copy.selectors = rule.selectors.map((sel) => (sel.startsWith(':root') ? sel.replace(':root', ":root[data-skin='neon']") : `:root[data-skin='neon'] ${sel}`))
+      copy.each((node) => {
+        if (node.type !== 'decl') return node.remove()
+        const value = swapColors(node.value)
+        if (value === node.value) node.remove()
+        else node.value = value
+      })
+      rule.after(copy)
+    }
   },
 })
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
-  plugins: [react(), neonPalette()],
+  plugins: [react()],
+  css: { postcss: { plugins: [neonSkin()] } },
   // Project page on GitHub Pages is served under /productivityapp2/, not
   // the domain root — asset URLs need this prefix or they 404. Local dev
   // keeps the root path so the preview server is unaffected. The Tauri
