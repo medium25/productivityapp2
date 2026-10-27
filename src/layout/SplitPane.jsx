@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer } from 'react'
+import { Suspense, useCallback, useMemo, useReducer } from 'react'
 import { Routes, parsePath, UNSAFE_NavigationContext as NavigationContext, UNSAFE_LocationContext as LocationContext, UNSAFE_RouteContext as RouteContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SECTIONS, getSectionTitle } from '../constants/sections'
@@ -120,7 +120,7 @@ export default function SplitPane() {
           <NavigationContext.Provider value={navContext}>
             <LocationContext.Provider value={locContext}>
               <RouteContext.Provider value={ROOT_ROUTE_CONTEXT}>
-                <Routes>{pageRoutes}</Routes>
+                <Suspense fallback={null}><Routes>{pageRoutes}</Routes></Suspense>
               </RouteContext.Provider>
             </LocationContext.Provider>
           </NavigationContext.Provider>

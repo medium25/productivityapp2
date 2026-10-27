@@ -1,3 +1,4 @@
+import { invalidateAppDataCache } from '../firebase/firestoreStorage'
 import { useSettingsStore } from './useSettingsStore'
 import { useFocusStore } from './useFocusStore'
 import { useFocusHistoryStore } from './useFocusHistoryStore'
@@ -51,6 +52,7 @@ const PERSISTED_STORES = [
 ]
 
 export function rehydrateAllPersistedStores() {
+  invalidateAppDataCache()
   PERSISTED_STORES.forEach((store) => store.persist.rehydrate())
 }
 
@@ -59,6 +61,7 @@ export function rehydrateAllPersistedStores() {
 // The focus timer is skipped: it runs a live countdown/sound in this tab and
 // this tab's copy is the one being written, not a stale one.
 export function refreshPersistedStores() {
+  invalidateAppDataCache()
   return Promise.all(
     PERSISTED_STORES.filter((store) => store !== useFocusTimerStore).map((store) => store.persist.rehydrate()),
   )

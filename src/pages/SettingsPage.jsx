@@ -8,10 +8,6 @@ import { accountLabel } from '../features/auth/phoneAccount'
 import LoginSettings from '../features/auth/LoginSettings'
 import SegmentedControl from '../layout/SegmentedControl'
 import { IconSun, IconMoon, IconMonitor, IconChevronDown, IconFocus, IconCheckCircle, IconTrash, IconArrowRight } from '../icons/Icons'
-import { collectSectionData } from '../export/collectSectionData'
-import { exportToPdf } from '../export/exportToPdf'
-import { exportToWord } from '../export/exportToWord'
-import { exportToExcel } from '../export/exportToExcel'
 import FriendsPanel from '../features/social/FriendsPanel'
 import RingtonePicker from '../features/focus/RingtonePicker'
 import TelegramLinkSetting from '../features/telegram/TelegramLinkSetting'
@@ -61,7 +57,15 @@ export default function SettingsPage() {
     { value: 'dark', content: <IconMoon size={16} />, ariaLabel: t('settings.themeDark') },
   ]
 
-  const runExport = async (section, fn) => {
+  // The export libraries (docx, xlsx, jsPDF) are large and only needed here, so
+  // each one is fetched the first time its button is pressed, not at app start.
+  const EXPORTERS = {
+    pdf: async () => (await import('../export/exportToPdf')).exportToPdf,
+    word: async () => (await import('../export/exportToWord')).exportToWord,
+    excel: async () => (await import('../export/exportToExcel')).exportToExcel,
+  }
+  const runExport = async (section, kind) => {
+    const [{ collectSectionData }, fn] = await Promise.all([import('../export/collectSectionData'), EXPORTERS[kind]()])
     const data = collectSectionData(section, t)
     await fn(data, t)
     setExportMessage(t('export.success'))
@@ -175,9 +179,9 @@ export default function SettingsPage() {
                   <div className="settings-row">
                     <span>{t('settings.exportThisSection')}</span>
                     <div className="export-row__actions">
-                      <button type="button" onClick={() => runExport(s, exportToPdf)}>PDF</button>
-                      <button type="button" onClick={() => runExport(s, exportToWord)}>Word</button>
-                      <button type="button" onClick={() => runExport(s, exportToExcel)}>Excel</button>
+                      <button type="button" onClick={() => runExport(s, 'pdf')}>PDF</button>
+                      <button type="button" onClick={() => runExport(s, 'word')}>Word</button>
+                      <button type="button" onClick={() => runExport(s, 'excel')}>Excel</button>
                     </div>
                   </div>
                 </div>

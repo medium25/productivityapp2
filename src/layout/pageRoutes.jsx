@@ -1,26 +1,58 @@
 import { Route } from 'react-router-dom'
-import FocusPage from '../pages/FocusPage'
-import MyFocusPage from '../pages/MyFocusPage'
-import SportPage from '../pages/SportPage'
-import SportDayPage from '../pages/SportDayPage'
-import UpcomingPage from '../pages/UpcomingPage'
-import SometimePage from '../pages/SometimePage'
-import HabitsPage from '../pages/HabitsPage'
-import InboxPage from '../pages/InboxPage'
-import InsightsPage from '../pages/InsightsPage'
-import ReferenceInfoPage from '../pages/ReferenceInfoPage'
-import QaydlarHubPage from '../pages/QaydlarHubPage'
-import QaydlarPage from '../pages/QaydlarPage'
-import PrinciplesPage from '../pages/PrinciplesPage'
-import GtdBoardPage from '../pages/GtdBoardPage'
-import ProjectsPage from '../pages/ProjectsPage'
-import QaydlarNotePage from '../pages/QaydlarNotePage'
-import FinancePage from '../pages/FinancePage'
-import ProjectFlowPage from '../pages/ProjectFlowPage'
-import CompletedPage from '../pages/CompletedPage'
-import TrashPage from '../pages/TrashPage'
-import SettingsPage from '../pages/SettingsPage'
-import TokovininPage from '../pages/TokovininPage'
+import { lazy } from 'react'
+
+// Pages load on demand (one small chunk each) so the first screen doesn't pay for
+// every section; preloadPages() fetches the rest in the background once idle.
+const loaders = {
+  FocusPage: () => import('../pages/FocusPage'),
+  MyFocusPage: () => import('../pages/MyFocusPage'),
+  SportPage: () => import('../pages/SportPage'),
+  SportDayPage: () => import('../pages/SportDayPage'),
+  UpcomingPage: () => import('../pages/UpcomingPage'),
+  SometimePage: () => import('../pages/SometimePage'),
+  HabitsPage: () => import('../pages/HabitsPage'),
+  InboxPage: () => import('../pages/InboxPage'),
+  InsightsPage: () => import('../pages/InsightsPage'),
+  ReferenceInfoPage: () => import('../pages/ReferenceInfoPage'),
+  QaydlarHubPage: () => import('../pages/QaydlarHubPage'),
+  QaydlarPage: () => import('../pages/QaydlarPage'),
+  PrinciplesPage: () => import('../pages/PrinciplesPage'),
+  GtdBoardPage: () => import('../pages/GtdBoardPage'),
+  ProjectsPage: () => import('../pages/ProjectsPage'),
+  QaydlarNotePage: () => import('../pages/QaydlarNotePage'),
+  FinancePage: () => import('../pages/FinancePage'),
+  ProjectFlowPage: () => import('../pages/ProjectFlowPage'),
+  CompletedPage: () => import('../pages/CompletedPage'),
+  TrashPage: () => import('../pages/TrashPage'),
+  SettingsPage: () => import('../pages/SettingsPage'),
+  TokovininPage: () => import('../pages/TokovininPage'),
+}
+const FocusPage = lazy(loaders.FocusPage)
+const MyFocusPage = lazy(loaders.MyFocusPage)
+const SportPage = lazy(loaders.SportPage)
+const SportDayPage = lazy(loaders.SportDayPage)
+const UpcomingPage = lazy(loaders.UpcomingPage)
+const SometimePage = lazy(loaders.SometimePage)
+const HabitsPage = lazy(loaders.HabitsPage)
+const InboxPage = lazy(loaders.InboxPage)
+const InsightsPage = lazy(loaders.InsightsPage)
+const ReferenceInfoPage = lazy(loaders.ReferenceInfoPage)
+const QaydlarHubPage = lazy(loaders.QaydlarHubPage)
+const QaydlarPage = lazy(loaders.QaydlarPage)
+const PrinciplesPage = lazy(loaders.PrinciplesPage)
+const GtdBoardPage = lazy(loaders.GtdBoardPage)
+const ProjectsPage = lazy(loaders.ProjectsPage)
+const QaydlarNotePage = lazy(loaders.QaydlarNotePage)
+const FinancePage = lazy(loaders.FinancePage)
+const ProjectFlowPage = lazy(loaders.ProjectFlowPage)
+const CompletedPage = lazy(loaders.CompletedPage)
+const TrashPage = lazy(loaders.TrashPage)
+const SettingsPage = lazy(loaders.SettingsPage)
+const TokovininPage = lazy(loaders.TokovininPage)
+
+export function preloadPages() {
+  Object.values(loaders).forEach((load) => load().catch(() => {}))
+}
 
 // The app's page routes, shared by the main router (App.jsx) and the left
 // half of the split window (SplitPane.jsx), which renders the same pages

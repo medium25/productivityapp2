@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useTasksStore } from './store/useTasksStore'
 import { LEGACY_ROUTINE_TITLES } from './features/tasks/dailyRoutineTasks'
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
-import { pageRoutes } from './layout/pageRoutes'
+import { pageRoutes, preloadPages } from './layout/pageRoutes'
 import { useTranslation } from 'react-i18next'
 import Sidebar from './layout/Sidebar'
 import TopBar from './layout/TopBar'
@@ -46,6 +46,17 @@ function Layout() {
       document.removeEventListener('visibilitychange', recheck)
     }
   }, [])
+  // Fetch the remaining pages in the background once the first screen is up, so
+  // tapping a section is instant even though pages are loaded on demand.
+  useEffect(() => {
+    const run = () => preloadPages()
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(run, { timeout: 4000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = setTimeout(run, 2000)
+    return () => clearTimeout(id)
+  }, [])
   useEffect(() => {
     if (!tasks.some((tk) => LEGACY_ROUTINE_TITLES[tk.title])) return
     useTasksStore.setState((state) => ({
@@ -63,12 +74,14 @@ function Layout() {
             <div className="split-col"><SplitPane /></div>
             <div className="split-col">
               <SplitPaneBar title={rightTitle} />
-              <div className="page-content"><Outlet /></div>
+              <div className="page-content"><Suspense fallback={null}><Outlet /></Suspense></div>
             </div>
           </div>
         ) : (
           <div className="page-content">
-            <Outlet />
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
           </div>
         )}
       </div>
