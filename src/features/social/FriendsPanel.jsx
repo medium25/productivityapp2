@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 import { useFriendsStore } from '../../store/useFriendsStore'
 import { useCompetitionsStore } from '../../store/useCompetitionsStore'
 import { IconUserPlus } from '../../icons/Icons'
+import { accountLabel, toAccountEmail } from '../auth/phoneAccount'
 
 export default function FriendsPanel() {
   const { t } = useTranslation()
@@ -44,7 +45,7 @@ export default function FriendsPanel() {
     e.preventDefault()
     setMessage('')
     try {
-      const result = await sendFriendRequest(user.uid, user.email, email)
+      const result = await sendFriendRequest(user.uid, user.email, toAccountEmail(email))
       if (result.ok) {
         setMessage(t('social.requestSent'))
         setEmail('')
@@ -60,7 +61,9 @@ export default function FriendsPanel() {
     <div>
       <form className="friends-add" onSubmit={submit}>
         <input
-          type="email"
+          type="text"
+          inputMode="email"
+          autoCapitalize="none"
           className="focus-create__input"
           placeholder={t('social.emailPlaceholder')}
           value={email}
@@ -75,7 +78,7 @@ export default function FriendsPanel() {
 
       {activeCompetition && (
         <div className="competition-active">
-          <p className="competition-active__title">{t('social.competitionActive', { email: opponentEmail })}</p>
+          <p className="competition-active__title">{t('social.competitionActive', { email: accountLabel(opponentEmail) })}</p>
           <div className="competition-active__row">
             <span>{t('social.myHours')}: {myHours.toFixed(1)}</span>
             <span>{t('social.opponentHours')}: {opponentHours.toFixed(1)}</span>
@@ -88,7 +91,7 @@ export default function FriendsPanel() {
           <p className="friends-section__label">{t('social.incomingRequests')}</p>
           {incoming.map((r) => (
             <div className="settings-row" key={r.id}>
-              <span>{r.fromEmail}</span>
+              <span>{accountLabel(r.fromEmail)}</span>
               <div className="export-row__actions">
                 <button type="button" onClick={() => acceptFriendRequest(r.id)}>{t('social.accept')}</button>
                 <button type="button" onClick={() => declineFriendRequest(r.id)}>{t('social.decline')}</button>
@@ -103,7 +106,7 @@ export default function FriendsPanel() {
           <p className="friends-section__label">{t('social.outgoingRequests')}</p>
           {outgoing.map((r) => (
             <div className="settings-row" key={r.id}>
-              <span>{r.toEmail}</span>
+              <span>{accountLabel(r.toEmail)}</span>
               <button type="button" onClick={() => declineFriendRequest(r.id)}>{t('social.cancel')}</button>
             </div>
           ))}
@@ -117,7 +120,7 @@ export default function FriendsPanel() {
         ) : (
           friends.map((f) => (
             <div className="settings-row" key={f.uid}>
-              <span>{f.email}</span>
+              <span>{accountLabel(f.email)}</span>
               <button
                 type="button"
                 disabled={!!activeCompetition}

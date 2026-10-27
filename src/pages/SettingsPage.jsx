@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { SECTIONS, getSectionTitle } from '../constants/sections'
 import { useSettingsStore } from '../store/useSettingsStore'
 import { useAuthStore } from '../store/useAuthStore'
+import { accountLabel } from '../features/auth/phoneAccount'
 import SegmentedControl from '../layout/SegmentedControl'
 import { IconSun, IconMoon, IconMonitor, IconChevronDown, IconFocus, IconCheckCircle, IconTrash, IconArrowRight } from '../icons/Icons'
 import { collectSectionData } from '../export/collectSectionData'
@@ -92,7 +93,7 @@ export default function SettingsPage() {
       <div className="settings-block">
         <h2>{t('settings.account')}</h2>
         <div className="settings-row">
-          <span>{user?.email || user?.phoneNumber}</span>
+          <span>{accountLabel(user?.email) || user?.phoneNumber}</span>
           <button type="button" onClick={signOutUser}>{t('auth.signOut')}</button>
         </div>
       </div>
