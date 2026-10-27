@@ -263,3 +263,9 @@
 :root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) .insights-chat__meta { color: color-mix(in srgb, var(--bh) 55%, #7b8aa3); opacity: 1; }
 :root[data-skin='neon'] .insights-chat__bubble:not(.insights-chat__bubble--media) a { color: color-mix(in srgb, var(--bh) 70%, #ffffff); }
 :root[data-skin='neon'] .insights-chat__bubble--media { background: var(--panel2); border: 1px solid var(--line); }
+
+/* Phone field + sign-in settings. */
+:root[data-skin='neon'] .phone-input__country { background: rgba(255, 255, 255, 0.03); border-color: var(--line); border-radius: 12px; }
+:root[data-skin='neon'] .phone-input__field { letter-spacing: 0.04em; }
+:root[data-skin='neon'] .login-settings__save { border-radius: 16px; min-height: 50px; background: var(--neon-b); color: #fff; font-weight: 800; box-shadow: 0 8px 24px rgba(61, 139, 255, 0.28); }
+:root[data-skin='neon'] .login-settings__note--ok { color: var(--neon-g); }

@@ -10210,3 +10210,51 @@ body.kb-open .install-hint { display: none; }
 .phone-link__form { gap: 8px; }
 .phone-link__form input { flex: 1; min-width: 0; }
 .phone-link .settings-hint { margin: 6px 0 0; }
+
+/* Phone field: fixed country chip + grouped digits. */
+.phone-input { display: flex; gap: 8px; align-items: stretch; width: 100%; }
+.phone-input__country {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--control-bg);
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.phone-input__country i { font-style: normal; font-size: 0.75rem; color: var(--text-muted); }
+.phone-input__country select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.phone-input__field { flex: 1; min-width: 0; font-size: 1.05rem; letter-spacing: 0.02em; }
+.phone-input--disabled { opacity: 0.6; }
+
+/* Settings → Account → sign-in by number. */
+.login-settings { display: flex; flex-direction: column; gap: 8px; padding: 14px 0 4px; }
+.login-settings__title { margin: 0 0 2px; font-size: 0.95rem; }
+.login-settings__label { margin-top: 6px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.login-settings .segmented { align-self: flex-start; }
+.login-settings .settings-hint { margin: 0; }
+.login-settings__linked { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.login-settings__pw { position: relative; display: flex; }
+.login-settings__pw input { flex: 1; padding-right: 44px; }
+.login-settings__eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; background: none; cursor: pointer; font-size: 1.05rem; }
+.login-settings__save {
+  margin-top: 6px;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.login-settings__save:disabled { opacity: 0.5; }
+.login-settings__note { margin: 2px 0 0; font-size: 0.86rem; }
+.login-settings__note--ok { color: var(--success); }
+.login-settings__note--err { color: var(--danger); }

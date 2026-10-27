@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a10">
+<title>ARKAD — варианты окна входа</title>
+<style>
+:root{--bg:#070a10;--panel:#0e131c;--panel2:#111826;--line:#1b2433;--line2:#2c3a52;--tx:#e8eef7;--mute:#7b8aa3;--g:#2bff88;--b:#3d8bff;--r:#ff4d5e}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(900px 500px at 85% -10%,#12304a55,transparent),radial-gradient(700px 420px at -5% 10%,#0f3a2a44,transparent),var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,'SF Pro Display',Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;padding:20px 14px 60px}
+h1{font-size:22px;font-weight:800;letter-spacing:-.03em;text-align:center}
+.lead{color:var(--mute);text-align:center;margin:6px auto 22px;max-width:520px;font-size:14px}
+.grid{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.col{width:340px;max-width:100%}
+.tag{display:flex;gap:10px;align-items:baseline;margin:0 4px 10px}
+.tag b{font-size:34px;font-weight:800;color:var(--g);text-shadow:0 0 22px #2bff8855;line-height:1}
+.tag span{font-weight:700}
+.tag small{display:block;color:var(--mute);font-weight:500;font-size:13px;margin-top:2px}
+.screen{background:#070a10;border:1px solid var(--line);border-radius:34px;padding:34px 18px 26px;min-height:560px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 20px 60px #000a}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:24px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
+.card h2{text-align:center;font-size:24px;font-weight:800;letter-spacing:-.03em}
+.sub{text-align:center;color:var(--mute);font-size:13.5px;margin:-6px 0 2px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;min-width:0;padding:9px 4px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--mute);font:600 13.5px inherit;font-family:inherit;white-space:nowrap}
+.seg button.on{background:var(--g);border-color:var(--g);color:#04120a;font-weight:800;box-shadow:0 0 22px #2bff8844}
+.phone{display:flex;gap:8px}
+.chip{flex:none;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:#ffffff08;font-weight:700;white-space:nowrap}
+.chip i{font-style:normal;color:var(--mute);font-size:11px}
+.inp{width:100%;background:#ffffff08;border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--tx);font:16px inherit;font-family:inherit;outline:0}
+.inp:focus{border-color:var(--b);box-shadow:0 0 0 3px #3d8bff33}
+.inp::placeholder{color:#3b4a63}
+.phone .inp{font-size:17px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.pw{position:relative}.pw .inp{padding-right:46px}.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;background:none;font-size:17px;color:var(--mute)}
+.help{color:var(--mute);font-size:12.5px;margin:-4px 2px 0}
+.help b{color:var(--g);font-weight:600}
+.btn{min-height:50px;border:0;border-radius:16px;background:var(--b);color:#fff;font:800 16px inherit;font-family:inherit;box-shadow:0 8px 24px #3d8bff4d;width:100%}
+.btn:active{transform:scale(.98)}
+.link{border:0;background:none;color:var(--b);font:600 13.5px inherit;font-family:inherit;padding:6px;text-align:center}
+.mute{color:var(--mute);font-size:13px;text-align:center}
+/* B */
+.big{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:18px;background:#ffffff08;padding:6px 14px}
+.big:focus-within{border-color:var(--b);box-shadow:0 0 0 3px #3d8bff33}
+.big .pre{font-size:22px;font-weight:800;color:var(--mute);white-space:nowrap;letter-spacing:-.02em}
+.big input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--tx);font:800 26px inherit;font-family:inherit;letter-spacing:.02em;padding:10px 0;font-variant-numeric:tabular-nums}
+.big input::placeholder{color:#2c3a52}
+.who{display:flex;justify-content:space-between;align-items:center;background:#ffffff08;border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:700}
+.who button{border:0;background:none;color:var(--b);font:600 13px inherit;font-family:inherit}
+.note{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.4}
+.note.warn{background:#ffb84a14;color:#ffd58a}.note.new{background:#2bff8812;color:#8fffc0}
+.demo{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.demo button{padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--mute);font:600 12px inherit;font-family:inherit}
+.demo button.on{border-color:var(--b);color:#9dc0ff}
+/* C */
+.disp{text-align:center;padding:8px 0 2px}
+.disp .lbl{color:var(--mute);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.disp .num{font-size:25px;font-weight:800;letter-spacing:-.01em;margin-top:6px;font-variant-numeric:tabular-nums;min-height:38px;white-space:nowrap}
+.disp .num .pre{color:var(--mute)}.disp .num .ph{color:#2c3a52}
+.disp .num .caret{display:inline-block;width:2px;height:28px;background:var(--b);vertical-align:-4px;margin-left:2px;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.keys button{height:54px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));color:var(--tx);font:700 22px inherit;font-family:inherit}
+.keys button:active{background:#16213a;border-color:var(--b);transform:scale(.96)}
+.keys button.fn{font-size:16px;color:var(--mute)}
+.keys button.go{background:var(--g);border-color:var(--g);color:#04120a;font-size:15px;font-weight:800}
+.row2{display:flex;justify-content:space-between}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<h1>Окно входа — 3 варианта</h1>
+<p class="lead">Попробуй вводить номер: <b>+998</b> уже стоит, печатаешь только остальное, пробелы расставляются сами. Пароль по умолчанию — твой номер, его можно не вводить.</p>
+
+<div class="grid">
+
+<!-- ================= A ================= -->
+<div class="col">
+  <div class="tag"><b>A</b><span>Префикс-чип + поле<small>Привычная форма: «+998» отдельной кнопкой, пароль можно пропустить</small></span></div>
+  <div class="screen"><div class="card" id="A">
+    <h2>ARKAD</h2>
+    <p class="sub">Вход и регистрация по номеру телефона</p>
+    <div class="seg"><button class="on" data-m="in">Войти</button><button data-m="up">Зарегистрироваться</button></div>
+    <div class="phone"><div class="chip">🇺🇿 +998 <i>▾</i></div><input class="inp" inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67"></div>
+    <div class="pw"><input class="inp" type="password" placeholder="Пароль (можно пустой)"><button class="eye" type="button">👁</button></div>
+    <p class="help">Пустое поле = пароль <b>совпадает с номером</b></p>
+    <button class="btn">Войти</button>
+    <button class="link">Есть старый аккаунт с почтой? Войти по почте</button>
+  </div></div>
+</div>
+
+<!-- ================= B ================= -->
+<div class="col">
+  <div class="tag"><b>B</b><span>Один шаг, остальное по необходимости<small>Вводишь только номер — «Продолжить» сам решает: войти, спросить пароль или создать аккаунт</small></span></div>
+  <div class="screen"><div class="card" id="B">
+    <h2>ARKAD</h2>
+    <div id="B1">
+      <p class="sub" style="margin-bottom:14px">Введи номер телефона</p>
+      <div class="big"><span class="pre">🇺🇿 +998</span><input inputmode="numeric" autocomplete="tel-national" placeholder="90 123 45 67"></div>
+      <p class="help" style="margin-top:10px">Если пароль не менялся — войдёшь сразу. Нового номера ещё нет — предложим создать аккаунт.</p>
+      <button class="btn" style="margin-top:14px">Продолжить</button>
+    </div>
+    <div id="B2" class="hide">
+      <div class="who"><span class="n">+998 90 123 45 67</span><button type="button">Изменить</button></div>
+      <div class="note warn" style="margin:12px 0">Для этого номера задан свой пароль. Введи его.</div>
+      <div class="pw"><input class="inp" type="password" placeholder="Пароль"><button class="eye" type="button">👁</button></div>
+      <button class="btn" style="margin-top:12px">Войти</button>
+    </div>
+    <div id="B3" class="hide">
+      <div class="who"><span class="n">+998 90 123 45 67</span><button type="button">Изменить</button></div>
+      <div class="note new" style="margin:12px 0">Этот номер ещё не зарегистрирован. Создать аккаунт? Пароль будет — твой номер, его можно сменить в настройках.</div>
+      <button class="btn">Создать аккаунт</button>
+      <button class="link" style="width:100%">Задать свой пароль</button>
+    </div>
+    <button class="link" id="Bmail">Войти по почте</button>
+  </div>
+  <div class="demo" id="Bdemo"><button class="on" data-s="B1">Шаг 1: номер</button><button data-s="B2">Если пароль свой</button><button data-s="B3">Если номера нет</button></div>
+  </div>
+</div>
+
+<!-- ================= C ================= -->
+<div class="col">
+  <div class="tag"><b>C</b><span>Своя цифровая клавиатура<small>Как в банковском приложении: крупный номер и большие кнопки, системная клавиатура не закрывает экран</small></span></div>
+  <div class="screen"><div class="card" id="C">
+    <div class="disp"><div class="lbl">Номер телефона</div><div class="num"><span class="pre">🇺🇿 +998 </span><span class="d"></span><span class="caret"></span></div></div>
+    <div class="keys">
+      <button>1</button><button>2</button><button>3</button>
+      <button>4</button><button>5</button><button>6</button>
+      <button>7</button><button>8</button><button>9</button>
+      <button class="fn" data-k="pw">пароль</button><button>0</button><button class="fn" data-k="bs">⌫</button>
+    </div>
+    <div class="pw hide" id="Cpw"><input class="inp" type="password" placeholder="Пароль (по умолчанию — номер)"></div>
+    <button class="btn go" style="background:var(--g);color:#04120a;box-shadow:0 8px 24px #2bff8838">Войти</button>
+    <div class="row2"><button class="link">Создать аккаунт</button><button class="link">По почте</button></div>
+  </div></div>
+</div>
+
+</div>
+
+<script>
+const G=[2,3,2,2];
+const fmt=d=>{let o=[],i=0;for(const g of G){if(i>=d.length)break;o.push(d.slice(i,i+g));i+=g}return o.join(' ')};
+const digits=s=>s.replace(/\D/g,'');
+const norm=s=>{let d=digits(s);if(d.startsWith('998')&&d.length>9)d=d.slice(3);return d.slice(0,9)};
+// mask all phone-like inputs
+document.querySelectorAll('.phone .inp,.big input').forEach(i=>i.addEventListener('input',()=>{i.value=fmt(norm(i.value))}));
+// eyes
+document.querySelectorAll('.eye').forEach(b=>b.onclick=()=>{const i=b.previousElementSibling;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁':'🙈'});
+// A: tabs
+const A=document.getElementById('A');
+A.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{A.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));const up=b.dataset.m==='up';A.querySelector('.btn').textContent=up?'Зарегистрироваться':'Войти';A.querySelector('.pw .inp').placeholder=up?'Свой пароль (необязательно)':'Пароль (можно пустой)'});
+// B: demo steps
+const Bd=document.getElementById('Bdemo');
+Bd.querySelectorAll('button').forEach(b=>b.onclick=()=>{Bd.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));['B1','B2','B3'].forEach(id=>document.getElementById(id).classList.toggle('hide',id!==b.dataset.s))});
+document.querySelectorAll('#B .who button').forEach(b=>b.onclick=()=>Bd.querySelector('[data-s=B1]').click());
+document.querySelector('#B1 .btn').onclick=()=>Bd.querySelector('[data-s=B2]').click();
+// C: keypad
+let cd='';const C=document.getElementById('C');
+const draw=()=>{const f=fmt(cd);C.querySelector('.d').innerHTML=f?f:'<span class="ph">90 123 45 67</span>'};draw();
+C.querySelectorAll('.keys button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(k==='bs')cd=cd.slice(0,-1);else if(k==='pw')document.getElementById('Cpw').classList.toggle('hide');else if(cd.length<9)cd+=b.textContent;draw()});
+// real keyboard works too
+addEventListener('keydown',e=>{if(document.activeElement.tagName==='INPUT')return;if(/^\d$/.test(e.key)&&cd.length<9){cd+=e.key;draw()}if(e.key==='Backspace'){cd=cd.slice(0,-1);draw()}});
+</script>
+</body>
+</html>

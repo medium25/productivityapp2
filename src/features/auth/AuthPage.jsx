@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../store/useAuthStore'
-import { phoneToEmail } from './phoneAccount'
+import { defaultPassword, phoneToEmail } from './phoneAccount'
 import { findLinkedEmail, signInWithPhone } from './phoneLogin'
 
 // Firebase reports errors as "Firebase: Error (auth/some-code)." — show a
@@ -52,9 +52,9 @@ export default function AuthPage() {
             useAuthStore.setState({ error: 'Firebase: Error (auth/email-already-in-use).' })
             return
           }
-          await signUpEmail(phoneToEmail(phone), password)
+          await signUpEmail(phoneToEmail(phone), password || defaultPassword(phone))
         } else {
-          await signInWithPhone(phone, password, signInEmail)
+          await signInWithPhone(phone, password || defaultPassword(phone), signInEmail)
           useAuthStore.setState({ error: null })
         }
       } else {
@@ -112,11 +112,11 @@ export default function AuthPage() {
           <input
             type="password"
             className="focus-create__input"
-            placeholder={signup ? t('auth.newPasswordPlaceholder') : t('auth.passwordPlaceholder')}
+            placeholder={method === 'phone' ? (signup ? t('auth.newPasswordOptional') : t('auth.passwordOptional')) : t('auth.passwordPlaceholder')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
+            required={method !== 'phone'}
+            minLength={password ? 6 : undefined}
             autoComplete={signup ? 'new-password' : 'current-password'}
           />
           <button type="submit" className="timer-controls__primary" disabled={submitting}>

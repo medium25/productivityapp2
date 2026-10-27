@@ -40,3 +40,46 @@ export function toAccountEmail(input) {
   const text = String(input || '').trim()
   return /^[+\d][\d\s()-]{6,}$/.test(text) ? phoneToEmail(text) : text
 }
+
+// ---- Number entry: country prefix is fixed in the UI, only the rest is typed.
+export const COUNTRIES = [
+  { code: '998', flag: '🇺🇿', name: 'Узбекистан', length: 9, groups: [2, 3, 2, 2], example: '90 123 45 67' },
+  { code: '7', flag: '🇷🇺', name: 'Россия / Казахстан', length: 10, groups: [3, 3, 2, 2], example: '912 345 67 89' },
+  { code: '996', flag: '🇰🇬', name: 'Кыргызстан', length: 9, groups: [3, 3, 3], example: '700 123 456' },
+  { code: '992', flag: '🇹🇯', name: 'Таджикистан', length: 9, groups: [2, 3, 4], example: '90 123 4567' },
+]
+export const DEFAULT_COUNTRY = COUNTRIES[0]
+
+// Any input ("+998 90 123 45 67", "998901234567", "90 123 45 67", "") ->
+// { country, local } where local is the digits after the country code.
+export function splitPhone(raw) {
+  const text = String(raw || '').trim()
+  const digits = normalizePhone(text).slice(1)
+  if (!text || digits === '') return { country: DEFAULT_COUNTRY, local: '' }
+  // Longest code first so "998…" never reads as "9…".
+  const country = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length).find((c) => digits.startsWith(c.code))
+  if (!country) return { country: DEFAULT_COUNTRY, local: digits.slice(0, DEFAULT_COUNTRY.length) }
+  return { country, local: digits.slice(country.code.length, country.code.length + country.length) }
+}
+
+export const joinPhone = (country, local) => `+${country.code}${local}`
+
+export function formatLocal(country, local) {
+  const parts = []
+  let i = 0
+  for (const g of country.groups) {
+    if (i >= local.length) break
+    parts.push(local.slice(i, i + g))
+    i += g
+  }
+  return parts.join(' ')
+}
+
+export const isCompletePhone = (raw) => {
+  const { country, local } = splitPhone(raw)
+  return local.length === country.length
+}
+
+// Default password for phone accounts: the number itself, digits only with the
+// country code (e.g. "998901234567" — 12 characters, over Firebase's minimum).
+export const defaultPassword = (raw) => normalizePhone(raw).slice(1)
