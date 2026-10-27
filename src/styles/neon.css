@@ -275,20 +275,18 @@
 :root[data-skin='neon'] .login-opt--on .login-opt__radio { border-color: var(--neon-g); background: radial-gradient(circle, var(--neon-g) 45%, transparent 50%); }
 :root[data-skin='neon'] .login-note--ok { color: var(--neon-g); }
 
-/* "Мой день" rows (variant B): dark tinted fill, bright glowing outline in the
-   task's hue (--h, set inline from UpcomingPage), light text. */
+/* "Мой день" rows (variant A, no side bar): saturated tinted fill in the task's
+   hue (--h, set inline from UpcomingPage), light text, soft glow. */
 :root[data-skin='neon'] .timed-row__body {
-  background: color-mix(in srgb, var(--h, #3d8bff) 11%, #0a0f17);
-  color: color-mix(in srgb, var(--h, #3d8bff) 18%, #ffffff);
-  border: 1.5px solid var(--h, #3d8bff);
+  background: color-mix(in srgb, var(--h, #3d8bff) 30%, #0b1018);
+  color: color-mix(in srgb, var(--h, #3d8bff) 25%, #ffffff);
   border-radius: 14px;
-  box-shadow: 0 0 14px color-mix(in srgb, var(--h, #3d8bff) 45%, transparent), inset 0 0 14px color-mix(in srgb, var(--h, #3d8bff) 14%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--h, #3d8bff) 24%, transparent);
 }
 :root[data-skin='neon'] .timed-row__num { opacity: 0.65; }
-:root[data-skin='neon'] .timed-row__body .cycle-sign--on { background: color-mix(in srgb, var(--h, #3d8bff) 22%, #0a0f17); }
+:root[data-skin='neon'] .timed-row__body .cycle-sign--on { background: color-mix(in srgb, var(--h, #3d8bff) 35%, #0b1018); }
 /* Finished: back to the dashed empty slot, no glow. */
 :root[data-skin='neon'] .timed-row--done .timed-row__body {
-  border: 0;
   box-shadow: none;
   border-radius: 14px;
 }

@@ -43,7 +43,7 @@ const CALENDAR_PALETTE = [
   { bg: '#fdf6e0', border: '#c9a812', text: '#9e850e' },
 ]
 // Same hues for the web version's neon skin (styles/neon.css): a row is drawn
-// from one bright hue (--h) as a dark tinted fill with a glowing outline and
+// from one bright hue (--h) as a saturated tinted fill with a soft glow and
 // light text, instead of a pastel fill with dark text.
 const NEON_CALENDAR_PALETTE = [
   { border: '#3d8bff' },
