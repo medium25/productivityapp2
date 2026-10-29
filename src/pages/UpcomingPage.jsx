@@ -12,6 +12,7 @@ import { isoFromDate, todayISO, WEEKDAYS } from '../features/tasks/taskLogic'
 import { ROUTINE_TASKS } from '../features/tasks/dailyRoutineTasks'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { IconFocus, IconClock } from '../icons/Icons'
+import { ROW_PALETTE } from '../features/tasks/rowPalette'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -29,20 +30,6 @@ const PSEUDO_TIMER_TASK_ID = '__pomodoro__'
 const DEFAULT_MINUTES = 30
 const fmtTime = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
-// Today's own calendar-day palette (per user request — "каждая задача
-// разного цвета") — cycles by row index, a fill+border+text triple per
-// task so each block reads distinctly against the hour ruler. `hue` is the
-// bright colour the dark theme (styles/neon.css) draws the same row with.
-const CALENDAR_PALETTE = [
-  { bg: '#e6ebfd', border: '#4c5fd6', text: '#3547b8', hue: '#3d8bff' },
-  { bg: '#e9f7ee', border: '#178a3f', text: '#12692f', hue: '#2bff88' },
-  { bg: '#fdeee0', border: '#c96a12', text: '#a0560e', hue: '#ffb84a' },
-  { bg: '#fde8ea', border: '#c92a2a', text: '#a12121', hue: '#ff4d5e' },
-  { bg: '#f1e8fd', border: '#7c4dff', text: '#5e35c9', hue: '#9d7bff' },
-  { bg: '#fde8f3', border: '#d4537e', text: '#ab3f63', hue: '#ff5fa8' },
-  { bg: '#e3f6f6', border: '#0f6e7a', text: '#0b535c', hue: '#2be0d8' },
-  { bg: '#fdf6e0', border: '#c9a812', text: '#9e850e', hue: '#ffe14a' },
-]
 const PX_PER_MIN = 1.4
 
 // Sequential schedule: each task starts right when the previous one ends,
@@ -214,7 +201,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   const hasMinutes = !!task.estimateMinutes
   const start = dragPreview?.edge === 'start' ? dragPreview.value : slot.start
   const end = dragPreview?.edge === 'end' ? dragPreview.value : slot.end
-  const color = CALENDAR_PALETTE[(number - 1) % CALENDAR_PALETTE.length]
+  const color = ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
 
   const startHandle = useTimeDrag(
     (delta) => setDragPreview({ edge: 'start', value: Math.max(0, Math.min(slot.end - 5, slot.start + delta)) }),

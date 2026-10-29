@@ -91,6 +91,10 @@
     "tokovinin": {
       "title": "Tokovinin",
       "description": "Mikhail Tokovinin’s posts with ideas and progress."
+    },
+    "tasksList": {
+      "title": "Tasks",
+      "description": "All tasks with their projects."
     }
   },
   "settings": {
@@ -804,5 +808,21 @@
     "readNext": "Read ✓ next",
     "noIdeas": "This post is just a link or an announcement — nothing to retell.",
     "copyIdea": "Copy idea"
+  },
+  "tasksList": {
+    "title": "Tasks",
+    "addTask": "Add a task",
+    "empty": "No tasks yet. Add the first one.",
+    "myDay": "My day",
+    "addToMyDay": "Add to My day",
+    "removeFromMyDay": "Remove from My day",
+    "project": "project",
+    "noProject": "No project",
+    "changeProject": "Change project",
+    "pickProjectTitle": "Choose a project",
+    "newProject": "New project",
+    "newProjectPlaceholder": "Project name",
+    "create": "Create",
+    "deleteTask": "Delete task"
   }
 }

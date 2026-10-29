@@ -1,4 +1,4 @@
-import { IconFocus, IconInboxTray, IconSomeday, IconThoughts, IconFlame, IconBarChart, IconStar, IconClock, IconDumbbell, IconNoteCard, IconWallet } from '../icons/Icons'
+import { IconFocus, IconInboxTray, IconSomeday, IconThoughts, IconFlame, IconBarChart, IconStar, IconClock, IconDumbbell, IconNoteCard, IconWallet, IconCheckCircle } from '../icons/Icons'
 
 // Intentionally just these two — the other four ("Мысли", "Привычки",
 // "Фитнес", "Финансовый учёт") were never built beyond a placeholder page,
@@ -21,6 +21,10 @@ export const SECTIONS = [
   // Same card-notes shape as База знаний, separate store/section per user
   // request (facts/numbers to look up, not learnings to internalize).
   { id: 'referenceInfo', route: '/reference-info', Icon: IconBarChart, titleKey: 'sections.referenceInfo.title', descKey: 'sections.referenceInfo.description' },
+  // Every open task in one list, drawn like «Мой день» rows but with a project pill
+  // and a «Мой день» button instead of times (see TasksListPage.jsx). Sits between
+  // Входящие and Мой день in the sidebar.
+  { id: 'tasksList', route: '/tasks', Icon: IconCheckCircle, titleKey: 'sections.tasksList.title', descKey: 'sections.tasksList.description' },
   // The old single "Action" section (My day/Upcoming/Sometime/For Anki as
   // columns of one board, see former TasksGoalsPage.jsx) split into 3
   // separate top-level sections per user request; the "My day"/"Next"

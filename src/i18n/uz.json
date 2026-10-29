@@ -91,6 +91,10 @@
     "tokovinin": {
       "title": "Tokovinin",
       "description": "Mixail Tokovinin postlari: g‘oyalar va jarayon."
+    },
+    "tasksList": {
+      "title": "Vazifalar",
+      "description": "Barcha vazifalar loyihalari bilan."
     }
   },
   "settings": {
@@ -789,5 +793,21 @@
     "readNext": "O‘qildi ✓ keyingi",
     "noIdeas": "Bu postda faqat havola yoki e’lon bor — qayta aytadigan fikr yo‘q.",
     "copyIdea": "G‘oyani nusxalash"
+  },
+  "tasksList": {
+    "title": "Vazifalar",
+    "addTask": "Vazifa qo‘shish",
+    "empty": "Hali vazifalar yo‘q. Birinchisini qo‘shing.",
+    "myDay": "Mening kunim",
+    "addToMyDay": "«Mening kunim»ga qo‘shish",
+    "removeFromMyDay": "«Mening kunim»dan olib tashlash",
+    "project": "loyiha",
+    "noProject": "Loyihasiz",
+    "changeProject": "Loyihani almashtirish",
+    "pickProjectTitle": "Loyihani tanlang",
+    "newProject": "Yangi loyiha",
+    "newProjectPlaceholder": "Loyiha nomi",
+    "create": "Yaratish",
+    "deleteTask": "Vazifani o‘chirish"
   }
 }

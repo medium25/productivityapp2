@@ -26,6 +26,7 @@ const loaders = {
   TrashPage: () => import('../pages/TrashPage'),
   SettingsPage: () => import('../pages/SettingsPage'),
   TokovininPage: () => import('../pages/TokovininPage'),
+  TasksListPage: () => import('../pages/TasksListPage'),
 }
 const FocusPage = lazy(loaders.FocusPage)
 const MyFocusPage = lazy(loaders.MyFocusPage)
@@ -49,6 +50,7 @@ const CompletedPage = lazy(loaders.CompletedPage)
 const TrashPage = lazy(loaders.TrashPage)
 const SettingsPage = lazy(loaders.SettingsPage)
 const TokovininPage = lazy(loaders.TokovininPage)
+const TasksListPage = lazy(loaders.TasksListPage)
 
 export function preloadPages() {
   Object.values(loaders).forEach((load) => load().catch(() => {}))
@@ -83,6 +85,7 @@ export const pageRoutes = (
       <Route path="/completed" element={<CompletedPage />} />
       <Route path="/trash" element={<TrashPage />} />
       <Route path="/tokovinin" element={<TokovininPage />} />
+      <Route path="/tasks" element={<TasksListPage />} />
       <Route path="/settings" element={<SettingsPage />} />
   </>
 )

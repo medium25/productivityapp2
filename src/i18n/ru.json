@@ -91,6 +91,10 @@
     "tokovinin": {
       "title": "Токовинин",
       "description": "Посты Михаила Токовинина с идеями и прогрессом."
+    },
+    "tasksList": {
+      "title": "Задачи",
+      "description": "Все задачи с проектами."
     }
   },
   "settings": {
@@ -820,5 +824,21 @@
     "readNext": "Прочитано ✓ дальше",
     "noIdeas": "В этом посте только ссылка или анонс — пересказывать нечего.",
     "copyIdea": "Скопировать идею"
+  },
+  "tasksList": {
+    "title": "Задачи",
+    "addTask": "Добавить задачу",
+    "empty": "Задач пока нет. Добавь первую.",
+    "myDay": "Мой день",
+    "addToMyDay": "Добавить в «Мой день»",
+    "removeFromMyDay": "Убрать из «Моего дня»",
+    "project": "проект",
+    "noProject": "Без проекта",
+    "changeProject": "Сменить проект",
+    "pickProjectTitle": "Выбери проект",
+    "newProject": "Новый проект",
+    "newProjectPlaceholder": "Название проекта",
+    "create": "Создать",
+    "deleteTask": "Удалить задачу"
   }
 }

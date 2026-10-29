@@ -15,7 +15,7 @@ import { SIDEBAR_ICONS, SideIconSettings } from './sidebarIcons'
 // isn't in here either — it's not a sidebar destination at all anymore (per
 // earlier user request: only reachable from the Tasks hub's own Projects
 // card now — see UpcomingPage.jsx).
-const ACTIONS_IDS = ['referenceInfo', 'myDay', 'habits', 'tokovinin']
+const ACTIONS_IDS = ['referenceInfo', 'tasksList', 'myDay', 'habits', 'tokovinin']
 
 // Which sections a task can be dragged onto to move it there (see
 // useDragReorder.js's onCrossDropSection, taskLogic.js's
@@ -54,6 +54,7 @@ const SECTION_HUE = {
   referenceInfo: '#e0564a',
   tokovinin: '#6c7bd6',
   myDay: '#f0a23a',
+  tasksList: '#3d8bff',
   insights: '#e56fa8',
   principles: '#e8a93a',
   habits: '#ee7b52',

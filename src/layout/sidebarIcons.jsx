@@ -153,6 +153,7 @@ export const SIDEBAR_ICONS = {
   referenceInfo: SideIconInbox,
   tokovinin: SideIconReader,
   myDay: SideIconMyDay,
+  tasksList: SideIconTasks,
   myFocus: SideIconFocus,
   upcoming: SideIconTasks,
   insights: SideIconInsights,
