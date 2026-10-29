@@ -82,6 +82,9 @@ export const useTasksStore = create(
                 status: 'active',
                 completedAt: null,
                 createdAt: new Date().toISOString(),
+                // Where it was made: 'myday' | 'tasks' (the «Задачи» list) | 'other'. Only tasks made in
+                // «Мой день» (or old ones with no marker) can count as habits — see habitTaskSync.
+                createdIn: 'other',
                 ...task,
               },
             ],

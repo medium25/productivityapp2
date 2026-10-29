@@ -7,6 +7,13 @@ import { todayISO } from './taskLogic'
 // its own routine-task matching — no stored link id. A non-recurring task
 // never links, even on a name match: a habit is inherently repeating, a
 // one-off task isn't habit-shaped.
+// A recurring task counts as a habit only when it was made in «Мой день» (createdIn 'myday'; old
+// tasks with no marker keep working as before). Repeating tasks made in «Задачи» or anywhere
+// else ('tasks' / 'other') stay plain tasks — they never create, join or sync with a habit.
+export function isHabitTask(task) {
+  return !!task.recurrence && task.recurrence !== 'none' && task.createdIn !== 'tasks' && task.createdIn !== 'other'
+}
+
 export function findLinkedHabit(habits, title) {
   return habits.find((h) => h.title === title)
 }
@@ -14,7 +21,7 @@ export function findLinkedHabit(habits, title) {
 export function findLinkedTodayTask(tasks, title, today = todayISO()) {
   return tasks.find((t) => (
     t.title === title
-    && t.recurrence && t.recurrence !== 'none'
+    && isHabitTask(t)
     && t.status !== 'trashed'
     && (t.deadline || t.whenDate) === today
   ))
@@ -25,7 +32,7 @@ export function findLinkedTodayTask(tasks, title, today = todayISO()) {
 // today cell in step. Uses setCompletion (a plain set, not toggleCompletion's
 // flip) so a rapid double-click on either side can't desync the two.
 export function syncHabitForTask(task, nowDone, { habits, setCompletion }) {
-  if (!task.recurrence || task.recurrence === 'none') return
+  if (!isHabitTask(task)) return
   const habit = findLinkedHabit(habits, task.title)
   if (!habit) return
   const today = todayISO()
@@ -62,6 +69,8 @@ export function spawnTaskForHabit(habit, { tasks, addTask, updateTask }) {
     t.title === habit.title && t.status !== 'trashed' && (t.deadline || t.whenDate) === today
   ))
   if (existing) {
+    // A same-named task made elsewhere stays a plain task — it does not join the habit.
+    if (existing.createdIn === 'tasks' || existing.createdIn === 'other') return
     if (!existing.recurrence || existing.recurrence === 'none') {
       updateTask(existing.id, { recurrence: habit.recurrence, recurrenceDays: habit.recurrenceDays || null })
     }
@@ -70,6 +79,7 @@ export function spawnTaskForHabit(habit, { tasks, addTask, updateTask }) {
   addTask({
     title: habit.title,
     stage: 'tasks',
+    createdIn: 'myday',
     whenDate: today,
     recurrence: habit.recurrence,
     recurrenceDays: habit.recurrenceDays || null,
@@ -80,7 +90,7 @@ export function spawnTaskForHabit(habit, { tasks, addTask, updateTask }) {
 // from 'none' (see UpcomingPage's onSetCycle) — spawns the matching habit
 // if none exists yet under that exact title.
 export function spawnHabitForTask(task, { habits, addHabit }) {
-  if (!task.recurrence || task.recurrence === 'none') return
+  if (!isHabitTask(task)) return
   if (findLinkedHabit(habits, task.title)) return
   addHabit(task.title, task.recurrence, task.recurrenceDays || [])
 }

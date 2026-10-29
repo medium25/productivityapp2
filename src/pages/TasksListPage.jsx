@@ -297,7 +297,7 @@ export default function TasksListPage() {
   const submitDraft = () => {
     const title = draft.trim()
     if (!title) return
-    addTask({ title, stage: 'tasks', projectId: null })
+    addTask({ title, stage: 'tasks', projectId: null, createdIn: 'tasks' })
     setDraft('')
     draftRef.current?.focus()
   }
