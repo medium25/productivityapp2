@@ -368,7 +368,7 @@ export default function TasksListPage() {
             <div className="timed-list">
               {ordered.length === 0 && !adding && <p className="tasks-cards__empty">{t('tasksList.empty')}</p>}
               {ordered.map((task, i) => (
-                <div key={task.id}>
+                <div key={task.id} className={i < ordered.length - 1 ? 'task-row-gap' : undefined}>
                   <TaskRow
                     task={task}
                     number={i + 1}

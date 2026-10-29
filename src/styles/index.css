@@ -10571,3 +10571,6 @@ body.kb-open .install-hint { display: none; }
 .cycle-monthdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .cycle-monthdays .deadline-picker__chip { padding-left: 0; padding-right: 0; text-align: center; justify-content: center; }
 
+/* «Задачи» rows get the same gap as «Мой день» (there the hidden «insert here» strip adds 3px between rows). */
+.task-row-gap { margin-bottom: 3px; }
+
