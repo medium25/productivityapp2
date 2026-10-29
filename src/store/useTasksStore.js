@@ -296,7 +296,11 @@ export const useTasksStore = create(
             state.tasks.forEach((t, i) => { if (idSet.has(t.id)) positions.push(i) })
             const byId = new Map(state.tasks.map((t) => [t.id, t]))
             const tasks = state.tasks.slice()
-            positions.forEach((pos, i) => { tasks[pos] = byId.get(orderedIds[i]) })
+            // An explicit order wins over the «sent to the end of Мой день» rank (dayRank).
+            positions.forEach((pos, i) => {
+              const t = byId.get(orderedIds[i])
+              tasks[pos] = t.dayRank != null ? { ...t, dayRank: null } : t
+            })
             return { tasks }
           })
         },

@@ -594,7 +594,14 @@ export default function UpcomingPage() {
     })
     // Repeating tasks come first (per user request), then the one-step ones;
     // inside each group the order is the store's own, which a drag rewrites.
-    return [...todayList.filter(isRecurring), ...todayList.filter((task) => !isRecurring(task))]
+    // Tasks just sent over from «Задачи» (dayRank) go to the end, oldest first, until the
+    // list is reordered by hand.
+    const oneStep = todayList.filter((task) => !isRecurring(task))
+    return [
+      ...todayList.filter(isRecurring),
+      ...oneStep.filter((task) => task.dayRank == null),
+      ...oneStep.filter((task) => task.dayRank != null).sort((a, b) => a.dayRank - b.dayRank),
+    ]
   }, [tasks, projects, today])
 
   // Next free time in Today, offered as the default when a task is pulled in.
