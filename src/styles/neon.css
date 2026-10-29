@@ -281,7 +281,8 @@
   box-shadow: none;
   border-radius: 14px;
 }
-:root[data-skin='neon'] .task-myday--on svg { stroke: #0b1018; }
+:root[data-skin='neon'] .task-myday--on svg { background: #0b1018; stroke: currentColor; }
+:root[data-skin='neon'] .task-myday--on { box-shadow: 0 0 14px color-mix(in srgb, currentColor 55%, transparent); }
 /* «Задачи»: project pill in the bright shade of its colour on the dark rows. */
 :root[data-skin='neon'] .task-tag { --c: var(--tag-bright, currentColor); background: color-mix(in srgb, var(--c) 18%, #0b1018); }
 :root[data-skin='neon'] .task-tag--none { --c: currentColor; background: none; }
