@@ -281,3 +281,4 @@
   box-shadow: none;
   border-radius: 14px;
 }
+:root[data-skin='neon'] .task-myday--on svg { stroke: #0b1018; }

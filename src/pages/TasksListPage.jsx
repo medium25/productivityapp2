@@ -39,7 +39,7 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
       className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '')}
       {...(editing ? null : dragHandleProps)}
     >
-      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue }}>
+      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
         <DragGrip />
         <span className="timed-row__title">
           <span className="timed-row__num">{number}.</span>
@@ -75,23 +75,6 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
         </span>
         <button
           type="button"
-          className={'task-pill' + (project ? '' : ' task-pill--none')}
-          onPointerDown={stop}
-          onClick={() => onPickProject(task)}
-          title={t('tasksList.changeProject')}
-          aria-label={t('tasksList.changeProject')}
-        >
-          {project ? (
-            <>
-              <i className="task-pill__dot" style={{ '--dot-color': getProjectColor(project) }} />
-              <span className="task-pill__name">{project.name}</span>
-            </>
-          ) : (
-            <span className="task-pill__name">+ {t('tasksList.project')}</span>
-          )}
-        </button>
-        <button
-          type="button"
           className={'task-myday' + (inMyDay ? ' task-myday--on' : '')}
           onPointerDown={stop}
           onClick={() => onToggleMyDay(task)}
@@ -99,8 +82,18 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
           aria-label={inMyDay ? t('tasksList.removeFromMyDay') : t('tasksList.addToMyDay')}
           aria-pressed={inMyDay}
         >
-          <SideIconMyDay size={14} />
-          <span className="task-myday__label">{t('tasksList.myDay')}</span>
+          <SideIconMyDay size={16} />
+        </button>
+        <button
+          type="button"
+          className={'task-tag' + (project ? '' : ' task-tag--none')}
+          style={project ? { '--dot-color': getProjectColor(project) } : undefined}
+          onPointerDown={stop}
+          onClick={() => onPickProject(task)}
+          title={t('tasksList.changeProject')}
+          aria-label={t('tasksList.changeProject')}
+        >
+          <span className="task-tag__name">{project ? project.name : `+ ${t('tasksList.project')}`}</span>
         </button>
       </span>
       <span className="timed-row__actions">

@@ -10339,45 +10339,42 @@ body.kb-open .install-hint { display: none; }
 
 /* «Задачи»: the rows of «Мой день» without a time column, plus a project pill and a «Мой день» button. */
 .timed-row--notime { padding-left: 14px; }
-.task-pill {
+.task-tag {
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 40%;
+  max-width: 38%;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   height: 24px;
-  padding: 0 10px;
+  padding: 0 10px 0 9px;
   border: 0;
-  border-radius: 999px;
+  border-left: 3px solid var(--dot-color, currentColor);
+  border-radius: 6px;
   background: color-mix(in srgb, currentColor 14%, transparent);
   color: inherit;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
+  order: 2;
 }
-.task-pill__name { overflow: hidden; text-overflow: ellipsis; }
-.task-pill__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dot-color, currentColor); }
-.task-pill--none { background: transparent; border: 1px dashed color-mix(in srgb, currentColor 50%, transparent); opacity: 0.8; }
+.task-tag__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-tag--none { background: transparent; border: 1px dashed color-mix(in srgb, currentColor 50%, transparent); padding: 0 10px; opacity: 0.8; }
 .task-myday {
   flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 24px;
-  padding: 0 10px;
-  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
-  border-radius: 999px;
-  background: transparent;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 16%, transparent);
   color: inherit;
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 700;
   cursor: pointer;
+  order: 3;
 }
-.task-myday--on { background: color-mix(in srgb, currentColor 22%, transparent); border-color: currentColor; }
+.task-myday--on { background: currentColor; }
+.task-myday--on svg { stroke: var(--row-bg-light, #fff); }
 .task-row__delete { flex: none; border: 0; background: none; color: var(--danger); font-size: 1.2rem; line-height: 1; padding: 0 6px; cursor: pointer; }
 .project-picker__task { margin: 0 0 8px; font-weight: 600; }
 .project-picker__create { display: flex; gap: 8px; }
@@ -10385,9 +10382,10 @@ body.kb-open .install-hint { display: none; }
 .project-picker__create-btn { border: 0; border-radius: var(--radius-sm); padding: 0 16px; background: var(--accent); color: var(--accent-contrast); font: inherit; font-weight: 700; cursor: pointer; }
 .project-picker__create-btn:disabled { opacity: 0.5; cursor: default; }
 .task-modal__project-dot--none { background: transparent; border: 1.5px dashed var(--text-muted); }
-/* Phones: title on its own line, project pill and «Мой день» button under it. */
+/* Phones: «Мой день» button stays on the title line, the project tag drops under the title. */
 @media (max-width: 480px) {
   .timed-row--notime .timed-row__body { flex-wrap: wrap; row-gap: 6px; padding-top: 8px; padding-bottom: 8px; }
-  .timed-row--notime .timed-row__title { flex: 1 1 calc(100% - 28px); }
-  .timed-row--notime .task-pill { margin-left: 22px; max-width: 62%; }
+  .timed-row--notime .timed-row__title { flex: 1 1 calc(100% - 70px); }
+  .timed-row--notime .task-myday { order: 2; }
+  .timed-row--notime .task-tag { order: 4; margin-left: 22px; max-width: 70%; }
 }
