@@ -7,13 +7,14 @@ import ModalClose from './ModalClose'
 // again whenever its project pill is tapped to change it. Pick an existing
 // project, "no project", or create a new one on the spot. Closing it without
 // picking (backdrop, ×, Esc) leaves everything as it was.
-export default function ProjectPickerModal({ open, taskTitle, projects, currentProjectId, onPick, onCreate, onCancel }) {
+export default function ProjectPickerModal({ open, taskTitle, projects, currentProjectId, onPick, onCreate, onDelete, onCancel }) {
   const { t } = useTranslation()
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
+  const [confirmId, setConfirmId] = useState(null) // project awaiting delete confirmation
   const inputRef = useRef(null)
 
-  useEffect(() => { if (open) { setCreating(false); setName('') } }, [open])
+  useEffect(() => { if (open) { setCreating(false); setName(''); setConfirmId(null) } }, [open])
   useEffect(() => { if (creating) inputRef.current?.focus() }, [creating])
   useEffect(() => {
     if (!open) return undefined
@@ -37,17 +38,35 @@ export default function ProjectPickerModal({ open, taskTitle, projects, currentP
         <div className="task-modal__body">
           {taskTitle && <p className="task-modal__due-required-text project-picker__task">{taskTitle}</p>}
           <div className="task-modal__project-picker">
-            {active.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={'task-modal__project-option' + (currentProjectId === p.id ? ' active' : '')}
-                onClick={() => onPick(p.id)}
-              >
-                <span className="task-modal__project-dot" style={{ '--dot-color': getProjectColor(p) }} />
-                {p.name}
-              </button>
-            ))}
+            {active.map((p) => (confirmId === p.id ? (
+              <div key={p.id} className="project-picker__confirm">
+                <span className="project-picker__confirm-text">{t('tasksList.deleteProjectConfirm', { name: p.name })}</span>
+                <div className="project-picker__confirm-actions">
+                  <button type="button" className="project-picker__confirm-yes" onClick={() => { setConfirmId(null); onDelete(p.id) }}>{t('tasksList.deleteProjectYes')}</button>
+                  <button type="button" onClick={() => setConfirmId(null)}>{t('tasks.cancel')}</button>
+                </div>
+              </div>
+            ) : (
+              <div key={p.id} className="project-picker__row">
+                <button
+                  type="button"
+                  className={'task-modal__project-option' + (currentProjectId === p.id ? ' active' : '')}
+                  onClick={() => onPick(p.id)}
+                >
+                  <span className="task-modal__project-dot" style={{ '--dot-color': getProjectColor(p) }} />
+                  {p.name}
+                </button>
+                <button
+                  type="button"
+                  className="project-picker__del"
+                  onClick={() => setConfirmId(p.id)}
+                  title={t('tasksList.deleteProject')}
+                  aria-label={t('tasksList.deleteProject')}
+                >
+                  ×
+                </button>
+              </div>
+            )))}
             <button
               type="button"
               className={'task-modal__project-option' + (!currentProjectId ? ' active' : '')}

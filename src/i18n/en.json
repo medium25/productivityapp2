@@ -830,6 +830,9 @@
     "pathTomorrow": "Tomorrow",
     "pathEmpty": "No tasks in this project yet",
     "pathDone": "done",
+    "deleteProject": "Delete project",
+    "deleteProjectConfirm": "Delete project “{{name}}”? Its tasks will stay, without a project.",
+    "deleteProjectYes": "Delete",
     "deleteTask": "Delete task"
   }
 }

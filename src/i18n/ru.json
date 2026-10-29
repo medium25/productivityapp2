@@ -846,6 +846,9 @@
     "pathTomorrow": "Завтра",
     "pathEmpty": "В проекте пока нет задач",
     "pathDone": "выполнено",
+    "deleteProject": "Удалить проект",
+    "deleteProjectConfirm": "Удалить проект «{{name}}»? Задачи останутся без проекта.",
+    "deleteProjectYes": "Удалить",
     "deleteTask": "Удалить задачу"
   }
 }

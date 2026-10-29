@@ -815,6 +815,9 @@
     "pathTomorrow": "Ertaga",
     "pathEmpty": "Loyihada hali vazifalar yo‘q",
     "pathDone": "bajarildi",
+    "deleteProject": "Loyihani o‘chirish",
+    "deleteProjectConfirm": "“{{name}}” loyihasi o‘chirilsinmi? Vazifalar loyihasiz qoladi.",
+    "deleteProjectYes": "O‘chirish",
     "deleteTask": "Vazifani o‘chirish"
   }
 }

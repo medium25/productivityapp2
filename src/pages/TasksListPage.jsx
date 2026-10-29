@@ -169,6 +169,7 @@ export default function TasksListPage() {
   const deleteTask = useTasksStore((s) => s.deleteTask)
   const toggleTaskDone = useTasksStore((s) => s.toggleTaskDone)
   const addProject = useTasksStore((s) => s.addProject)
+  const deleteProject = useTasksStore((s) => s.deleteProject)
   const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
@@ -359,6 +360,7 @@ export default function TasksListPage() {
         currentProjectId={picker ? picker.task.projectId : null}
         onPick={pick}
         onCreate={createAndPick}
+        onDelete={deleteProject}
         onCancel={closePicker}
       />
     </>
