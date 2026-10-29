@@ -22,6 +22,8 @@ export function CyclePicker({ task, t, onSet, onClose }) {
     return () => document.removeEventListener('pointerdown', onDown, true)
   }, [onClose])
   const [custom, setCustom] = useState(task.recurrence === 'custom')
+  // Weekly / monthly ask WHICH day before anything is saved.
+  const [ask, setAsk] = useState(null) // 'weekly' | 'monthly' | null
   const days = task.recurrenceDays || []
   const pick = (recurrence) => { onSet(recurrence, null); onClose() }
   const toggleDay = (dow) => {
@@ -37,10 +39,26 @@ export function CyclePicker({ task, t, onSet, onClose }) {
       <div className="deadline-picker__quick">
         {chip(t('tasksHub.cycleNone'), cur === 'none' && !custom, () => pick('none'))}
         {chip(t('tasks.recurrenceDaily'), cur === 'daily', () => pick('daily'))}
-        {chip(t('tasks.recurrenceWeekly'), cur === 'weekly', () => pick('weekly'))}
-        {chip(t('tasks.recurrenceMonthly'), cur === 'monthly', () => pick('monthly'))}
-        {chip(t('tasks.recurrenceCustom'), cur === 'custom' || custom, () => setCustom(true))}
+        {chip(t('tasks.recurrenceWeekly'), cur === 'weekly' || ask === 'weekly', () => { setCustom(false); setAsk('weekly') })}
+        {chip(t('tasks.recurrenceMonthly'), cur === 'monthly' || ask === 'monthly', () => { setCustom(false); setAsk('monthly') })}
+        {chip(t('tasks.recurrenceCustom'), cur === 'custom' || custom, () => { setAsk(null); setCustom(true) })}
       </div>
+      {ask === 'weekly' && (
+        <>
+          <div className="cycle-picker__ask">{t('tasks.cycleAskWeekday')}</div>
+          <div className="deadline-picker__quick">
+            {WEEKDAYS.map((w) => chip(t(`tasks.weekdayShort.${w.key}`), cur === 'weekly' && days.includes(w.dow), () => { onSet('weekly', [w.dow]); onClose() }))}
+          </div>
+        </>
+      )}
+      {ask === 'monthly' && (
+        <>
+          <div className="cycle-picker__ask">{t('tasks.cycleAskMonthDay')}</div>
+          <div className="cycle-monthdays">
+            {Array.from({ length: 31 }, (_, i) => i + 1).map((n) => chip(String(n), cur === 'monthly' && days[0] === n, () => { onSet('monthly', [n]); onClose() }))}
+          </div>
+        </>
+      )}
       {(custom || cur === 'custom') && (
         <div className="deadline-picker__quick">
           {WEEKDAYS.map((w) => chip(t(`tasks.weekdayShort.${w.key}`), days.includes(w.dow), () => toggleDay(w.dow)))}

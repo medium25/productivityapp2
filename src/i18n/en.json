@@ -456,6 +456,8 @@
     "recurrenceDaily": "Daily",
     "recurrenceCustom": "Selected",
     "recurrenceWeekly": "Weekly",
+    "cycleAskWeekday": "Which day of the week?",
+    "cycleAskMonthDay": "Which day of the month?",
     "recurrenceMonthly": "Monthly",
     "recurBadgeDaily": "every day",
     "recurBadgeWeekly": "every week",

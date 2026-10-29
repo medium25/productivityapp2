@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
-import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
+import { getProjectColor, todayISO, nextRecurringDate } from '../features/tasks/taskLogic'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
@@ -246,7 +246,13 @@ export default function TasksListPage() {
   }
 
   const setCycle = (task, recurrence, recurrenceDays) => {
-    updateTask(task.id, { recurrence, recurrenceDays })
+    const patch = { recurrence, recurrenceDays }
+    // Weekly / monthly with a chosen day: the task shows up on the next such day.
+    if ((recurrence === 'weekly' || recurrence === 'monthly') && recurrenceDays?.length) {
+      const next = nextRecurringDate({ ...task, ...patch }, todayISO())
+      if (next) { patch.whenDate = next; patch.deadline = null }
+    }
+    updateTask(task.id, patch)
     spawnHabitForTask({ ...task, recurrence, recurrenceDays }, { habits, addHabit })
   }
 

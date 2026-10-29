@@ -125,6 +125,11 @@ function recursOnDate(task, iso) {
   if (task.recurrence === 'daily') return true
   const anchor = new Date(`${task.whenDate}T00:00:00`)
   const d = new Date(`${iso}T00:00:00`)
+  if (task.recurrence === 'weekly' && task.recurrenceDays?.length) return task.recurrenceDays.includes(d.getDay())
+  if (task.recurrence === 'monthly' && task.recurrenceDays?.length) {
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+    return d.getDate() === Math.min(task.recurrenceDays[0], last)
+  }
   if (task.recurrence === 'weekly') return anchor.getDay() === d.getDay()
   if (task.recurrence === 'monthly') return anchor.getDate() === d.getDate()
   if (task.recurrence === 'custom') return (task.recurrenceDays || []).includes(d.getDay())

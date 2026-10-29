@@ -57,6 +57,11 @@ export function appliesOnDate(habit, iso) {
   if (habit.recurrence === 'daily' || !habit.recurrence) return true
   const anchor = new Date(`${habit.createdAt.slice(0, 10)}T00:00:00`)
   const d = new Date(`${iso}T00:00:00`)
+  if (habit.recurrence === 'weekly' && habit.recurrenceDays?.length) return habit.recurrenceDays.includes(d.getDay())
+  if (habit.recurrence === 'monthly' && habit.recurrenceDays?.length) {
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+    return d.getDate() === Math.min(habit.recurrenceDays[0], last)
+  }
   if (habit.recurrence === 'weekly') return anchor.getDay() === d.getDay()
   if (habit.recurrence === 'monthly') return anchor.getDate() === d.getDate()
   if (habit.recurrence === 'custom') return (habit.recurrenceDays || []).includes(d.getDay())

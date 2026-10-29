@@ -260,6 +260,7 @@ export function nextOccurrenceDate(task) {
   const base = (task.whenDate && task.whenDate > today) ? task.whenDate : today
   if (task.recurrence === 'daily') return addDays(base, 1)
   if (task.recurrence === 'custom') return nextCustomDate(base, task.recurrenceDays || [])
+  if ((task.recurrence === 'weekly' || task.recurrence === 'monthly') && task.recurrenceDays?.length) return nextRecurringDate(task, addDays(base, 1))
   if (task.recurrence === 'weekly') return addDays(base, 7)
   if (task.recurrence === 'monthly') return addMonths(base, 1)
   return null
@@ -268,11 +269,28 @@ export function nextOccurrenceDate(task) {
 // Whether a recurring task's pattern lands on `iso` — daily always, weekly/
 // monthly anchored on the task's own whenDate (its weekday / day-of-month),
 // custom on its chosen weekdays.
+// First date on or after `fromIso` the pattern lands on (null if none within ~2 years).
+export function nextRecurringDate(task, fromIso) {
+  let iso = fromIso
+  for (let n = 0; n < 800; n += 1) {
+    if (recursOnDate(task, iso)) return iso
+    iso = addDays(iso, 1)
+  }
+  return null
+}
+
 export function recursOnDate(task, iso) {
   if (!task.recurrence || task.recurrence === 'none') return false
   if (task.recurrence === 'daily') return true
   const d = new Date(`${iso}T00:00:00`)
   if (task.recurrence === 'custom') return (task.recurrenceDays || []).includes(d.getDay())
+  // Weekly / monthly with a chosen day: recurrenceDays = [weekday] / [day of month]
+  // (a day past the month's end lands on its last day).
+  if (task.recurrence === 'weekly' && task.recurrenceDays?.length) return task.recurrenceDays.includes(d.getDay())
+  if (task.recurrence === 'monthly' && task.recurrenceDays?.length) {
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+    return d.getDate() === Math.min(task.recurrenceDays[0], last)
+  }
   if (!task.whenDate) return false
   const anchor = new Date(`${task.whenDate}T00:00:00`)
   if (task.recurrence === 'weekly') return anchor.getDay() === d.getDay()

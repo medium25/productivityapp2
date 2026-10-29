@@ -8,7 +8,7 @@ import TaskFormModal from '../features/tasks/TaskFormModal'
 import DueRequiredPrompt from '../features/tasks/DueRequiredPrompt'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import MyDayTimer from '../features/focus/MyDayTimer'
-import { isoFromDate, todayISO } from '../features/tasks/taskLogic'
+import { isoFromDate, todayISO, nextRecurringDate } from '../features/tasks/taskLogic'
 import { ROUTINE_TASKS } from '../features/tasks/dailyRoutineTasks'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { IconFocus, IconClock } from '../icons/Icons'
@@ -553,7 +553,13 @@ export default function UpcomingPage() {
     onSetStart: (task, minutes) => updateTask(task.id, { startMinute: Math.max(0, Math.min(1439, minutes)) }),
     onSetTitle: (task, title) => updateTask(task.id, { title }),
     onSetCycle: (task, recurrence, recurrenceDays) => {
-      updateTask(task.id, { recurrence, recurrenceDays })
+      const patch = { recurrence, recurrenceDays }
+      // Weekly / monthly with a chosen day: the task shows up on the next such day.
+      if ((recurrence === 'weekly' || recurrence === 'monthly') && recurrenceDays?.length) {
+        const next = nextRecurringDate({ ...task, ...patch }, todayISO())
+        if (next) { patch.whenDate = next; patch.deadline = null }
+      }
+      updateTask(task.id, patch)
       spawnHabitForTask({ ...task, recurrence, recurrenceDays }, { habits, addHabit })
     },
     onSetDeadline: (task, iso) => updateTask(task.id, { whenDate: iso, deadline: null }),

@@ -450,6 +450,8 @@
     "recurrenceDaily": "Har kuni",
     "recurrenceCustom": "Tanlangan",
     "recurrenceWeekly": "Har hafta",
+    "cycleAskWeekday": "Haftaning qaysi kuni?",
+    "cycleAskMonthDay": "Oyning qaysi kuni?",
     "recurrenceMonthly": "Har oy",
     "recurBadgeDaily": "har kuni",
     "recurBadgeWeekly": "har hafta",

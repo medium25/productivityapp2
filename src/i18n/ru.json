@@ -468,6 +468,8 @@
     "recurrenceDaily": "Ежедневно",
     "recurrenceCustom": "Выборочно",
     "recurrenceWeekly": "Еженедельно",
+    "cycleAskWeekday": "В какой день недели?",
+    "cycleAskMonthDay": "Какого числа месяца?",
     "recurrenceMonthly": "Ежемесячно",
     "recurBadgeDaily": "каждый день",
     "recurBadgeWeekly": "каждую неделю",

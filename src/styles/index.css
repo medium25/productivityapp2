@@ -10566,3 +10566,8 @@ body.kb-open .install-hint { display: none; }
   .tasks-column__total { width: 60px; right: 52px; }
 }
 
+/* Cycle picker: «which day?» step for weekly / monthly. */
+.cycle-picker__ask { margin: 8px 2px 4px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.cycle-monthdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cycle-monthdays .deadline-picker__chip { padding-left: 0; padding-right: 0; text-align: center; justify-content: center; }
+
