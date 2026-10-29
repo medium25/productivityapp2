@@ -10374,35 +10374,37 @@ body.kb-open .install-hint { display: none; }
 .task-tag--dot.task-tag--none { font-size: 1rem; font-weight: 700; line-height: 1; padding: 0; }
 .task-tag--dot.task-tag--none::before { content: none; }
 .task-tag--none { --c: currentColor; opacity: 0.75; font-size: 0.8rem; background: none; border: 1px dashed color-mix(in srgb, currentColor 50%, transparent); padding: 0 12px; }
-/* «Мой день» toggle: a switch with a sun knob — knob left = not in My day, knob right + filled track = in My day. */
+/* «Мой день» toggle: moon knob on a dim track = not in My day; sun knob on a glowing amber track = in My day. */
 .task-myday {
   position: relative;
   flex: none;
-  width: 54px;
+  width: 52px;
   height: 30px;
   padding: 0;
-  border: 1.5px solid color-mix(in srgb, currentColor 50%, transparent);
+  border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
   color: inherit;
   cursor: pointer;
   order: 3;
+  outline: none;
 }
+.task-myday:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .task-myday svg {
   position: absolute;
   top: 2px;
   left: 2px;
   width: 23px;
   height: 23px;
-  padding: 4px;
+  padding: 4.5px;
   box-sizing: border-box;
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 45%, transparent);
-  stroke-width: 2.2;
+  background: color-mix(in srgb, currentColor 40%, transparent);
+  stroke-width: 2;
   transition: left 0.15s ease;
 }
-.task-myday--on { background: currentColor; border-color: currentColor; box-shadow: 0 0 12px color-mix(in srgb, currentColor 40%, transparent); }
-.task-myday--on svg { left: calc(100% - 25px); background: var(--row-bg-light, #fff); stroke: currentColor; }
+.task-myday--on { background: linear-gradient(100deg, #ffb93d, #ff8a1f); border-color: #ffb93d; box-shadow: 0 2px 8px rgba(240, 138, 16, 0.4); }
+.task-myday--on svg { left: calc(100% - 25px); background: #fff; stroke: #c25a00; }
 .task-row__delete { flex: none; border: 0; background: none; color: var(--danger); font-size: 1.2rem; line-height: 1; padding: 0 6px; cursor: pointer; }
 .project-picker__task { margin: 0 0 8px; font-weight: 600; }
 .project-picker__create { display: flex; gap: 8px; }

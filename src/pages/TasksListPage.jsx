@@ -113,7 +113,13 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
           aria-label={inMyDay ? t('tasksList.removeFromMyDay') : t('tasksList.addToMyDay')}
           aria-pressed={inMyDay}
         >
-          <SideIconMyDay size={16} />
+          {inMyDay ? (
+            <SideIconMyDay size={16} />
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" />
+            </svg>
+          )}
         </button>
         {/* Collapsed: just a coloured dot (long names ate the row). Tap = show the name; tap the name = change project. */}
         <span ref={tagRef} className="task-tag-wrap">
