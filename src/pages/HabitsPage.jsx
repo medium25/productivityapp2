@@ -4,6 +4,7 @@ import { useHabitsStore } from '../store/useHabitsStore'
 import { useTasksStore } from '../store/useTasksStore'
 import { addDays, RECURRENCE_OPTIONS, todayISO, WEEKDAYS } from '../features/tasks/taskLogic'
 import { useDragReorder } from '../features/tasks/useDragReorder'
+import { buildTodayRows, splitHabits } from '../features/tasks/todayRows'
 import EmptyStateCelebration from '../features/tasks/EmptyStateCelebration'
 import { syncTaskForHabit, spawnTaskForHabit } from '../features/tasks/habitTaskSync'
 import { COLOR_PALETTE } from '../constants/colorPalette'
@@ -180,12 +181,23 @@ export default function HabitsPage() {
   // pointer-based hook every other list in the app uses (see
   // useDragReorder.jsx) — the whole list is one flat bucket, so the new
   // order replaces habits outright (see reorderHabits).
-  const habitIds = useMemo(() => habits.map((h) => h.id), [habits])
-  const { displayOrder: habitOrder, draggingId: draggingHabitId, bindHandle: bindHabitHandle, dragGhost } =
+  const today = todayISO()
+  // The page lists (1) the habits whose task is in «Мой день» today, in that list's order, then
+  // (2) the habits made in this section (draggable). See splitHabits.
+  const allTasks = useTasksStore((s) => s.tasks)
+  const allProjects = useTasksStore((s) => s.projects)
+  const { linked: linkedHabits, own: ownHabits } = useMemo(
+    () => splitHabits(habits, buildTodayRows(allTasks, allProjects, today)),
+    [habits, allTasks, allProjects, today],
+  )
+  const shownHabits = useMemo(() => [...linkedHabits, ...ownHabits], [linkedHabits, ownHabits])
+  const linkedIds = useMemo(() => new Set(linkedHabits.map((h) => h.id)), [linkedHabits])
+  const habitIds = useMemo(() => ownHabits.map((h) => h.id), [ownHabits])
+  const { displayOrder: ownOrder, draggingId: draggingHabitId, bindHandle: bindHabitHandle, dragGhost } =
     useDragReorder(habitIds, reorderHabits)
+  const habitOrder = useMemo(() => [...linkedHabits.map((h) => h.id), ...ownOrder], [linkedHabits, ownOrder])
   const habitsById = useMemo(() => new Map(habits.map((h) => [h.id, h])), [habits])
 
-  const today = todayISO()
   const dateStrip = useMemo(() => buildDateStrip(today), [today])
   const [selectedDate, setSelectedDate] = useState(today)
   const [newTitle, setNewTitle] = useState('')
@@ -218,7 +230,7 @@ export default function HabitsPage() {
     const map = new Map()
     dateStrip.forEach((iso) => {
       if (iso > today) { map.set(iso, ''); return }
-      const due = habits.filter((h) => appliesOnDate(h, iso))
+      const due = shownHabits.filter((h) => appliesOnDate(h, iso))
       if (due.length === 0) { map.set(iso, ''); return }
       const doneCount = due.filter((h) => h.completions[iso]).length
       if (doneCount === due.length) map.set(iso, ' habits-day--full')
@@ -226,13 +238,13 @@ export default function HabitsPage() {
       else map.set(iso, ' habits-day--partial')
     })
     return map
-  }, [dateStrip, habits, today])
+  }, [dateStrip, shownHabits, today])
 
   // Same celebration as Tasks/Wishes/Inbox/Insights (per user request) —
   // shown once every habit actually due today is checked off, mirroring
   // the sidebar's own green-check condition (see Sidebar.jsx's
   // sectionCounts.habits) so the two never disagree.
-  const dueToday = useMemo(() => habits.filter((h) => appliesOnDate(h, today)), [habits, today])
+  const dueToday = useMemo(() => shownHabits.filter((h) => appliesOnDate(h, today)), [shownHabits, today])
   const allDoneToday = dueToday.length > 0 && dueToday.every((h) => h.completions[today])
 
   const toggleNewRecurrenceDay = (dow) => {
@@ -317,7 +329,7 @@ export default function HabitsPage() {
             {allDoneToday && <EmptyStateCelebration message={t('habits.allDoneToday')} compact />}
 
             <div className="habits-list">
-              {habits.length === 0 ? (
+              {shownHabits.length === 0 ? (
                 <p className="task-section__empty">{t('habits.emptyHint')}</p>
               ) : (
                 habitOrder.map((habitId) => {
@@ -336,7 +348,7 @@ export default function HabitsPage() {
                   return (
                     <div
                       key={habit.id}
-                      {...bindHabitHandle(habit.id, habit.title)}
+                      {...(linkedIds.has(habit.id) ? null : bindHabitHandle(habit.id, habit.title))}
                       className={
                         'habits-row'
                         + (done ? ' habits-row--done' : ' habits-row--pending')

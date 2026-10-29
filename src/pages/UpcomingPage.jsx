@@ -14,6 +14,7 @@ import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTask
 import { IconFocus, IconClock } from '../icons/Icons'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
+import { buildTodayRows } from '../features/tasks/todayRows'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -575,40 +576,7 @@ export default function UpcomingPage() {
   // today — overdue and every future date alike, oldest-first then
   // soonest-first, since a plain date sort already puts overdue dates
   // (< today) ahead of future ones (> today) in the right order.
-  const todayRows = useMemo(() => {
-    const todayList = []
-    // A project task is scheduled only once it's on that project's map (per
-    // user request) — unplaced ones stay off the date board.
-    const onMap = new Set(projects.flatMap((p) => p.flow || []))
-    tasks.forEach((task) => {
-      if (task.projectId && !onMap.has(task.id)) return
-      // Done tasks stay in the list, marked done, until the day rolls over
-      // (per user request — "выполненные держатся до следующего дня, потом
-      // исчезают"): only those completed today remain visible.
-      if (task.status === 'done') {
-        if (!task.completedAt || isoFromDate(new Date(task.completedAt)) !== today) return
-      } else if (task.status !== 'active') return
-      const iso = task.deadline || task.whenDate
-      if (!iso) return
-      if (iso === today) {
-        todayList.push(task)
-      } else if (iso < today && !isRecurring(task)) {
-        // A one-step task stays in Today day after day until it is done or
-        // deleted (per user request); recurring ones are rolled by the store.
-        todayList.push(task)
-      }
-    })
-    // Repeating tasks come first (per user request), then the one-step ones;
-    // inside each group the order is the store's own, which a drag rewrites.
-    // Tasks just sent over from «Задачи» (dayRank) go to the end, oldest first, until the
-    // list is reordered by hand.
-    const oneStep = todayList.filter((task) => !isRecurring(task))
-    return [
-      ...todayList.filter(isRecurring),
-      ...oneStep.filter((task) => task.dayRank == null),
-      ...oneStep.filter((task) => task.dayRank != null).sort((a, b) => a.dayRank - b.dayRank),
-    ]
-  }, [tasks, projects, today])
+  const todayRows = useMemo(() => buildTodayRows(tasks, projects, today), [tasks, projects, today])
 
   // Next free time in Today, offered as the default when a task is pulled in.
   const suggestedStart = useMemo(() => {

@@ -25,7 +25,7 @@ export const useHabitsStore = create(
       // useTasksStore.js's addProject) — per user request, a habit's own
       // "done" color no longer has to be the fixed red every row used
       // before.
-      addHabit: (title, recurrence = 'daily', recurrenceDays = [], color, targetDays = null) => {
+      addHabit: (title, recurrence = 'daily', recurrenceDays = [], color, targetDays = null, origin = 'habits') => {
         const trimmed = (title || '').trim()
         if (!trimmed) return
         set((state) => ({
@@ -39,6 +39,8 @@ export const useHabitsStore = create(
               recurrence,
               recurrenceDays,
               targetDays,
+              // Where it was made: 'habits' (this section) or 'myday' (from a «Мой день» task).
+              origin,
               completions: {},
             },
           ],
@@ -59,9 +61,17 @@ export const useHabitsStore = create(
       // per user request) — habits are always rendered as one flat list, so
       // (unlike reorderTasks's subset-reslotting) the new order just
       // replaces the array outright, same as reorderProjects.
+      // A subset (the habits the page shows) is re-slotted into the positions it already
+      // occupies, so habits hidden from the page keep their place.
       reorderHabits: (orderedIds) => set((state) => {
+        const idSet = new Set(orderedIds)
         const byId = new Map(state.habits.map((h) => [h.id, h]))
-        return { habits: orderedIds.map((id) => byId.get(id)).filter(Boolean) }
+        const habits = state.habits.slice()
+        let i = 0
+        state.habits.forEach((h, pos) => {
+          if (idSet.has(h.id)) { habits[pos] = byId.get(orderedIds[i]); i += 1 }
+        })
+        return { habits }
       }),
 
       // Toggles just the one date — a habit's "done" state is per-day, not

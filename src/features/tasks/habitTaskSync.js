@@ -92,5 +92,5 @@ export function spawnTaskForHabit(habit, { tasks, addTask, updateTask }) {
 export function spawnHabitForTask(task, { habits, addHabit }) {
   if (!isHabitTask(task)) return
   if (findLinkedHabit(habits, task.title)) return
-  addHabit(task.title, task.recurrence, task.recurrenceDays || [])
+  addHabit(task.title, task.recurrence, task.recurrenceDays || [], undefined, null, 'myday')
 }
