@@ -18,17 +18,24 @@ const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
 // The light theme writes the project name in that colour as it is; the dark theme
 // (styles/neon.css) uses this lifted, saturated shade of the same hue instead, so the
 // name stays readable on the dark rows. Greys stay grey.
+// Bright shade of a project colour for dark rows: same perceived lightness for every hue
+// (OKLCH), so green never looks brighter than red; yellows get a touch more.
 function brightTagColor(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
-  if (!m) return '#9aa6ba'
-  const [r, g, b] = m.slice(1).map((h) => parseInt(h, 16) / 255)
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const d = max - min
-  if (d < 0.08) return 'hsl(220 12% 72%)' // grey / near-grey
-  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
-  h = Math.round(h * 60 + 360) % 360
-  return `hsl(${h} 85% 66%)`
+  if (!m) return 'oklch(0.75 0.02 250)'
+  const [r, g, b] = m.slice(1).map((h) => {
+    const c = parseInt(h, 16) / 255
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const mm = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  const A = 1.9779984951 * l - 2.428592205 * mm + 0.4505937099 * s
+  const B = 0.0259040371 * l + 0.7827717662 * mm - 0.808675766 * s
+  if (Math.hypot(A, B) < 0.04) return 'oklch(0.75 0.02 250)' // grey / near-grey
+  const hue = Math.round(((Math.atan2(B, A) * 180) / Math.PI + 360) % 360)
+  const light = hue > 80 && hue < 110 ? 0.78 : 0.75
+  return `oklch(${light} 0.16 ${hue})`
 }
 const capitalizeAfterSpace = (v) => (/\s/.test(v) && v ? v.charAt(0).toUpperCase() + v.slice(1) : v)
 
