@@ -10366,6 +10366,8 @@ body.kb-open .install-hint { display: none; }
   white-space: nowrap;
   line-height: 1.3;
 }
+.task-cycle { order: 3; }
+.timed-row--notime + .cycle-picker { margin-left: 14px; }
 .task-tag-wrap { flex: 0 1 auto; min-width: 0; max-width: 60%; display: inline-flex; order: 2; }
 .task-tag-wrap .task-tag { order: 0; max-width: 100%; }
 /* Collapsed project marker: a round dot in the project's colour (dashed «+» when there is none). */
@@ -10429,7 +10431,8 @@ body.kb-open .install-hint { display: none; }
 /* Phones: «Мой день» button stays on the title line, the project tag drops under the title. */
 @media (max-width: 480px) {
   .timed-row--notime .timed-row__body { flex-wrap: wrap; row-gap: 6px; padding-top: 8px; padding-bottom: 8px; }
-  .timed-row--notime .timed-row__title { flex: 1 1 calc(100% - 84px); }
+  .timed-row--notime .timed-row__title { flex: 1 1 calc(100% - 116px); }
+  .timed-row--notime .task-cycle { order: 2; }
   .timed-row--notime .task-myday { order: 2; }
   .timed-row--notime .task-tag-wrap { order: 4; margin-left: 22px; max-width: 70%; }
 }

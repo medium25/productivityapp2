@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
-import { syncHabitForTask } from '../features/tasks/habitTaskSync'
+import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
+import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 
 // «Задачи»: every open task in one list, drawn like the rows of «Мой день» but
@@ -43,10 +44,12 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onSetTitle, onDelete, dragHandleProps, dragging }) {
+function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onSetTitle, onSetCycle, onDelete, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [tagOpen, setTagOpen] = useState(false)
+  const [cycleOpen, setCycleOpen] = useState(false)
+  const closeCycle = useCallback(() => setCycleOpen(false), [])
   const tagRef = useRef(null)
   useEffect(() => {
     if (!tagOpen) return undefined
@@ -66,6 +69,7 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
   }
 
   return (
+    <>
     <div
       className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '')}
       {...(editing ? null : dragHandleProps)}
@@ -104,6 +108,17 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
             <span className="timed-row__title-text" onDoubleClick={() => { setValue(task.title); setEditing(true) }}>{task.title}</span>
           )}
         </span>
+        <button
+          type="button"
+          className={'cycle-sign task-cycle' + (isRecurring(task) ? ' cycle-sign--on' : '')}
+          data-cycle-trigger
+          onPointerDown={stop}
+          onClick={() => setCycleOpen((v) => !v)}
+          title={t('tasksHub.cycleTitle')}
+          aria-label={t('tasksHub.cycleTitle')}
+        >
+          {CYCLE_ICON}
+        </button>
         <button
           type="button"
           className={'task-myday' + (inMyDay ? ' task-myday--on' : '')}
@@ -161,6 +176,8 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
         </button>
       </span>
     </div>
+    {cycleOpen && <CyclePicker task={task} t={t} onSet={(rec, d) => onSetCycle(task, rec, d)} onClose={closeCycle} />}
+    </>
   )
 }
 
@@ -176,6 +193,7 @@ export default function TasksListPage() {
   const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
+  const addHabit = useHabitsStore((s) => s.addHabit)
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
 
   // Re-read the date on refocus / midnight so «Мой день» stays right overnight.
@@ -191,7 +209,7 @@ export default function TasksListPage() {
   // «Убрать выполненные» (which stamps listClearedAt). Repeating tasks live in
   // «Мой день» and «Привычки», not here.
   const rows = useMemo(() => tasks.filter((task) => {
-    if (isRecurring(task)) return false
+    if (isRecurring(task) && task.stage !== 'tasks') return false // repeating tasks made elsewhere live in «Мой день» / «Привычки»
     if (task.status === 'done') return !!task.completedAt && (!task.listClearedAt || task.completedAt > task.listClearedAt)
     return task.status === 'active'
   }), [tasks])
@@ -229,6 +247,11 @@ export default function TasksListPage() {
     if (old && (old.flow || []).includes(task.id)) setProjectFlow(old.id, old.flow.filter((id) => id !== task.id))
     updateTask(task.id, { projectId })
     if (wasInMyDay && projectId) placeOnMap(task.id, projectId)
+  }
+
+  const setCycle = (task, recurrence, recurrenceDays) => {
+    updateTask(task.id, { recurrence, recurrenceDays })
+    spawnHabitForTask({ ...task, recurrence, recurrenceDays }, { habits, addHabit })
   }
 
   const [adding, setAdding] = useState(false)
@@ -294,6 +317,7 @@ export default function TasksListPage() {
                     onToggleMyDay={toggleMyDay}
                     onPickProject={(tk) => setPicker({ task: tk })}
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
+                    onSetCycle={setCycle}
                     onDelete={deleteTask}
                     dragHandleProps={drag.bindHandle(task.id, task.title)}
                     dragging={drag.draggingId === task.id}
