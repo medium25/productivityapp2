@@ -329,63 +329,76 @@ export default function HabitsPage() {
 
             {allDoneToday && <EmptyStateCelebration message={t('habits.allDoneToday')} compact />}
 
-            <div className="habits-list">
+            {/* Rows look exactly like «Мой день»: same card, colours, dots, divider cell and done circle. */}
+            <div className="habits-list timed-list">
               {shownHabits.length === 0 ? (
                 <p className="task-section__empty">{t('habits.emptyHint')}</p>
               ) : (
-                habitOrder.map((habitId) => {
+                habitOrder.map((habitId, i) => {
                   const habit = habitsById.get(habitId)
                   if (!habit) return null
                   const done = !!habit.completions[selectedDate]
                   const streak = computeStreak(habit, selectedDate)
-                  // "Daily"/"Weekly"/etc no longer shown as its own line (per
-                  // user request) — only an actual day count does: the
-                  // total-days goal's progress if one's set ("30 дней пить
-                  // магний"), nothing at all otherwise (the streak pill below
-                  // already covers the day-to-day case).
-                  const goalLabel = habit.targetDays
-                    ? `${Object.keys(habit.completions).length}/${habit.targetDays} ${t('habits.streakUnit')}`
-                    : ''
+                  const prev = habitsById.get(habitOrder[i - 1])
+                  const next = habitsById.get(habitOrder[i + 1])
+                  const linkPrev = done && !!prev?.completions[selectedDate]
+                  const linkNext = done && !!next?.completions[selectedDate]
+                  // Same colour as the matching row of «Мой день» (rows are numbered from its list), else by position.
+                  const palette = ROW_PALETTE[(linkedIds.has(habit.id) ? rowIndex.get(habit.id) : i) % ROW_PALETTE.length]
+                  // Last 7 days up to the selected date: filled = done, ring = missed, faint = not due / no history.
+                  const dots = Array.from({ length: 7 }, (_, k) => {
+                    const iso = addDays(selectedDate, k - 6)
+                    if (habit.completions[iso]) return 'done'
+                    return iso < today && iso >= habit.createdAt.slice(0, 10) && appliesOnDate(habit, iso) ? 'missed' : 'none'
+                  })
                   return (
-                    <div
-                      key={habit.id}
-                      {...(linkedIds.has(habit.id) ? null : bindHabitHandle(habit.id, habit.title))}
-                      className={
-                        'habits-row'
-                        + (done ? ' habits-row--done' : ' habits-row--pending')
-                        + (draggingHabitId === habit.id ? ' habits-row--dragging' : '')
-                      }
-                      data-linked={linkedIds.has(habit.id) ? '' : undefined}
-                      style={linkedIds.has(habit.id)
-                        // Same colour as its row in «Мой день»: bright hue on the dark theme, the row's border colour on light.
-                        ? { '--habit-color': ROW_PALETTE[rowIndex.get(habit.id) % ROW_PALETTE.length].border, '--hc-dark': ROW_PALETTE[rowIndex.get(habit.id) % ROW_PALETTE.length].hue }
-                        : { '--habit-color': habit.color || COLOR_PALETTE[0] }}
-                      onClick={() => startEdit(habit)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') startEdit(habit) }}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <span className="habits-row__body">
-                        <span className="habits-row__title">{habit.title}</span>
-                        {goalLabel && <span className="habits-row__freq">{goalLabel}</span>}
-                      </span>
-                      {/* Streak, shown next to the habit per user request,
-                          "x{n} день"-style instead of the earlier floating
-                          corner badge. */}
-                      <span className="habits-streak-pill"><IconFlame size={13} /> x{streak} {t('habits.streakUnit')}</span>
-                      <button
-                        type="button"
-                        className="habits-toggle-btn"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const nowDone = !habit.completions[selectedDate]
-                          toggleCompletion(habit.id, selectedDate)
-                          syncTaskForHabit(habit, selectedDate, nowDone, { tasks, toggleTaskDone, updateTask })
-                        }}
-                        aria-label={done ? t('tasks.markUndone') : t('tasks.toggleDone')}
+                    <div key={habit.id} className={i < habitOrder.length - 1 ? 'task-row-gap' : undefined}>
+                      <div
+                        {...(linkedIds.has(habit.id) ? null : bindHabitHandle(habit.id, habit.title))}
+                        className={
+                          'timed-row'
+                          + (done ? ' timed-row--done' : '')
+                          + (linkPrev ? ' timed-row--link-prev' : '')
+                          + (linkNext ? ' timed-row--link-next' : '')
+                          + (draggingHabitId === habit.id ? ' timed-row--dragging' : '')
+                        }
+                        onClick={() => startEdit(habit)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') startEdit(habit) }}
+                        role="button"
+                        tabIndex={0}
                       >
-                        {done ? '✓' : '+'}
-                      </button>
+                        <span className="timed-row__body" style={{ background: palette.bg, color: palette.text, '--h': palette.hue, '--row-bg-light': palette.bg }}>
+                          <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
+                          <span className="timed-row__title">
+                            <span className="timed-row__num">{i + 1}.</span>
+                            <span className="timed-row__title-text">{habit.title}</span>
+                          </span>
+                          <span className="cycle-dots" aria-hidden="true">
+                            {dots.map((r, k) => <i key={k} className={'cycle-dots__dot cycle-dots__dot--' + r} />)}
+                          </span>
+                          <span className="timed-row__time timed-row__time--mins">
+                            <span className="timed-row__mins-label" title={habit.targetDays ? `${Object.keys(habit.completions).length}/${habit.targetDays}` : undefined}>
+                              <b>{streak}</b>
+                              <small>{habit.targetDays ? `${Object.keys(habit.completions).length}/${habit.targetDays}` : t('habits.streakUnit')}</small>
+                            </span>
+                          </span>
+                        </span>
+                        <span className="timed-row__actions">
+                          <button
+                            type="button"
+                            className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '')}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const nowDone = !habit.completions[selectedDate]
+                              toggleCompletion(habit.id, selectedDate)
+                              syncTaskForHabit(habit, selectedDate, nowDone, { tasks, toggleTaskDone, updateTask })
+                            }}
+                            aria-label={done ? t('tasks.markUndone') : t('tasks.toggleDone')}
+                          >
+                            {done ? '✓' : ''}
+                          </button>
+                        </span>
+                      </div>
                     </div>
                   )
                 })
