@@ -14,6 +14,21 @@ import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 // «Мой день» button that puts the task into today's list (tap again to take it out).
 // Adding a task asks for its project in a pop-up first.
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
+// Project colours in the app are deliberately dark (they carry white text elsewhere).
+// For the filled tag the same hue is lifted to a bright, saturated shade so it reads
+// at a glance; greys stay grey. Text on it is always dark.
+function brightTagColor(hex) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
+  if (!m) return '#9aa6ba'
+  const [r, g, b] = m.slice(1).map((h) => parseInt(h, 16) / 255)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const d = max - min
+  if (d < 0.08) return 'hsl(220 12% 72%)' // grey / near-grey
+  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  h = Math.round(h * 60 + 360) % 360
+  return `hsl(${h} 85% 66%)`
+}
 const capitalizeAfterSpace = (v) => (/\s/.test(v) && v ? v.charAt(0).toUpperCase() + v.slice(1) : v)
 
 const DragGrip = () => (
@@ -87,7 +102,7 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
         <button
           type="button"
           className={'task-tag' + (project ? '' : ' task-tag--none')}
-          style={project ? { '--dot-color': getProjectColor(project) } : undefined}
+          style={project ? { '--tag-bg': brightTagColor(getProjectColor(project)), '--tag-fg': '#0b1018' } : undefined}
           onPointerDown={stop}
           onClick={() => onPickProject(task)}
           title={t('tasksList.changeProject')}
