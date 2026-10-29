@@ -314,6 +314,13 @@ export default function TasksListPage() {
               <span className="tasks-column__header-title tasks-column__header-title--center">
                 <SideIconTasks size={15} />{t('tasksList.title')}
               </span>
+              {doneRows.length > 0 && !selecting && (
+                <button type="button" className="tasks-clear-done" onClick={clearDone} title={t('tasksList.clearDone')} aria-label={t('tasksList.clearDone')}>
+                  <svg className="tasks-clear-done__icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h6M4 17h10M15 15l2.5 2.5L22 12" /></svg>
+                  <span className="tasks-clear-done__text">{t('tasksList.clearDone')}</span>
+                  <span className="tasks-clear-done__n">{doneRows.length}</span>
+                </button>
+              )}
               {ordered.length > 0 && (
                 <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))}>
                   {selecting ? t('tasksList.selectDone') : t('tasksList.select')}
@@ -387,11 +394,6 @@ export default function TasksListPage() {
               ) : (
                 <button type="button" className="timed-add-slot" onClick={() => setAdding(true)}>
                   {t('tasksList.addTask')}
-                </button>
-              )}
-              {doneRows.length > 0 && (
-                <button type="button" className="tasks-clear-done" onClick={clearDone}>
-                  {t('tasksList.clearDone')} ({doneRows.length})
                 </button>
               )}
             </div>

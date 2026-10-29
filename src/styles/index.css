@@ -10408,19 +10408,32 @@ body.kb-open .install-hint { display: none; }
 .task-myday--on { background: linear-gradient(100deg, #ffb93d, #ff8a1f); border-color: #ffb93d; box-shadow: 0 2px 8px rgba(240, 138, 16, 0.4); }
 .task-myday--on svg { left: calc(100% - 25px); background: #fff; stroke: #c25a00; }
 .tasks-clear-done {
-  align-self: center;
-  margin-top: 6px;
-  padding: 8px 18px;
-  border: 1.5px solid color-mix(in srgb, var(--text-muted) 45%, transparent);
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 999px;
   background: none;
-  color: var(--text-muted);
+  color: inherit;
   font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 800;
   cursor: pointer;
 }
-.tasks-clear-done:hover { color: var(--text); border-color: var(--text-muted); }
+.tasks-clear-done__n { opacity: 0.75; }
+.tasks-clear-done__icon { display: none; flex: none; }
+/* Phones: the header is tight — icon + count instead of the full label. */
+@media (max-width: 560px) {
+  .tasks-clear-done { left: 10px; padding: 0 11px; }
+  .tasks-clear-done__text { display: none; }
+  .tasks-clear-done__icon { display: block; }
+}
 .task-row__delete { flex: none; border: 0; background: none; color: var(--danger); font-size: 1.2rem; line-height: 1; padding: 0 6px; cursor: pointer; }
 .project-picker__task { margin: 0 0 8px; font-weight: 600; }
 .project-picker__create { display: flex; gap: 8px; }
