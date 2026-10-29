@@ -162,6 +162,7 @@ export const useTasksStore = create(
 
           snapshotForUndo()
           set((state) => {
+            let spawnedId = null
             const tasks = state.tasks.map((t) => (
               t.id === id
                 ? { ...t, status: nowDone ? 'done' : 'active', completedAt: nowDone ? new Date().toISOString() : null }
@@ -200,9 +201,18 @@ export const useTasksStore = create(
                   startMinute: null,
                 }
                 tasks.splice(tasks.findIndex((t) => t.id === id) + 1, 0, spawned)
+                spawnedId = spawned.id
               }
             }
 
+            // A project task shows on the date board only while it is on the project's map, so the
+            // next occurrence of a repeating one joins the map right behind the finished one.
+            if (spawnedId && target.projectId) {
+              const projects = state.projects.map((p) => (
+                p.id === target.projectId && (p.flow || []).includes(id) ? { ...p, flow: [...p.flow, spawnedId] } : p
+              ))
+              return { tasks, projects }
+            }
             return { tasks }
           })
 
