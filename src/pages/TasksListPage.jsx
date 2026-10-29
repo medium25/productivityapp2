@@ -15,8 +15,9 @@ import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 // Adding a task asks for its project in a pop-up first.
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
 // Project colours in the app are deliberately dark (they carry white text elsewhere).
-// For the filled tag the same hue is lifted to a bright, saturated shade so it reads
-// at a glance; greys stay grey. Text on it is always dark.
+// The light theme writes the project name in that colour as it is; the dark theme
+// (styles/neon.css) uses this lifted, saturated shade of the same hue instead, so the
+// name stays readable on the dark rows. Greys stay grey.
 function brightTagColor(hex) {
   const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
   if (!m) return '#9aa6ba'
@@ -102,7 +103,7 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
         <button
           type="button"
           className={'task-tag' + (project ? '' : ' task-tag--none')}
-          style={project ? { '--tag-bg': brightTagColor(getProjectColor(project)), '--tag-fg': '#0b1018' } : undefined}
+          style={project ? { '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) } : undefined}
           onPointerDown={stop}
           onClick={() => onPickProject(task)}
           title={t('tasksList.changeProject')}

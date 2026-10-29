@@ -282,3 +282,6 @@
   border-radius: 14px;
 }
 :root[data-skin='neon'] .task-myday--on svg { stroke: #0b1018; }
+/* «Задачи»: project name in the bright shade of its colour on the dark rows. */
+:root[data-skin='neon'] .task-tag { color: var(--tag-bright, inherit); }
+:root[data-skin='neon'] .task-tag--none { color: inherit; }
