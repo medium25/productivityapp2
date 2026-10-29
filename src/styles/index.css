@@ -8251,8 +8251,8 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
   align-items: center;
   gap: 10px;
   border-radius: 10px;
-  padding: 6px 12px;
-  min-height: 44px; /* «Мой день» and «Задачи» rows share one size */
+  padding: 4px 12px;
+  min-height: 38px; /* «Мой день» and «Задачи» rows share one size (the original card height) */
   box-sizing: border-box;
 }
 
@@ -9967,7 +9967,7 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
      gesture), smaller history dots so the title gets the room. */
   .timed-row { gap: 6px; padding: 3px 10px; }
   .timed-row__time { flex-basis: 48px; padding-right: 8px; }
-  .timed-row__body { gap: 6px; padding: 6px 8px; }
+  .timed-row__body { gap: 6px; padding: 4px 8px; }
   .timed-row__body > .drag-grip { display: none; }
   .cycle-dots { gap: 3px; }
   .cycle-dots__dot { width: 6px; height: 6px; }
@@ -10373,7 +10373,7 @@ body.kb-open .install-hint { display: none; }
 .task-tag-wrap { flex: 0 1 auto; min-width: 0; max-width: 60%; display: inline-flex; order: 2; }
 .task-tag-wrap .task-tag { order: 0; max-width: 100%; }
 /* Collapsed project marker: a round dot in the project's colour (dashed «+» when there is none). */
-.task-tag--dot { width: 26px; height: 26px; padding: 0; justify-content: center; border-radius: 50%; }
+.task-tag--dot { width: 24px; height: 24px; padding: 0; justify-content: center; border-radius: 50%; }
 .task-tag--dot::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px color-mix(in srgb, var(--c) 60%, transparent); }
 .task-tag--dot.task-tag--none { font-size: 1rem; font-weight: 700; line-height: 1; padding: 0; }
 .task-tag--dot.task-tag--none::before { content: none; }
@@ -10382,8 +10382,8 @@ body.kb-open .install-hint { display: none; }
 .task-myday {
   position: relative;
   flex: none;
-  width: 52px;
-  height: 30px;
+  width: 46px;
+  height: 26px;
   padding: 0;
   border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 999px;
@@ -10398,9 +10398,9 @@ body.kb-open .install-hint { display: none; }
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 23px;
-  height: 23px;
-  padding: 4.5px;
+  width: 19px;
+  height: 19px;
+  padding: 3.5px;
   box-sizing: border-box;
   border-radius: 50%;
   background: color-mix(in srgb, currentColor 40%, transparent);
@@ -10408,7 +10408,7 @@ body.kb-open .install-hint { display: none; }
   transition: left 0.15s ease;
 }
 .task-myday--on { background: linear-gradient(100deg, #ffb93d, #ff8a1f); border-color: #ffb93d; box-shadow: 0 2px 8px rgba(240, 138, 16, 0.4); }
-.task-myday--on svg { left: calc(100% - 25px); background: #fff; stroke: #c25a00; }
+.task-myday--on svg { left: calc(100% - 21px); background: #fff; stroke: #c25a00; }
 .tasks-clear-done {
   position: absolute;
   left: 14px;
@@ -10538,20 +10538,21 @@ body.kb-open .install-hint { display: none; }
   min-width: 0;
   box-sizing: border-box;
   align-self: stretch;
-  margin: 6px 0;
+  margin: 0;
   padding: 0 0 0 10px;
   border-left: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 0;
 }
 .timed-row__body > .timed-row__time--mins::after { display: none; }
 .timed-row__body > .timed-row__time .timed-row__time-line { display: none; }
 .timed-row__body .timed-row__mins-label { text-align: center; }
-.timed-row__body .timed-row__mins-label b { color: inherit; font-size: 1.05rem; }
-.timed-row__body .timed-row__mins-label small { color: inherit; opacity: 0.75; }
+.timed-row__body .timed-row__mins-label { line-height: 1; }
+.timed-row__body .timed-row__mins-label b { color: inherit; font-size: 0.95rem; line-height: 1; }
+.timed-row__body .timed-row__mins-label small { color: inherit; opacity: 0.75; font-size: 0.55rem; line-height: 1; margin-top: 1px; }
 .timed-row__body .timed-row__addtime { color: inherit; opacity: 0.85; text-align: center; }
 .timed-row__body .timed-row__addtime:hover { opacity: 1; color: inherit; }
 .timed-row__body > .timed-row__time .timed-row__start,
