@@ -10436,3 +10436,31 @@ body.kb-open .install-hint { display: none; }
   .timed-row--notime .task-myday { order: 2; }
   .timed-row--notime .task-tag-wrap { order: 4; margin-left: 22px; max-width: 70%; }
 }
+
+/* Project path window (opened from a task's project dot in «Задачи»): a vertical timeline. */
+.ppath { --c: var(--ppath-c); max-width: 400px; }
+:root[data-skin='neon'] .ppath { --c: var(--ppath-bright); }
+.ppath__head { display: flex; align-items: center; gap: 10px; padding: 16px 52px 8px 16px; }
+.ppath__dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px color-mix(in srgb, var(--c) 70%, transparent); }
+.ppath__title { margin: 0; font-size: 1rem; font-weight: 800; line-height: 1.25; min-width: 0; }
+.ppath__sub { padding: 0 16px 10px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; }
+.ppath__sub b { color: var(--c); font-weight: 800; }
+.ppath__body { padding: 4px 16px 12px; overflow-y: auto; min-height: 0; }
+.ppath__empty { margin: 8px 0; color: var(--text-muted); }
+.ppath__tl { list-style: none; margin: 0; padding: 0 0 0 34px; }
+.ppath__st { position: relative; padding: 2px 0 16px; }
+.ppath__st:last-child { padding-bottom: 2px; }
+.ppath__st::before { content: ''; position: absolute; left: -23px; top: 22px; bottom: -4px; width: 2px; background: repeating-linear-gradient(color-mix(in srgb, var(--text-muted) 45%, transparent) 0 4px, transparent 4px 8px); }
+.ppath__st--done::before { background: var(--c); box-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent); }
+.ppath__st:last-child::before { display: none; }
+.ppath__node { position: absolute; left: -34px; top: 0; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 2px solid color-mix(in srgb, var(--text-muted) 55%, transparent); background: var(--glass-bg-strong, var(--surface)); box-sizing: border-box; }
+.ppath__st--done .ppath__node { background: var(--c); border-color: var(--c); color: var(--surface, #fff); box-shadow: 0 0 10px color-mix(in srgb, var(--c) 60%, transparent); }
+.ppath__st--cur .ppath__node { border-color: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
+.ppath__st--cur .ppath__node::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.ppath__name { font-weight: 700; font-size: 0.9rem; line-height: 1.3; overflow-wrap: anywhere; }
+.ppath__st--done .ppath__name { color: var(--text-muted); }
+.ppath__meta { display: flex; gap: 8px; margin-top: 3px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+.ppath__meta i { font-style: normal; opacity: 0.5; margin-right: 8px; }
+.ppath__st--done .ppath__meta { color: var(--c); }
+.ppath__foot { padding: 10px 16px 16px; border-top: 1px solid var(--glass-border); display: flex; }
+.ppath__change { flex: 1; height: 38px; border-radius: 12px; font: inherit; font-weight: 800; font-size: 0.85rem; cursor: pointer; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border: 1.5px solid color-mix(in srgb, var(--c) 50%, transparent); }

@@ -840,6 +840,12 @@
     "newProjectPlaceholder": "Название проекта",
     "create": "Создать",
     "clearDone": "Убрать выполненные",
+    "pathProgress": "{{done}} из {{total}} шагов выполнено",
+    "pathNoDate": "без даты",
+    "pathToday": "Сегодня",
+    "pathTomorrow": "Завтра",
+    "pathEmpty": "В проекте пока нет задач",
+    "pathDone": "выполнено",
     "deleteTask": "Удалить задачу"
   }
 }

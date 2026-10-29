@@ -7,6 +7,7 @@ import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
+import ProjectPathModal from '../features/tasks/ProjectPathModal'
 import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 
@@ -44,19 +45,11 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onSetTitle, onSetCycle, onDelete, dragHandleProps, dragging }) {
+function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
-  const [tagOpen, setTagOpen] = useState(false)
   const [cycleOpen, setCycleOpen] = useState(false)
   const closeCycle = useCallback(() => setCycleOpen(false), [])
-  const tagRef = useRef(null)
-  useEffect(() => {
-    if (!tagOpen) return undefined
-    const close = (e) => { if (!tagRef.current?.contains(e.target)) setTagOpen(false) }
-    document.addEventListener('pointerdown', close)
-    return () => document.removeEventListener('pointerdown', close)
-  }, [tagOpen])
   const [value, setValue] = useState(task.title)
   const done = task.status === 'done'
   const color = ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
@@ -136,33 +129,19 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
             </svg>
           )}
         </button>
-        {/* Collapsed: just a coloured dot (long names ate the row). Tap = show the name; tap the name = change project. */}
-        <span ref={tagRef} className="task-tag-wrap">
-          {project && tagOpen ? (
-            <button
-              type="button"
-              className="task-tag"
-              style={{ '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) }}
-              onPointerDown={stop}
-              onClick={() => { setTagOpen(false); onPickProject(task) }}
-              title={t('tasksList.changeProject')}
-              aria-label={t('tasksList.changeProject')}
-            >
-              <span className="task-tag__name">{project.name}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={'task-tag task-tag--dot' + (project ? '' : ' task-tag--none')}
-              style={project ? { '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) } : undefined}
-              onPointerDown={stop}
-              onClick={() => (project ? setTagOpen(true) : onPickProject(task))}
-              title={project ? project.name : t('tasksList.project')}
-              aria-label={project ? project.name : t('tasksList.project')}
-            >
-              {project ? null : '+'}
-            </button>
-          )}
+        {/* Just a coloured dot (long names ate the row): tap = the project's path window; «+» when there is no project. */}
+        <span className="task-tag-wrap">
+          <button
+            type="button"
+            className={'task-tag task-tag--dot' + (project ? '' : ' task-tag--none')}
+            style={project ? { '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) } : undefined}
+            onPointerDown={stop}
+            onClick={() => (project ? onOpenPath(task) : onPickProject(task))}
+            title={project ? project.name : t('tasksList.project')}
+            aria-label={project ? project.name : t('tasksList.project')}
+          >
+            {project ? null : '+'}
+          </button>
         </span>
       </span>
       <span className="timed-row__actions">
@@ -254,6 +233,10 @@ export default function TasksListPage() {
     spawnHabitForTask({ ...task, recurrence, recurrenceDays }, { habits, addHabit })
   }
 
+  const [pathTaskId, setPathTaskId] = useState(null) // the task whose project path window is open
+  const pathTask = pathTaskId ? tasks.find((x) => x.id === pathTaskId) : null
+  const pathProject = pathTask ? projectById.get(pathTask.projectId) : null
+
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
   const draftRef = useRef(null)
@@ -316,6 +299,7 @@ export default function TasksListPage() {
                     onToggleDone={onToggleDone}
                     onToggleMyDay={toggleMyDay}
                     onPickProject={(tk) => setPicker({ task: tk })}
+                    onOpenPath={(tk) => setPathTaskId(tk.id)}
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
                     onSetCycle={setCycle}
                     onDelete={deleteTask}
@@ -360,6 +344,14 @@ export default function TasksListPage() {
         </div>
       </div>
       {drag.dragGhost}
+      <ProjectPathModal
+        open={!!pathProject}
+        project={pathProject}
+        color={pathProject ? { deep: getProjectColor(pathProject), bright: brightTagColor(getProjectColor(pathProject)) } : { deep: '#888', bright: '#aaa' }}
+        tasks={tasks}
+        onClose={() => setPathTaskId(null)}
+        onChangeProject={() => { setPathTaskId(null); if (pathTask) setPicker({ task: pathTask }) }}
+      />
       <ProjectPickerModal
         open={!!picker}
         taskTitle={picker ? picker.task.title : ''}

@@ -824,6 +824,12 @@
     "newProjectPlaceholder": "Project name",
     "create": "Create",
     "clearDone": "Clear completed",
+    "pathProgress": "{{done}} of {{total}} steps done",
+    "pathNoDate": "no date",
+    "pathToday": "Today",
+    "pathTomorrow": "Tomorrow",
+    "pathEmpty": "No tasks in this project yet",
+    "pathDone": "done",
     "deleteTask": "Delete task"
   }
 }

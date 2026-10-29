@@ -809,6 +809,12 @@
     "newProjectPlaceholder": "Loyiha nomi",
     "create": "Yaratish",
     "clearDone": "Bajarilganlarni olib tashlash",
+    "pathProgress": "{{total}} tadan {{done}} qadam bajarildi",
+    "pathNoDate": "sanasiz",
+    "pathToday": "Bugun",
+    "pathTomorrow": "Ertaga",
+    "pathEmpty": "Loyihada hali vazifalar yo‘q",
+    "pathDone": "bajarildi",
     "deleteTask": "Vazifani o‘chirish"
   }
 }
