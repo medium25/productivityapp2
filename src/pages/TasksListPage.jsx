@@ -232,7 +232,10 @@ export default function TasksListPage() {
     if (inMyDay(task)) {
       updateTask(task.id, { whenDate: null, deadline: null })
     } else {
+      // The sequence in «Мой день» is the store's order: send the task to the end of today's list.
+      const todayIds = tasks.filter((x) => x.id !== task.id && x.status !== 'trashed' && inMyDay(x)).map((x) => x.id)
       updateTask(task.id, { whenDate: today, deadline: null })
+      reorderTasks([...todayIds, task.id])
       if (task.projectId) placeOnMap(task.id, task.projectId)
     }
   }
