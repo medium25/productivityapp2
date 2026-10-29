@@ -138,7 +138,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, dragHandleProps, dragging }) {
+function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -171,10 +171,11 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   return (
     <>
     <div
-      className={'timed-row' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '')}
+      className={'timed-row' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '')}
       style={{ minHeight: pinned ? Math.max(34, (end - start) * PX_PER_MIN) : 34 }}
-      onDoubleClick={(e) => { if (!e.target.closest('button, input')) onEdit(task) }}
-      {...dragHandleProps}
+      onDoubleClick={selecting ? undefined : (e) => { if (!e.target.closest('button, input')) onEdit(task) }}
+      onClick={selecting ? () => onSelect(task.id) : undefined}
+      {...(selecting ? null : dragHandleProps)}
     >
       {!pinned ? (
         <span className="timed-row__time timed-row__time--mins">
@@ -214,8 +215,12 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         </span>
       </span>
       )}
-      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue }}>
-        <DragGrip />
+      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
+        {selecting ? (
+          <span className={'task-sel' + (selected ? ' task-sel--on' : '')} aria-hidden="true">
+            {selected && <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+          </span>
+        ) : <DragGrip />}
         <span className="timed-row__title">
           <span className="timed-row__num">{number}.</span>
           {editing === 'title' ? (
@@ -259,13 +264,29 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
 // One date lane — Overdue / Today / Tomorrow: a dotted, Miro-style field
 // holding a timed list of the day's tasks. `onAddTask` is omitted for
 // Overdue (adding an already-overdue task makes no sense).
-function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskProps, taskDrag, onAddTask, onAddClick, onInsertAfter, onMoveToToday, onRequestStart, ghost, onGhostSubmit, onGhostCancel, conflict, onConflictPush, onConflictAfter, onConflictCancel }) {
+function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskProps, taskDrag, onAddTask, onAddClick, onInsertAfter, onMoveToToday, onRequestStart, ghost, onGhostSubmit, onGhostCancel, conflict, onConflictPush, onConflictAfter, onConflictCancel, onDeleteMany }) {
   const { t } = useTranslation()
   const dayStart = useUiPreferencesStore((s) => s.dayStartMinutes)
   const [adding, setAdding] = useState(false)
   const [value, setValue] = useState('')
   const inputRef = useRef(null)
   useEffect(() => { if (adding) inputRef.current?.focus() }, [adding])
+
+  // Group mode: pick several tasks and delete them together (to Трэш, like a single delete).
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState(() => new Set())
+  const [confirmDel, setConfirmDel] = useState(false)
+  const exitSelect = () => { setSelecting(false); setSelected(new Set()); setConfirmDel(false) }
+  const toggleSelected = (id) => {
+    setConfirmDel(false)
+    setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next })
+  }
+  useEffect(() => {
+    if (!selecting) return undefined
+    const onKey = (e) => { if (e.key === 'Escape') exitSelect() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [selecting])
   const submitAdd = () => {
     const trimmed = value.trim()
     if (trimmed) onAddTask(trimmed)
@@ -278,6 +299,11 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
     ? taskDrag.displayOrder.map((id) => baseRows.find((r) => r.id === id)).filter(Boolean)
     : baseRows
   const slots = computeSlots(rows, dayStart)
+  const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id))
+  const deleteSelected = () => {
+    onDeleteMany(rows.filter((r) => selected.has(r.id)).map((r) => r.id))
+    exitSelect()
+  }
   // Remaining time (per user request): finishing a task takes its minutes off
   // the header total; it stays visible, at 0, once everything is done.
   const plannedMinutes = rows.reduce((sum, r) => sum + (r.estimateMinutes || 0), 0)
@@ -297,7 +323,34 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
           )}
         </span>
         <span className="tasks-column__header-title tasks-column__header-title--center"><Icon size={15} />{title}</span>
+        {onDeleteMany && rows.length > 0 && (
+          <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))} title={selecting ? t('tasksList.selectDone') : t('tasksList.select')} aria-label={selecting ? t('tasksList.selectDone') : t('tasksList.select')}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+              <path d="M8 12.3l2.8 2.8L16.3 9.5" />
+            </svg>
+          </button>
+        )}
       </div>
+      {selecting && (
+        <div className="tasks-select-bar">
+          <span className="tasks-select-bar__count">{t('tasksList.selectedCount', { n: selected.size })}</span>
+          <button type="button" onClick={() => { setConfirmDel(false); setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.id))) }}>
+            {allSelected ? t('tasksList.selectNone') : t('tasksList.selectAll')}
+          </button>
+          {confirmDel ? (
+            <>
+              <span className="tasks-select-bar__ask">{t('tasksList.deleteSelectedConfirm', { n: selected.size })}</span>
+              <button type="button" className="tasks-select-bar__danger" onClick={deleteSelected}>{t('tasksList.deleteSelectedYes')}</button>
+              <button type="button" onClick={() => setConfirmDel(false)}>{t('tasks.cancel')}</button>
+            </>
+          ) : (
+            <button type="button" className="tasks-select-bar__danger" disabled={selected.size === 0} onClick={() => setConfirmDel(true)}>
+              {t('tasksList.deleteSelected')}{selected.size ? ` (${selected.size})` : ''}
+            </button>
+          )}
+        </div>
+      )}
       {adding && (
         <div className="tasks-cards__addtask tasks-cards__addtask--lane">
           <input
@@ -339,13 +392,16 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
                 language={language}
                 dragHandleProps={taskDrag.bindHandle(task.id, task.title)}
                 dragging={taskDrag.draggingId === task.id}
+                selecting={selecting}
+                selected={selected.has(task.id)}
+                onSelect={toggleSelected}
                 {...taskProps}
                 onSetStart={(tk, m) => onRequestStart(tk, m, rows, tone)}
               />
               {ghost && ghost.insertAfterId === task.id && !(conflict && conflict.tone === tone) ? (
                 <GhostRow key="mid" ghost={ghost} onSubmit={onGhostSubmit} onCancel={onGhostCancel} />
               ) : (
-                onInsertAfter && i < rows.length - 1 && (
+                onInsertAfter && !selecting && i < rows.length - 1 && (
                   <button
                     type="button"
                     className="timed-insert"
@@ -362,7 +418,7 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
           {ghost && !ghost.insertAfterId && !(conflict && conflict.tone === tone) ? (
             <GhostRow key={ghost.taskId || 'new'} ghost={ghost} onSubmit={onGhostSubmit} onCancel={onGhostCancel} />
           ) : (
-            !conflict && onAddClick && (
+            !conflict && !selecting && onAddClick && (
               <button type="button" className="timed-add-slot" data-drop-section="today-add" onClick={onAddClick}>
                 {t('tasksActivity.addSlotHint')}
               </button>
@@ -621,6 +677,7 @@ export default function UpcomingPage() {
           onConflictAfter={() => { conflict.after(); setConflict(null) }}
           onConflictCancel={() => setConflict(null)}
           onRequestStart={requestStart}
+          onDeleteMany={(ids) => ids.forEach((id) => deleteTask(id))}
           onAddClick={() => setSchedulePrompt({ isNew: true, title: '', minutes: DEFAULT_MINUTES })}
           onInsertAfter={(afterTask) => setSchedulePrompt({ isNew: true, title: '', minutes: DEFAULT_MINUTES, insertAfterId: afterTask.id })}
         />

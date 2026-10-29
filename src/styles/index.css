@@ -10533,7 +10533,7 @@ body.kb-open .install-hint { display: none; }
 .task-sel--on svg { stroke: var(--row-bg-light, #0b1018); }
 :root[data-skin='neon'] .task-sel--on svg { stroke: #0b1018; }
 .timed-row--selecting { cursor: pointer; }
-.timed-row--selecting .task-cycle, .timed-row--selecting .task-myday, .timed-row--selecting .task-tag-wrap, .timed-row--selecting .timed-row__actions { pointer-events: none; }
+.timed-row--selecting * { pointer-events: none; }
 .timed-row--selected .timed-row__body { outline: 2px solid currentColor; outline-offset: -2px; }
 @media (max-width: 480px) { .tasks-select-btn { right: 10px; } }
 
