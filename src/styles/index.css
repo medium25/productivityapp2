@@ -10574,6 +10574,3 @@ body.kb-open .install-hint { display: none; }
 /* «Задачи» rows get the same gap as «Мой день» (there the hidden «insert here» strip adds 3px between rows). */
 .task-row-gap { margin-bottom: 3px; }
 
-
-/* «Привычки» list uses the «Мой день» row component, so it takes that list's box, not the old card stack. */
-.habits-list.timed-list { display: block; gap: 0; padding: 0; }
