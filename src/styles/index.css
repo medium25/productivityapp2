@@ -10366,6 +10366,13 @@ body.kb-open .install-hint { display: none; }
   white-space: nowrap;
   line-height: 1.3;
 }
+.task-tag-wrap { flex: 0 1 auto; min-width: 0; max-width: 60%; display: inline-flex; order: 2; }
+.task-tag-wrap .task-tag { order: 0; max-width: 100%; }
+/* Collapsed project marker: a round dot in the project's colour (dashed «+» when there is none). */
+.task-tag--dot { width: 26px; height: 26px; padding: 0; justify-content: center; border-radius: 50%; }
+.task-tag--dot::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px color-mix(in srgb, var(--c) 60%, transparent); }
+.task-tag--dot.task-tag--none { font-size: 1rem; font-weight: 700; line-height: 1; padding: 0; }
+.task-tag--dot.task-tag--none::before { content: none; }
 .task-tag--none { --c: currentColor; opacity: 0.75; font-size: 0.8rem; background: none; border: 1px dashed color-mix(in srgb, currentColor 50%, transparent); padding: 0 12px; }
 /* «Мой день» toggle: a switch with a sun knob — knob left = not in My day, knob right + filled track = in My day. */
 .task-myday {
@@ -10408,5 +10415,5 @@ body.kb-open .install-hint { display: none; }
   .timed-row--notime .timed-row__body { flex-wrap: wrap; row-gap: 6px; padding-top: 8px; padding-bottom: 8px; }
   .timed-row--notime .timed-row__title { flex: 1 1 calc(100% - 84px); }
   .timed-row--notime .task-myday { order: 2; }
-  .timed-row--notime .task-tag { order: 4; margin-left: 22px; max-width: 70%; }
+  .timed-row--notime .task-tag-wrap { order: 4; margin-left: 22px; max-width: 70%; }
 }
