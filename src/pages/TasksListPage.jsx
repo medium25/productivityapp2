@@ -316,14 +316,16 @@ export default function TasksListPage() {
               </span>
               {doneRows.length > 0 && !selecting && (
                 <button type="button" className="tasks-clear-done" onClick={clearDone} title={t('tasksList.clearDone')} aria-label={t('tasksList.clearDone')}>
-                  <svg className="tasks-clear-done__icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h6M4 17h10M15 15l2.5 2.5L22 12" /></svg>
-                  <span className="tasks-clear-done__text">{t('tasksList.clearDone')}</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h6M4 17h10M15 15l2.5 2.5L22 12" /></svg>
                   <span className="tasks-clear-done__n">{doneRows.length}</span>
                 </button>
               )}
               {ordered.length > 0 && (
-                <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))}>
-                  {selecting ? t('tasksList.selectDone') : t('tasksList.select')}
+                <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))} title={selecting ? t('tasksList.selectDone') : t('tasksList.select')} aria-label={selecting ? t('tasksList.selectDone') : t('tasksList.select')}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                    <path d="M8 12.3l2.8 2.8L16.3 9.5" />
+                  </svg>
                 </button>
               )}
             </div>

@@ -10414,9 +10414,11 @@ body.kb-open .install-hint { display: none; }
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  justify-content: center;
+  gap: 5px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 11px;
   border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 999px;
   background: none;
@@ -10426,14 +10428,8 @@ body.kb-open .install-hint { display: none; }
   font-weight: 800;
   cursor: pointer;
 }
-.tasks-clear-done__n { opacity: 0.75; }
-.tasks-clear-done__icon { display: none; flex: none; }
-/* Phones: the header is tight — icon + count instead of the full label. */
-@media (max-width: 560px) {
-  .tasks-clear-done { left: 10px; padding: 0 11px; }
-  .tasks-clear-done__text { display: none; }
-  .tasks-clear-done__icon { display: block; }
-}
+.tasks-clear-done__n { opacity: 0.8; }
+@media (max-width: 480px) { .tasks-clear-done { left: 10px; } }
 .task-row__delete { flex: none; border: 0; background: none; color: var(--danger); font-size: 1.2rem; line-height: 1; padding: 0 6px; cursor: pointer; }
 .project-picker__task { margin: 0 0 8px; font-weight: 600; }
 .project-picker__create { display: flex; gap: 8px; }
@@ -10514,15 +10510,15 @@ body.kb-open .install-hint { display: none; }
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
   border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   background: none;
   color: inherit;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 800;
   cursor: pointer;
 }
 .tasks-select-btn--on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast, #fff); }
@@ -10539,5 +10535,5 @@ body.kb-open .install-hint { display: none; }
 .timed-row--selecting { cursor: pointer; }
 .timed-row--selecting .task-cycle, .timed-row--selecting .task-myday, .timed-row--selecting .task-tag-wrap, .timed-row--selecting .timed-row__actions { pointer-events: none; }
 .timed-row--selected .timed-row__body { outline: 2px solid currentColor; outline-offset: -2px; }
-@media (max-width: 480px) { .tasks-select-btn { right: 10px; padding: 0 11px; } }
+@media (max-width: 480px) { .tasks-select-btn { right: 10px; } }
 
