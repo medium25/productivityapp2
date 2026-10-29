@@ -195,6 +195,7 @@ export default function TasksListPage() {
   // «Убрать выполненные» (which stamps listClearedAt). Repeating tasks live in
   // «Мой день» and «Привычки», not here.
   const rows = useMemo(() => tasks.filter((task) => {
+    if (task.createdIn === 'myday') return false // made straight in «Мой день» — stays there, not in this list
     if (isRecurring(task) && task.stage !== 'tasks') return false // repeating tasks made elsewhere live in «Мой день» / «Привычки»
     if (task.status === 'done') return !!task.completedAt && (!task.listClearedAt || task.completedAt > task.listClearedAt)
     return task.status === 'active'

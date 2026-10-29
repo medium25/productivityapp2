@@ -614,7 +614,7 @@ export default function UpcomingPage() {
       const fields = { ...(dateFields || {}), ...(minutes != null ? { estimateMinutes: minutes } : null), startMinute: startMin }
       let id = taskId
       if (id) updateTask(id, fields)
-      else id = addTask({ title, stage: 'tasks', ...fields })
+      else id = addTask({ title, stage: 'tasks', createdIn: 'myday', ...fields })
       const order = others.map((r) => r.id)
       order.splice(index, 0, id)
       reorderTasks(order)
@@ -663,7 +663,7 @@ export default function UpcomingPage() {
             // through the time-conflict search (per user request, "легко
             // добавлять задачу между задачами").
             if (p.insertAfterId) {
-              const id = addTask({ title, stage: 'tasks', whenDate: today, deadline: null })
+              const id = addTask({ title, stage: 'tasks', createdIn: 'myday', whenDate: today, deadline: null })
               const order = todayRows.map((r) => r.id)
               const idx = order.indexOf(p.insertAfterId)
               order.splice(idx + 1, 0, id)
