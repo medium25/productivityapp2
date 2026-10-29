@@ -229,18 +229,11 @@ export default function TasksListPage() {
   const [draft, setDraft] = useState('')
   const draftRef = useRef(null)
 
-  // Project pop-up: for a task being added (mode 'add', held until a project is
-  // chosen) or for an existing one (mode 'change').
-  const [picker, setPicker] = useState(null) // { mode: 'add', title } | { mode: 'change', task }
+  // Project pop-up for an existing task (opened from its «+» / project dot).
+  const [picker, setPicker] = useState(null) // { task }
   const pick = (projectId) => {
     if (!picker) return
-    if (picker.mode === 'add') {
-      addTask({ title: picker.title, stage: 'tasks', projectId })
-      setDraft('') // the typed row closes once the task exists; cancelling the pop-up keeps the text
-      setAdding(false)
-    } else {
-      changeProject(picker.task, projectId)
-    }
+    changeProject(picker.task, projectId)
     setPicker(null)
   }
   const createAndPick = (name) => {
@@ -249,10 +242,13 @@ export default function TasksListPage() {
   }
 
   useEffect(() => { if (adding) draftRef.current?.focus() }, [adding])
+  // Quick add: Enter creates the task at once (no project) and keeps the field open for the next one.
   const submitDraft = () => {
     const title = draft.trim()
     if (!title) return
-    setPicker({ mode: 'add', title })
+    addTask({ title, stage: 'tasks', projectId: null })
+    setDraft('')
+    draftRef.current?.focus()
   }
   const closePicker = () => setPicker(null)
   const finishAdd = () => { setDraft(''); setAdding(false) }
@@ -290,7 +286,7 @@ export default function TasksListPage() {
                     project={projectById.get(task.projectId)}
                     onToggleDone={onToggleDone}
                     onToggleMyDay={toggleMyDay}
-                    onPickProject={(tk) => setPicker({ mode: 'change', task: tk })}
+                    onPickProject={(tk) => setPicker({ task: tk })}
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
                     onDelete={deleteTask}
                     dragHandleProps={drag.bindHandle(task.id, task.title)}
@@ -331,9 +327,9 @@ export default function TasksListPage() {
       {drag.dragGhost}
       <ProjectPickerModal
         open={!!picker}
-        taskTitle={picker ? (picker.mode === 'add' ? picker.title : picker.task.title) : ''}
+        taskTitle={picker ? picker.task.title : ''}
         projects={projects}
-        currentProjectId={picker?.mode === 'change' ? picker.task.projectId : null}
+        currentProjectId={picker ? picker.task.projectId : null}
         onPick={pick}
         onCreate={createAndPick}
         onCancel={closePicker}
