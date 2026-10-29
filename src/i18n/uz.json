@@ -818,6 +818,14 @@
     "deleteProject": "Loyihani o‘chirish",
     "deleteProjectConfirm": "“{{name}}” loyihasi o‘chirilsinmi? Vazifalar loyihasiz qoladi.",
     "deleteProjectYes": "O‘chirish",
+    "select": "Tanlash",
+    "selectDone": "Tayyor",
+    "selectedCount": "Tanlandi: {{n}}",
+    "selectAll": "Hammasi",
+    "selectNone": "Bekor",
+    "deleteSelected": "O‘chirish",
+    "deleteSelectedConfirm": "{{n}} ta o‘chirilsinmi?",
+    "deleteSelectedYes": "O‘chirish",
     "deleteTask": "Vazifani o‘chirish"
   }
 }

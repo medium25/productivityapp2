@@ -45,7 +45,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, dragHandleProps, dragging }) {
+function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -64,11 +64,16 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
   return (
     <>
     <div
-      className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '')}
-      {...(editing ? null : dragHandleProps)}
+      className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '')}
+      {...(editing || selecting ? null : dragHandleProps)}
+      onClick={selecting ? () => onSelect(task.id) : undefined}
     >
       <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
-        <DragGrip />
+        {selecting ? (
+          <span className={'task-sel' + (selected ? ' task-sel--on' : '')} aria-hidden="true">
+            {selected && <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+          </span>
+        ) : <DragGrip />}
         <span className="timed-row__title">
           <span className="timed-row__num">{number}.</span>
           {editing ? (
@@ -238,6 +243,22 @@ export default function TasksListPage() {
   const pathTask = pathTaskId ? tasks.find((x) => x.id === pathTaskId) : null
   const pathProject = pathTask ? projectById.get(pathTask.projectId) : null
 
+  // Group mode: pick several tasks and delete them in one go (to Трэш, like a single delete).
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState(() => new Set())
+  const [confirmDel, setConfirmDel] = useState(false)
+  const exitSelect = () => { setSelecting(false); setSelected(new Set()); setConfirmDel(false) }
+  const toggleSelected = (id) => {
+    setConfirmDel(false)
+    setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next })
+  }
+  useEffect(() => {
+    if (!selecting) return undefined
+    const onKey = (e) => { if (e.key === 'Escape') exitSelect() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [selecting])
+
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
   const draftRef = useRef(null)
@@ -278,6 +299,12 @@ export default function TasksListPage() {
     if (task) syncHabitForTask(task, task.status !== 'done', { habits, setCompletion: setHabitCompletion })
   }
 
+  const allSelected = ordered.length > 0 && ordered.every((r) => selected.has(r.id))
+  const deleteSelected = () => {
+    ordered.filter((r) => selected.has(r.id)).forEach((r) => deleteTask(r.id))
+    exitSelect()
+  }
+
   return (
     <>
       <div className="tasks-page tasks-page--edge-to-edge">
@@ -287,7 +314,31 @@ export default function TasksListPage() {
               <span className="tasks-column__header-title tasks-column__header-title--center">
                 <SideIconTasks size={15} />{t('tasksList.title')}
               </span>
+              {ordered.length > 0 && (
+                <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))}>
+                  {selecting ? t('tasksList.selectDone') : t('tasksList.select')}
+                </button>
+              )}
             </div>
+            {selecting && (
+              <div className="tasks-select-bar">
+                <span className="tasks-select-bar__count">{t('tasksList.selectedCount', { n: selected.size })}</span>
+                <button type="button" onClick={() => { setConfirmDel(false); setSelected(allSelected ? new Set() : new Set(ordered.map((r) => r.id))) }}>
+                  {allSelected ? t('tasksList.selectNone') : t('tasksList.selectAll')}
+                </button>
+                {confirmDel ? (
+                  <>
+                    <span className="tasks-select-bar__ask">{t('tasksList.deleteSelectedConfirm', { n: selected.size })}</span>
+                    <button type="button" className="tasks-select-bar__danger" onClick={deleteSelected}>{t('tasksList.deleteSelectedYes')}</button>
+                    <button type="button" onClick={() => setConfirmDel(false)}>{t('tasks.cancel')}</button>
+                  </>
+                ) : (
+                  <button type="button" className="tasks-select-bar__danger" disabled={selected.size === 0} onClick={() => setConfirmDel(true)}>
+                    {t('tasksList.deleteSelected')}{selected.size ? ` (${selected.size})` : ''}
+                  </button>
+                )}
+              </div>
+            )}
             <div className="timed-list">
               {ordered.length === 0 && !adding && <p className="tasks-cards__empty">{t('tasksList.empty')}</p>}
               {ordered.map((task, i) => (
@@ -304,6 +355,9 @@ export default function TasksListPage() {
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
                     onSetCycle={setCycle}
                     onDelete={deleteTask}
+                    selecting={selecting}
+                    selected={selected.has(task.id)}
+                    onSelect={toggleSelected}
                     dragHandleProps={drag.bindHandle(task.id, task.title)}
                     dragging={drag.draggingId === task.id}
                   />

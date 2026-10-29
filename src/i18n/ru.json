@@ -849,6 +849,14 @@
     "deleteProject": "Удалить проект",
     "deleteProjectConfirm": "Удалить проект «{{name}}»? Задачи останутся без проекта.",
     "deleteProjectYes": "Удалить",
+    "select": "Выбрать",
+    "selectDone": "Готово",
+    "selectedCount": "Выбрано: {{n}}",
+    "selectAll": "Все",
+    "selectNone": "Снять",
+    "deleteSelected": "Удалить",
+    "deleteSelectedConfirm": "Удалить {{n}}?",
+    "deleteSelectedYes": "Удалить",
     "deleteTask": "Удалить задачу"
   }
 }

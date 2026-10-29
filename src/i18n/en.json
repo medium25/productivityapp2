@@ -833,6 +833,14 @@
     "deleteProject": "Delete project",
     "deleteProjectConfirm": "Delete project “{{name}}”? Its tasks will stay, without a project.",
     "deleteProjectYes": "Delete",
+    "select": "Select",
+    "selectDone": "Done",
+    "selectedCount": "Selected: {{n}}",
+    "selectAll": "All",
+    "selectNone": "None",
+    "deleteSelected": "Delete",
+    "deleteSelectedConfirm": "Delete {{n}}?",
+    "deleteSelectedYes": "Delete",
     "deleteTask": "Delete task"
   }
 }

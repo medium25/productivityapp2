@@ -10494,3 +10494,37 @@ body.kb-open .install-hint { display: none; }
 .project-picker__confirm-actions { display: flex; gap: 8px; }
 .project-picker__confirm-actions button { flex: 1; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: none; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
 .project-picker__confirm-actions .project-picker__confirm-yes { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+/* «Задачи»: group select / delete. Button at the right of the header, bar under it, a check circle on each row. */
+.tasks-select-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tasks-select-btn--on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast, #fff); }
+.tasks-select-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+.tasks-select-bar__count { font-weight: 800; font-size: 0.85rem; margin-right: auto; }
+.tasks-select-bar__ask { font-size: 0.85rem; font-weight: 600; }
+.tasks-select-bar button { height: 32px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--glass-border); background: none; color: inherit; font: inherit; font-size: 0.8rem; font-weight: 800; cursor: pointer; }
+.tasks-select-bar button:disabled { opacity: 0.4; cursor: default; }
+.tasks-select-bar .tasks-select-bar__danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.task-sel { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 55%, transparent); display: grid; place-items: center; box-sizing: border-box; }
+.task-sel--on { background: currentColor; border-color: currentColor; }
+.task-sel--on svg { stroke: var(--row-bg-light, #0b1018); }
+:root[data-skin='neon'] .task-sel--on svg { stroke: #0b1018; }
+.timed-row--selecting { cursor: pointer; }
+.timed-row--selecting .task-cycle, .timed-row--selecting .task-myday, .timed-row--selecting .task-tag-wrap, .timed-row--selecting .timed-row__actions { pointer-events: none; }
+.timed-row--selected .timed-row__body { outline: 2px solid currentColor; outline-offset: -2px; }
+@media (max-width: 480px) { .tasks-select-btn { right: 10px; padding: 0 11px; } }
+
