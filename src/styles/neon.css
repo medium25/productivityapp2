@@ -286,3 +286,7 @@
 /* «Задачи»: project pill in the bright shade of its colour on the dark rows. */
 :root[data-skin='neon'] .task-tag { --c: var(--tag-bright, currentColor); background: color-mix(in srgb, var(--c) 18%, #0b1018); }
 :root[data-skin='neon'] .task-tag--none { --c: currentColor; background: none; }
+
+/* «Привычки» rows that mirror a «Мой день» task use that row's colour. */
+:root[data-skin='neon'] .habits-row[data-linked] { --habit-color: var(--hc-dark); }
+

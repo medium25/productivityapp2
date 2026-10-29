@@ -5,6 +5,7 @@ import { useTasksStore } from '../store/useTasksStore'
 import { addDays, RECURRENCE_OPTIONS, todayISO, WEEKDAYS } from '../features/tasks/taskLogic'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import { buildTodayRows, splitHabits } from '../features/tasks/todayRows'
+import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import EmptyStateCelebration from '../features/tasks/EmptyStateCelebration'
 import { syncTaskForHabit, spawnTaskForHabit } from '../features/tasks/habitTaskSync'
 import { COLOR_PALETTE } from '../constants/colorPalette'
@@ -186,7 +187,7 @@ export default function HabitsPage() {
   // (2) the habits made in this section (draggable). See splitHabits.
   const allTasks = useTasksStore((s) => s.tasks)
   const allProjects = useTasksStore((s) => s.projects)
-  const { linked: linkedHabits, own: ownHabits } = useMemo(
+  const { linked: linkedHabits, own: ownHabits, rowIndex } = useMemo(
     () => splitHabits(habits, buildTodayRows(allTasks, allProjects, today)),
     [habits, allTasks, allProjects, today],
   )
@@ -354,7 +355,11 @@ export default function HabitsPage() {
                         + (done ? ' habits-row--done' : ' habits-row--pending')
                         + (draggingHabitId === habit.id ? ' habits-row--dragging' : '')
                       }
-                      style={{ '--habit-color': habit.color || COLOR_PALETTE[0] }}
+                      data-linked={linkedIds.has(habit.id) ? '' : undefined}
+                      style={linkedIds.has(habit.id)
+                        // Same colour as its row in «Мой день»: bright hue on the dark theme, the row's border colour on light.
+                        ? { '--habit-color': ROW_PALETTE[rowIndex.get(habit.id) % ROW_PALETTE.length].border, '--hc-dark': ROW_PALETTE[rowIndex.get(habit.id) % ROW_PALETTE.length].hue }
+                        : { '--habit-color': habit.color || COLOR_PALETTE[0] }}
                       onClick={() => startEdit(habit)}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') startEdit(habit) }}
                       role="button"

@@ -42,11 +42,12 @@ export function buildTodayRows(tasks, projects, today) {
 export function splitHabits(habits, todayRows) {
   const used = new Set()
   const linked = []
-  todayRows.forEach((task) => {
+  const rowIndex = new Map() // habit id → its task's position in «Мой день» (drives the shared row colour)
+  todayRows.forEach((task, idx) => {
     if (!isHabitTask(task)) return
     const habit = habits.find((h) => h.origin !== 'habits' && h.title === task.title && !used.has(h.id))
-    if (habit) { used.add(habit.id); linked.push(habit) }
+    if (habit) { used.add(habit.id); linked.push(habit); rowIndex.set(habit.id, idx) }
   })
   const own = habits.filter((h) => !used.has(h.id) && h.origin !== 'myday')
-  return { linked, own }
+  return { linked, own, rowIndex }
 }
