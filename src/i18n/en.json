@@ -841,6 +841,8 @@
     "deleteSelected": "Delete",
     "deleteSelectedConfirm": "Delete {{n}}?",
     "deleteSelectedYes": "Delete",
+    "clearDoneConfirm": "Remove the completed tasks ({{n}}) from this list? They stay completed and remain visible in other sections.",
+    "clearDoneYes": "Remove",
     "deleteTask": "Delete task"
   }
 }

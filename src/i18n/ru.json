@@ -857,6 +857,8 @@
     "deleteSelected": "Удалить",
     "deleteSelectedConfirm": "Удалить {{n}}?",
     "deleteSelectedYes": "Удалить",
+    "clearDoneConfirm": "Убрать выполненные задачи ({{n}}) из списка? Они останутся выполненными и будут видны в других разделах.",
+    "clearDoneYes": "Убрать",
     "deleteTask": "Удалить задачу"
   }
 }

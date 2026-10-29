@@ -8,6 +8,7 @@ import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTask
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
 import ProjectPathModal from '../features/tasks/ProjectPathModal'
+import ModalClose from '../features/tasks/ModalClose'
 import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 
@@ -199,7 +200,15 @@ export default function TasksListPage() {
     return task.status === 'active'
   }), [tasks])
   const doneRows = rows.filter((r) => r.status === 'done')
+  const [confirmClear, setConfirmClear] = useState(false)
+  useEffect(() => {
+    if (!confirmClear) return undefined
+    const onKey = (e) => { if (e.key === 'Escape') setConfirmClear(false) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [confirmClear])
   const clearDone = () => {
+    setConfirmClear(false)
     const stamp = new Date().toISOString()
     doneRows.forEach((r) => updateTask(r.id, { listClearedAt: stamp }))
   }
@@ -315,7 +324,7 @@ export default function TasksListPage() {
                 <SideIconTasks size={15} />{t('tasksList.title')}
               </span>
               {doneRows.length > 0 && !selecting && (
-                <button type="button" className="tasks-clear-done" onClick={clearDone} title={t('tasksList.clearDone')} aria-label={t('tasksList.clearDone')}>
+                <button type="button" className="tasks-clear-done" onClick={() => setConfirmClear(true)} title={t('tasksList.clearDone')} aria-label={t('tasksList.clearDone')}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h6M4 17h10M15 15l2.5 2.5L22 12" /></svg>
                   <span className="tasks-clear-done__n">{doneRows.length}</span>
                 </button>
@@ -403,6 +412,22 @@ export default function TasksListPage() {
         </div>
       </div>
       {drag.dragGhost}
+      {confirmClear && (
+        <div className="task-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setConfirmClear(false) }}>
+          <div className="task-modal" role="alertdialog" aria-modal="true">
+            <ModalClose onClick={() => setConfirmClear(false)} />
+            <div className="task-modal__header">{t('tasksList.clearDone')}</div>
+            <div className="task-modal__body">
+              <p className="task-modal__due-required-text">{t('tasksList.clearDoneConfirm', { n: doneRows.length })}</p>
+            </div>
+            <div className="task-modal__footer">
+              <button type="button" onClick={() => setConfirmClear(false)}>{t('tasks.cancel')}</button>
+              <span className="task-modal__footer-spacer" />
+              <button type="button" className="primary" onClick={clearDone}>{t('tasksList.clearDoneYes')}</button>
+            </div>
+          </div>
+        </div>
+      )}
       <ProjectPathModal
         open={!!pathProject}
         project={pathProject}

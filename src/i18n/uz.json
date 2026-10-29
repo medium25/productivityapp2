@@ -826,6 +826,8 @@
     "deleteSelected": "O‘chirish",
     "deleteSelectedConfirm": "{{n}} ta o‘chirilsinmi?",
     "deleteSelectedYes": "O‘chirish",
+    "clearDoneConfirm": "Bajarilgan vazifalar ({{n}}) ro‘yxatdan olib tashlansinmi? Ular bajarilgan holda boshqa bo‘limlarda qoladi.",
+    "clearDoneYes": "Olib tashlash",
     "deleteTask": "Vazifani o‘chirish"
   }
 }
