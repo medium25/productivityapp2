@@ -177,44 +177,6 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
       onClick={selecting ? () => onSelect(task.id) : undefined}
       {...(selecting ? null : dragHandleProps)}
     >
-      {!pinned ? (
-        <span className="timed-row__time timed-row__time--mins">
-          {editing === 'mins' ? (
-            <InlineField type="number" min={5} max={480} step={5} initial={String(slot.duration)} className="timed-inline--num" onCancel={stop} onCommit={(v) => { const m = Math.round(Number(v)); if (Number.isFinite(m) && m > 0) onSetMinutes(task, m); stop() }} />
-          ) : hasMinutes ? (
-            <span className="timed-row__mins-label" onDoubleClick={startEdit('mins')} title="Двойной клик — изменить">
-              <b>{minutesFigure(slot.duration).n}</b>
-              <small>{minutesFigure(slot.duration).u}</small>
-            </span>
-          ) : (
-            <button type="button" className="timed-row__addtime" onPointerDown={(e) => e.stopPropagation()} onClick={() => setEditing('mins')}>+ время</button>
-          )}
-        </span>
-      ) : (
-      <span className="timed-row__time">
-        <span className="timed-row__time-pair">
-          {editing === 'start' ? (
-            <InlineField type="time" initial={fmtTime(start)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetStart(task, m); stop() }} />
-          ) : (
-            <span className="timed-row__start" onDoubleClick={startEdit('start')} onPointerDown={startHandle}>
-              {fmtTime(start)}
-              <i className="timed-row__handle" />
-            </span>
-          )}
-        </span>
-        <span className="timed-row__time-line" />
-        <span className="timed-row__time-pair">
-          {editing === 'end' ? (
-            <InlineField type="time" initial={fmtTime(end)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetEnd(task, slot.start, m); stop() }} />
-          ) : (
-            <small className="timed-row__end" onDoubleClick={startEdit('end')} onPointerDown={endHandle}>
-              {fmtTime(end)}
-              <i className="timed-row__handle" />
-            </small>
-          )}
-        </span>
-      </span>
-      )}
       <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
         {selecting ? (
           <span className={'task-sel' + (selected ? ' task-sel--on' : '')} aria-hidden="true">
@@ -245,6 +207,44 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         >
           {CYCLE_ICON}
         </button>
+        {!pinned ? (
+          <span className="timed-row__time timed-row__time--mins">
+            {editing === 'mins' ? (
+              <InlineField type="number" min={5} max={480} step={5} initial={String(slot.duration)} className="timed-inline--num" onCancel={stop} onCommit={(v) => { const m = Math.round(Number(v)); if (Number.isFinite(m) && m > 0) onSetMinutes(task, m); stop() }} />
+            ) : hasMinutes ? (
+              <span className="timed-row__mins-label" onDoubleClick={startEdit('mins')} title="Двойной клик — изменить">
+                <b>{minutesFigure(slot.duration).n}</b>
+                <small>{minutesFigure(slot.duration).u}</small>
+              </span>
+            ) : (
+              <button type="button" className="timed-row__addtime" onPointerDown={(e) => e.stopPropagation()} onClick={() => setEditing('mins')}>+ время</button>
+            )}
+          </span>
+        ) : (
+        <span className="timed-row__time">
+          <span className="timed-row__time-pair">
+            {editing === 'start' ? (
+              <InlineField type="time" initial={fmtTime(start)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetStart(task, m); stop() }} />
+            ) : (
+              <span className="timed-row__start" onDoubleClick={startEdit('start')} onPointerDown={startHandle}>
+                {fmtTime(start)}
+                <i className="timed-row__handle" />
+              </span>
+            )}
+          </span>
+          <span className="timed-row__time-line" />
+          <span className="timed-row__time-pair">
+            {editing === 'end' ? (
+              <InlineField type="time" initial={fmtTime(end)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetEnd(task, slot.start, m); stop() }} />
+            ) : (
+              <small className="timed-row__end" onDoubleClick={startEdit('end')} onPointerDown={endHandle}>
+                {fmtTime(end)}
+                <i className="timed-row__handle" />
+              </small>
+            )}
+          </span>
+        </span>
+        )}
       </span>
       <span className="timed-row__actions">
         <button

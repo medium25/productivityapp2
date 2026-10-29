@@ -10530,3 +10530,38 @@ body.kb-open .install-hint { display: none; }
 .timed-row--selected .timed-row__body { outline: 2px solid currentColor; outline-offset: -2px; }
 @media (max-width: 480px) { .tasks-select-btn { right: 10px; } }
 
+/* «Мой день»: the time block sits at the END of the card, in a fixed-width cell behind a thin
+   divider, so every row's divider lines up — even when it only says «+ время». */
+.timed-row__body > .timed-row__time {
+  flex: 0 0 72px;
+  width: 72px;
+  min-width: 0;
+  box-sizing: border-box;
+  align-self: stretch;
+  margin: 6px 0;
+  padding: 0 0 0 10px;
+  border-left: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.timed-row__body > .timed-row__time--mins::after { display: none; }
+.timed-row__body > .timed-row__time .timed-row__time-line { display: none; }
+.timed-row__body .timed-row__mins-label { text-align: center; }
+.timed-row__body .timed-row__mins-label b { color: inherit; font-size: 1.05rem; }
+.timed-row__body .timed-row__mins-label small { color: inherit; opacity: 0.75; }
+.timed-row__body .timed-row__addtime { color: inherit; opacity: 0.85; text-align: center; }
+.timed-row__body .timed-row__addtime:hover { opacity: 1; color: inherit; }
+.timed-row__body > .timed-row__time .timed-row__start,
+.timed-row__body > .timed-row__time .timed-row__end { color: inherit; font-size: 0.8rem; text-align: center; }
+.timed-row__body > .timed-row__time .timed-row__time-pair { text-align: center; }
+/* Header total: over the same cell. */
+.tasks-column__total { left: auto; right: 64px; width: 72px; padding: 0; justify-content: center; }
+.tasks-column__total::after { display: none; }
+@media (max-width: 480px) {
+  .timed-row__body > .timed-row__time { flex-basis: 60px; width: 60px; padding-left: 6px; }
+  .tasks-column__total { width: 60px; right: 52px; }
+}
+
