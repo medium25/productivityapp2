@@ -808,6 +808,7 @@
     "newProject": "Yangi loyiha",
     "newProjectPlaceholder": "Loyiha nomi",
     "create": "Yaratish",
+    "clearDone": "Bajarilganlarni olib tashlash",
     "deleteTask": "Vazifani o‘chirish"
   }
 }

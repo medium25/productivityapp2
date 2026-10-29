@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
-import { getProjectColor, isoFromDate, todayISO } from '../features/tasks/taskLogic'
+import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
 import { syncHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
@@ -187,13 +187,19 @@ export default function TasksListPage() {
     return () => { window.removeEventListener('focus', sync); document.removeEventListener('visibilitychange', sync) }
   }, [])
 
-  // Open tasks plus those finished today (they leave at the day's end, like in
-  // «Мой день»). Repeating tasks live in «Мой день» and «Привычки», not here.
+  // Open tasks plus every finished one — done tasks stay here until the user presses
+  // «Убрать выполненные» (which stamps listClearedAt). Repeating tasks live in
+  // «Мой день» and «Привычки», not here.
   const rows = useMemo(() => tasks.filter((task) => {
     if (isRecurring(task)) return false
-    if (task.status === 'done') return !!task.completedAt && isoFromDate(new Date(task.completedAt)) === today
+    if (task.status === 'done') return !!task.completedAt && (!task.listClearedAt || task.completedAt > task.listClearedAt)
     return task.status === 'active'
-  }), [tasks, today])
+  }), [tasks])
+  const doneRows = rows.filter((r) => r.status === 'done')
+  const clearDone = () => {
+    const stamp = new Date().toISOString()
+    doneRows.forEach((r) => updateTask(r.id, { listClearedAt: stamp }))
+  }
 
   const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects])
   // A project's task shows in «Мой день» only once it is on that project's map.
@@ -318,6 +324,11 @@ export default function TasksListPage() {
               ) : (
                 <button type="button" className="timed-add-slot" onClick={() => setAdding(true)}>
                   {t('tasksList.addTask')}
+                </button>
+              )}
+              {doneRows.length > 0 && (
+                <button type="button" className="tasks-clear-done" onClick={clearDone}>
+                  {t('tasksList.clearDone')} ({doneRows.length})
                 </button>
               )}
             </div>

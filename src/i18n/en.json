@@ -823,6 +823,7 @@
     "newProject": "New project",
     "newProjectPlaceholder": "Project name",
     "create": "Create",
+    "clearDone": "Clear completed",
     "deleteTask": "Delete task"
   }
 }

@@ -839,6 +839,7 @@
     "newProject": "Новый проект",
     "newProjectPlaceholder": "Название проекта",
     "create": "Создать",
+    "clearDone": "Убрать выполненные",
     "deleteTask": "Удалить задачу"
   }
 }
