@@ -400,17 +400,17 @@ export default function HabitsPage() {
                           corner badge. */}
                       {(() => {
                         const missedIso = lastMissedDay(habit, today, appliesOnDate)
-                        if (!missedIso || seenMiss[habit.id] === missedIso) return null
                         return (
                           <MissedHabitBell
                             habit={habit}
                             missedIso={missedIso}
+                            unseen={!!missedIso && seenMiss[habit.title] !== missedIso}
                             today={today}
                             applies={appliesOnDate}
                             t={t}
                             locale={i18n.language || 'ru'}
                             onMark={(iso) => toggleCompletion(habit.id, iso)}
-                            onDismiss={() => dismissMiss(habit.id, missedIso)}
+                            onDismiss={() => dismissMiss(habit.title, missedIso)}
                           />
                         )
                       })()}

@@ -8,13 +8,14 @@ import TaskFormModal from '../features/tasks/TaskFormModal'
 import DueRequiredPrompt from '../features/tasks/DueRequiredPrompt'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import MyDayTimer from '../features/focus/MyDayTimer'
-import { isoFromDate, todayISO, nextRecurringDate } from '../features/tasks/taskLogic'
+import { isoFromDate, todayISO, nextRecurringDate, recursOnDate } from '../features/tasks/taskLogic'
 import { ROUTINE_TASKS } from '../features/tasks/dailyRoutineTasks'
-import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
+import { syncHabitForTask, spawnHabitForTask, findLinkedHabit, isHabitTask } from '../features/tasks/habitTaskSync'
 import { IconFocus, IconClock } from '../icons/Icons'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { buildTodayRows } from '../features/tasks/todayRows'
+import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -139,7 +140,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -167,7 +168,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   )
 
   const results = isRecurring(task) ? cycleResults(task) : null
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <>
@@ -208,6 +209,25 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         >
           {CYCLE_ICON}
         </button>
+        {results && seriesFor && (() => {
+          const series = seriesFor(task)
+          const applies = (h, iso) => recursOnDate({ recurrence: h.recurrence, recurrenceDays: h.recurrenceDays, whenDate: h.createdAt.slice(0, 10) }, iso)
+          const missedIso = lastMissedDay(series, todayISO(), applies)
+          return (
+            <MissedHabitBell
+              habit={series}
+              missedIso={missedIso}
+              unseen={!!missedIso && seenMiss?.[task.title] !== missedIso}
+              today={todayISO()}
+              applies={applies}
+              t={t}
+              locale={i18n.language || 'ru'}
+              color={color.border}
+              onMark={(iso) => onMarkMissed(task, series, iso)}
+              onDismiss={() => onDismissMiss(task.title, missedIso)}
+            />
+          )
+        })()}
         {!pinned ? (
           <span className="timed-row__time timed-row__time--mins">
             {editing === 'mins' ? (
@@ -498,6 +518,7 @@ export default function UpcomingPage() {
   const habits = useHabitsStore((s) => s.habits)
   const addHabit = useHabitsStore((s) => s.addHabit)
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
+  const toggleHabitCompletion = useHabitsStore((s) => s.toggleCompletion)
   const permanentlyDeleteTask = useTasksStore((s) => s.permanentlyDeleteTask)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   // Re-read at local midnight / on refocus so an unfinished Today task falls
@@ -541,7 +562,46 @@ export default function UpcomingPage() {
   const [schedulePrompt, setSchedulePrompt] = useState(null)
   const [conflict, setConflict] = useState(null)
   const dayStart = useUiPreferencesStore((s) => s.dayStartMinutes)
+  // «Понял» on a missed-habit card hides its bell until the next miss (kept per device, by title).
+  const [seenMiss, setSeenMiss] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('arkad:missedSeen') || '{}') } catch { return {} }
+  })
+  const dismissMiss = (title, iso) => {
+    setSeenMiss((prev) => {
+      const next = { ...prev, [title]: iso }
+      try { localStorage.setItem('arkad:missedSeen', JSON.stringify(next)) } catch { /* ignore */ }
+      return next
+    })
+  }
+  // The history of a repeating task's series: every finished copy (each completion is its own record),
+  // plus the linked habit's days when it is a habit — this feeds the activity map.
+  const seriesFor = (task) => {
+    const habit = isHabitTask(task) ? findLinkedHabit(habits, task.title) : null
+    const completions = { ...(habit?.completions || {}) }
+    let created = (habit?.createdAt || task.createdAt || `${todayISO()}T00:00:00`).slice(0, 10)
+    tasks.forEach((x) => {
+      if (x.title !== task.title || !x.recurrence || x.recurrence === 'none' || x.status === 'trashed') return
+      const c = (x.createdAt || '').slice(0, 10)
+      if (c && c < created) created = c
+      if (x.status === 'done' && x.completedAt) completions[isoFromDate(new Date(x.completedAt))] = true
+    })
+    return { id: habit?.id || task.id, title: task.title, createdAt: `${created}T00:00:00`, completions, recurrence: task.recurrence, recurrenceDays: task.recurrenceDays }
+  }
+  // Marks a missed day done: on the linked habit when there is one, otherwise as a finished copy of the task.
+  const markMissed = (task, series, iso) => {
+    const habit = isHabitTask(task) ? findLinkedHabit(habits, task.title) : null
+    if (habit) { toggleHabitCompletion(habit.id, iso); return }
+    addTask({
+      title: task.title, stage: 'tasks', projectId: task.projectId, createdIn: task.createdIn,
+      recurrence: task.recurrence, recurrenceDays: task.recurrenceDays,
+      whenDate: iso, status: 'done', completedAt: `${iso}T12:00:00`,
+    })
+  }
   const taskProps = {
+    seriesFor,
+    seenMiss,
+    onDismissMiss: dismissMiss,
+    onMarkMissed: markMissed,
     onToggleDone: (id) => {
       const task = tasks.find((t) => t.id === id)
       toggleTaskDone(id)

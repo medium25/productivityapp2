@@ -23,18 +23,41 @@ const BELL = (
 // Small bell on a habit's card (shown once a due day was missed). Pressing it opens the habit's
 // activity map — a calendar-like grid of the last 16 weeks, like a contribution graph — with the
 // missed day marked, the streak numbers and two actions.
-export default function MissedHabitBell({ habit, missedIso, today, applies, t, locale, onMark, onDismiss }) {
+export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, locale, color, onMark, onDismiss }) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState(null)
   const ref = useRef(null)
+  const btnRef = useRef(null)
 
   useEffect(() => {
     if (!open) return undefined
     const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
+    const close = () => setOpen(false)
     document.addEventListener('pointerdown', onDown, true)
     document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('pointerdown', onDown, true); document.removeEventListener('keydown', onKey) }
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true)
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
   }, [open])
+
+  // The card is positioned against the window (lists clip their overflow), under the bell or above it near the bottom.
+  const toggle = () => {
+    if (open) { setOpen(false); return }
+    const r = btnRef.current?.getBoundingClientRect()
+    if (r) {
+      const width = Math.min(340, window.innerWidth - 24)
+      const left = Math.max(12, Math.min(window.innerWidth - width - 12, r.right - width + 8))
+      const below = r.bottom + 330 <= window.innerHeight
+      setPos(below ? { left, top: r.bottom + 10, width } : { left, bottom: window.innerHeight - r.top + 10, width })
+    }
+    setOpen(true)
+  }
 
   const stats = useMemo(() => {
     const created = habit.createdAt.slice(0, 10)
@@ -58,17 +81,29 @@ export default function MissedHabitBell({ habit, missedIso, today, applies, t, l
     let best = 0
     let run = 0
     dates.forEach((d, i) => { run = i > 0 && addDays(dates[i - 1], 1) === d ? run + 1 : 1; best = Math.max(best, run) })
-    return { cells, streak, best, pct: due ? Math.round((done / due) * 100) : 0 }
+    return { cells, streak, best, pct: due ? Math.round((done / due) * 100) : 0, misses: cells.filter((c) => c.kind === 'miss').length }
   }, [habit, today, applies])
 
-  const dateLabel = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${missedIso}T00:00:00`))
+  // Nothing to show: no fresh miss and no misses in the last 16 weeks.
+  if (!unseen && stats.misses === 0) return null
+  const alert = unseen && !!missedIso
+  const dateLabel = missedIso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${missedIso}T00:00:00`)) : ''
 
   return (
-    <span ref={ref} className="hmiss" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+    <span
+      ref={ref}
+      className="hmiss"
+      style={color ? { '--hm-color': color } : undefined}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+    >
       <button
+        ref={btnRef}
         type="button"
-        className={'hmiss__bell' + (open ? ' hmiss__bell--on' : '')}
-        onClick={() => setOpen((v) => !v)}
+        className={'hmiss__bell' + (open ? ' hmiss__bell--on' : '') + (alert ? '' : ' hmiss__bell--quiet')}
+        onClick={toggle}
         title={t('habits.missedBell')}
         aria-label={t('habits.missedBell')}
         aria-expanded={open}
@@ -76,12 +111,12 @@ export default function MissedHabitBell({ habit, missedIso, today, applies, t, l
         {BELL}
       </button>
       {open && (
-        <div className="hmiss__card" role="dialog">
+        <div className="hmiss__card" role="dialog" style={pos || undefined}>
           <div className="hmiss__head">
             <span className="hmiss__icon">{BELL}</span>
             <div className="hmiss__text">
-              <h3>{t('habits.missedTitle', { name: habit.title })}</h3>
-              <p>{t('habits.missedText', { date: dateLabel })}</p>
+              <h3>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h3>
+              <p>{alert ? t('habits.missedText', { date: dateLabel }) : t('habits.mapText', { n: stats.misses })}</p>
             </div>
             <button type="button" className="hmiss__x" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>×</button>
           </div>
@@ -96,8 +131,8 @@ export default function MissedHabitBell({ habit, missedIso, today, applies, t, l
             <span><b>{stats.pct}%</b> {t('habits.statPercent')}</span>
           </div>
           <div className="hmiss__actions">
-            <button type="button" className="hmiss__btn hmiss__btn--primary" onClick={() => { onMark(missedIso); setOpen(false) }}>{t('habits.markNow')}</button>
-            <button type="button" className="hmiss__btn" onClick={() => { onDismiss(); setOpen(false) }}>{t('habits.gotIt')}</button>
+            {alert && <button type="button" className="hmiss__btn hmiss__btn--primary" onClick={() => { onMark(missedIso); setOpen(false) }}>{t('habits.markNow')}</button>}
+            <button type="button" className="hmiss__btn" onClick={() => { if (alert) onDismiss(); setOpen(false) }}>{t('habits.gotIt')}</button>
           </div>
         </div>
       )}

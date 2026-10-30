@@ -698,6 +698,8 @@
     "deleteSelected": "Tanlanganlarni oʻchirish"
   },
   "habits": {
+    "mapTitle": "«{{name}}» faollik xaritasi",
+    "mapText": "Oxirgi 16 haftada o‘tkazib yuborilgan: {{n}}.",
     "missedBell": "O‘tkazib yuborildi — xaritani ochish",
     "missedTitle": "Siz «{{name}}» odatini o‘tkazib yubordingiz",
     "missedText": "U {{date}} kuni belgilanmadi. Tizim odatlar o‘tkazib yuborilishini xohlamaydi.",
