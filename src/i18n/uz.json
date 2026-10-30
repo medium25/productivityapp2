@@ -698,6 +698,14 @@
     "deleteSelected": "Tanlanganlarni oʻchirish"
   },
   "habits": {
+    "missedBell": "O‘tkazib yuborildi — xaritani ochish",
+    "missedTitle": "Siz «{{name}}» odatini o‘tkazib yubordingiz",
+    "missedText": "U {{date}} kuni belgilanmadi. Tizim odatlar o‘tkazib yuborilishini xohlamaydi.",
+    "markNow": "Hozir belgilash",
+    "gotIt": "Tushundim",
+    "statStreak": "kun ketma-ket",
+    "statBest": "eng yaxshi",
+    "statPercent": "16 haftada",
     "emptyHint": "Hali odatlar yo'q — pastda qo'shing.",
     "addPlaceholder": "Yangi odat",
     "streakUnit": "kun",

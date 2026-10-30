@@ -713,6 +713,14 @@
     "deleteSelected": "Delete selected"
   },
   "habits": {
+    "missedBell": "Missed — open the map",
+    "missedTitle": "You missed the habit “{{name}}”",
+    "missedText": "It was not checked off on {{date}}. The system would rather you did not skip habits.",
+    "markNow": "Mark now",
+    "gotIt": "Got it",
+    "statStreak": "day streak",
+    "statBest": "best",
+    "statPercent": "over 16 wk",
     "emptyHint": "No habits yet — add one below.",
     "addPlaceholder": "New habit",
     "streakUnit": "day",

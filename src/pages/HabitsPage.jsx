@@ -6,6 +6,7 @@ import { addDays, RECURRENCE_OPTIONS, todayISO, WEEKDAYS } from '../features/tas
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import { buildTodayRows, splitHabits } from '../features/tasks/todayRows'
 import { isHabitTask } from '../features/tasks/habitTaskSync'
+import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import EmptyStateCelebration from '../features/tasks/EmptyStateCelebration'
 import { syncTaskForHabit, spawnTaskForHabit } from '../features/tasks/habitTaskSync'
@@ -167,7 +168,7 @@ function HabitFields({ t, title, onTitleChange, recurrence, onRecurrenceChange, 
 }
 
 export default function HabitsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const habits = useHabitsStore((s) => s.habits)
   const addHabit = useHabitsStore((s) => s.addHabit)
   const updateHabit = useHabitsStore((s) => s.updateHabit)
@@ -211,6 +212,18 @@ export default function HabitsPage() {
     useDragReorder(habitIds, reorderHabits)
   const habitOrder = useMemo(() => [...linkedHabits.map((h) => h.id), ...ownOrder], [linkedHabits, ownOrder])
   const habitsById = useMemo(() => new Map(habits.map((h) => [h.id, h])), [habits])
+
+  // «Понял» on a missed-habit card hides its bell until the next miss (kept per device).
+  const [seenMiss, setSeenMiss] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('arkad:missedSeen') || '{}') } catch { return {} }
+  })
+  const dismissMiss = (habitId, iso) => {
+    setSeenMiss((prev) => {
+      const next = { ...prev, [habitId]: iso }
+      try { localStorage.setItem('arkad:missedSeen', JSON.stringify(next)) } catch { /* ignore */ }
+      return next
+    })
+  }
 
   const dateStrip = useMemo(() => buildDateStrip(today), [today])
   const [selectedDate, setSelectedDate] = useState(today)
@@ -385,6 +398,22 @@ export default function HabitsPage() {
                       {/* Streak, shown next to the habit per user request,
                           "x{n} день"-style instead of the earlier floating
                           corner badge. */}
+                      {(() => {
+                        const missedIso = lastMissedDay(habit, today, appliesOnDate)
+                        if (!missedIso || seenMiss[habit.id] === missedIso) return null
+                        return (
+                          <MissedHabitBell
+                            habit={habit}
+                            missedIso={missedIso}
+                            today={today}
+                            applies={appliesOnDate}
+                            t={t}
+                            locale={i18n.language || 'ru'}
+                            onMark={(iso) => toggleCompletion(habit.id, iso)}
+                            onDismiss={() => dismissMiss(habit.id, missedIso)}
+                          />
+                        )
+                      })()}
                       <span className="habits-streak-pill"><IconFlame size={13} /> x{streak} {t('habits.streakUnit')}</span>
                       <button
                         type="button"

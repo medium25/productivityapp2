@@ -727,6 +727,14 @@
     "deleteSelected": "Удалить выбранные"
   },
   "habits": {
+    "missedBell": "Пропущено — открыть карту",
+    "missedTitle": "Ты пропустил привычку «{{name}}»",
+    "missedText": "Её не отметили {{date}}. Система не хочет, чтобы привычки пропускались.",
+    "markNow": "Отметить сейчас",
+    "gotIt": "Понял",
+    "statStreak": "дн. серия",
+    "statBest": "лучшая",
+    "statPercent": "за 16 нед.",
     "emptyHint": "Пока нет привычек — добавь ниже.",
     "addPlaceholder": "Новая привычка",
     "streakUnit": "день",
