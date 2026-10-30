@@ -1,5 +1,5 @@
 import { getCurrentUid } from '../firebase/currentUid'
-import { clearDirtyKeys, invalidateAppDataCache, isDirtyKey, primeAppData, readCachedAppData, readServerAppData } from '../firebase/firestoreStorage'
+import { clearDirtyKeys, invalidateAppDataCache, isDirtyKey, primeAppData, readCachedAppData, readServerAppData, replayOutbox, setMergedHandler } from '../firebase/firestoreStorage'
 import { useSettingsStore } from './useSettingsStore'
 import { useFocusStore } from './useFocusStore'
 import { useFocusHistoryStore } from './useFocusHistoryStore'
@@ -52,6 +52,15 @@ const PERSISTED_STORES = [
   ...SPORT_DAY_CHAT_STORES,
 ]
 
+// After a save had to be merged with newer work from another device, the store re-reads the
+// merged document so this device shows it too.
+setMergedHandler((key) => {
+  const store = PERSISTED_STORES.find((st) => st.persist.getOptions().storage?.__key === key)
+  if (!store || store === useFocusTimerStore) return
+  invalidateAppDataCache()
+  store.persist.rehydrate()
+})
+
 // Fast start. Every store's data is first read from this device's own copy of
 // Firestore (IndexedDB — milliseconds, no network), so the app can open at once
 // with everything on screen; then the server is asked in the background and only
@@ -76,6 +85,13 @@ export function rehydrateAllPersistedStores() {
   })()
 
   const refreshed = ready.then(async () => {
+    // Saves left from an earlier session (offline edits) go out first, merged with the cloud.
+    if (uid) {
+      try {
+        const replayed = await replayOutbox(uid)
+        if (replayed.length) { invalidateAppDataCache(); await hydrateAll(PERSISTED_STORES.filter((st) => replayed.includes(st.persist.getOptions().storage?.__key) && st !== useFocusTimerStore)) }
+      } catch { /* kept in the outbox */ }
+    }
     if (!cached || !uid) return
     let fresh
     try { fresh = await readServerAppData(uid) } catch { return }

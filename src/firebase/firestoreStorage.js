@@ -1,6 +1,7 @@
-import { collection, doc, getDoc, getDocs, getDocsFromCache, setDoc, deleteDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, getDocsFromCache, runTransaction, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getCurrentUid } from './currentUid'
+import { mergeDocs } from './docMerge'
 
 // All stores hydrate at sign-in, and each one used to read its own document —
 // ~20 separate round trips before the app had its data. The first read now
@@ -60,15 +61,96 @@ function readAllAppData(uid) {
 // input lag on phones. Writes are now coalesced per document: only the latest
 // state is sent, a moment after the changes stop (and right away when the page
 // is hidden or closed, or before stores are re-read), so nothing is lost.
+//
+// Stale-device guard. A document is saved whole, so a device that started from an old
+// local copy used to overwrite newer work done on another device. Now every document
+// carries a revision (`rev`); this device remembers the revision and content it last saw
+// (`baseRev` / `baseVal`). A save runs in a transaction: if the cloud's revision is not the
+// one this device saw, the cloud's version and this device's changes are merged record by
+// record (see docMerge.js) instead of one replacing the other, and the store is re-read.
+// Each save is first put in a small local outbox, so edits made offline — or while the page
+// is closing — are replayed (and merged) on the next start.
 const WRITE_DELAY_MS = 800
-const pendingWrites = new Map() // document path -> { ref, value, timer }
+const pendingWrites = new Map() // document path -> { key, ref, value, timer }
+const chains = new Map() // document path -> promise (saves of one document run one after another)
+const seqs = new Map() // document path -> number of the newest save (an older, retried one is dropped)
+const baseRev = new Map() // store key -> revision last seen / written by this device
+const baseVal = new Map() // store key -> document content last seen / written by this device
+let onMerged = null // (key) => void — set by rehydrateStores: re-read a store after a merge
+
+export function setMergedHandler(fn) { onMerged = fn }
+
+const outboxKey = (uid, key) => `arkad:outbox:${uid}:${key}`
+const saveOutbox = (uid, key, payload) => { try { localStorage.setItem(outboxKey(uid, key), JSON.stringify(payload)) } catch { /* quota / private mode */ } }
+const clearOutbox = (uid, key) => { try { localStorage.removeItem(outboxKey(uid, key)) } catch { /* ignore */ } }
+
+// One guarded save. `expected` / `base` default to what this device last saw.
+export async function commitDoc(ref, key, value, { expected = baseRev.get(key) ?? 0, base = baseVal.get(key) ?? null, run = runTransaction } = {}) {
+  let merged = false
+  const result = await run(db, async (tx) => {
+    const snap = await tx.get(ref)
+    const server = snap.exists() ? snap.data() : null
+    const serverRev = server?.rev ?? 0
+    let out = value
+    merged = false
+    // The cloud moved on since this device last saw it. A document without `rev` (written by an
+    // older app version) is compared by content.
+    const moved = server && (serverRev !== expected
+      || (serverRev === 0 && base && JSON.stringify(server.state) !== JSON.stringify(base.state)))
+    if (moved) { out = mergeDocs(base, server, value); merged = true }
+    const doc = { ...out, rev: serverRev + 1 }
+    tx.set(ref, doc)
+    return doc
+  })
+  baseRev.set(key, result.rev)
+  baseVal.set(key, result)
+  if (merged && onMerged) onMerged(key)
+  return result
+}
 
 function sendWrite(path) {
   const entry = pendingWrites.get(path)
   if (!entry) return
   clearTimeout(entry.timer)
   pendingWrites.delete(path)
-  setDoc(entry.ref, entry.value).catch((e) => console.error('Firestore write failed:', e))
+  const { key, ref, value } = entry
+  const uid = getCurrentUid()
+  const seq = (seqs.get(path) || 0) + 1
+  seqs.set(path, seq)
+  // Outbox first (synchronous), so nothing is lost if the page closes mid-save.
+  if (uid) saveOutbox(uid, key, { value, rev: baseRev.get(key) ?? 0, base: baseVal.get(key) ?? null })
+  const run = (attempt) => (chains.get(path) || Promise.resolve())
+    .then(() => commitDoc(ref, key, value))
+    .then(() => { if (seqs.get(path) === seq && !pendingWrites.has(path) && uid) clearOutbox(uid, key) })
+    .catch((e) => {
+      console.error('Firestore write failed:', e)
+      // Offline or contended: try again later — unless a newer save of the same document has taken over.
+      const delay = Math.min(60000, 3000 * 2 ** attempt)
+      setTimeout(() => { if (seqs.get(path) === seq && !pendingWrites.has(path)) chains.set(path, run(attempt + 1)) }, delay)
+    })
+  chains.set(path, run(0))
+}
+
+// Saves left in the outbox by an earlier session (offline edits, or a page closed mid-save)
+// are sent now. Returns the store keys that were replayed.
+export async function replayOutbox(uid) {
+  const keys = []
+  let names = []
+  try { names = Object.keys(localStorage).filter((k) => k.startsWith(`arkad:outbox:${uid}:`)) } catch { return keys }
+  for (const name of names) {
+    const key = name.slice(`arkad:outbox:${uid}:`.length)
+    try {
+      const saved = JSON.parse(localStorage.getItem(name))
+      if (!saved?.value) { localStorage.removeItem(name); continue }
+      const ref = doc(db, 'users', uid, 'appData', key)
+      await commitDoc(ref, key, saved.value, { expected: saved.rev ?? 0, base: saved.base ?? null })
+      localStorage.removeItem(name)
+      keys.push(key)
+    } catch (e) {
+      console.error('Outbox replay failed:', e) // stays in the outbox for the next start
+    }
+  }
+  return keys
 }
 
 export function flushPendingWrites() {
@@ -92,6 +174,12 @@ export function createFirestoreStorage(key) {
     return uid ? doc(db, 'users', uid, 'appData', key) : null
   }
 
+  // What this device now knows of the document (the base of its next guarded save).
+  const remember = (data) => {
+    if (data) { baseRev.set(key, data.rev ?? 0); baseVal.set(key, data) } else { baseRev.set(key, 0); baseVal.delete(key) }
+    return data
+  }
+
   return {
     __key: key,
     getItem: async () => {
@@ -101,10 +189,10 @@ export function createFirestoreStorage(key) {
       try {
         if (!bulk || bulk.uid !== uid) bulk = { uid, promise: readAllAppData(uid) }
         const all = await bulk.promise
-        return all.get(key) ?? null
+        return remember(all.get(key) ?? null)
       } catch {
         const snap = await getDoc(ref)
-        return snap.exists() ? snap.data() : null
+        return remember(snap.exists() ? snap.data() : null)
       }
     },
     setItem: async (_name, value) => {
@@ -114,7 +202,7 @@ export function createFirestoreStorage(key) {
       dirtyKeys.add(key)
       const previous = pendingWrites.get(path)
       if (previous) clearTimeout(previous.timer)
-      pendingWrites.set(path, { ref, value, timer: setTimeout(() => sendWrite(path), WRITE_DELAY_MS) })
+      pendingWrites.set(path, { key, ref, value, timer: setTimeout(() => sendWrite(path), WRITE_DELAY_MS) })
     },
     removeItem: async () => {
       const ref = docRef()
