@@ -84,8 +84,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     return { cells, streak, best, pct: due ? Math.round((done / due) * 100) : 0, misses: cells.filter((c) => c.kind === 'miss').length }
   }, [habit, today, applies])
 
-  // Nothing to show: no fresh miss and no misses in the last 16 weeks.
-  if (!unseen && stats.misses === 0) return null
+  // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
   const alert = unseen && !!missedIso
   const dateLabel = missedIso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${missedIso}T00:00:00`)) : ''
 
