@@ -196,11 +196,6 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
-        {results && (
-          <span className="cycle-dots" aria-hidden="true">
-            {results.map((r, i) => <i key={i} className={'cycle-dots__dot cycle-dots__dot--' + r} />)}
-          </span>
-        )}
         <button
           type="button"
           className={'cycle-sign' + (isRecurring(task) ? ' cycle-sign--on' : '')}
