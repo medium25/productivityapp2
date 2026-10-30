@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
-import { getProjectColor, todayISO, nextRecurringDate } from '../features/tasks/taskLogic'
-import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
+import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
+import { syncHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { brightTagColor, projectRowColors, projectRole, groupProjectRows, projectLinks } from '../features/tasks/projectParent'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
 import ProjectPathModal from '../features/tasks/ProjectPathModal'
 import ModalClose from '../features/tasks/ModalClose'
-import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 
 // «Задачи»: every open task in one list, drawn like the rows of «Мой день» but
@@ -24,11 +23,9 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
-  const [cycleOpen, setCycleOpen] = useState(false)
-  const closeCycle = useCallback(() => setCycleOpen(false), [])
   const [value, setValue] = useState(task.title)
   const done = task.status === 'done'
   const color = role ? projectRowColors(role.project) : ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
@@ -101,17 +98,6 @@ function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onTog
         )}
         <button
           type="button"
-          className={'cycle-sign task-cycle' + (isRecurring(task) ? ' cycle-sign--on' : '')}
-          data-cycle-trigger
-          onPointerDown={stop}
-          onClick={() => setCycleOpen((v) => !v)}
-          title={t('tasksHub.cycleTitle')}
-          aria-label={t('tasksHub.cycleTitle')}
-        >
-          {CYCLE_ICON}
-        </button>
-        <button
-          type="button"
           className={'task-myday' + (inMyDay ? ' task-myday--on' : '')}
           onPointerDown={stop}
           onClick={() => onToggleMyDay(task)}
@@ -166,7 +152,6 @@ function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onTog
         )}
       </span>
     </div>
-    {cycleOpen && <CyclePicker task={task} t={t} onSet={(rec, d) => onSetCycle(task, rec, d)} onClose={closeCycle} />}
     </>
   )
 }
@@ -185,7 +170,6 @@ export default function TasksListPage() {
   const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
-  const addHabit = useHabitsStore((s) => s.addHabit)
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
 
   // Re-read the date on refocus / midnight so «Мой день» stays right overnight.
@@ -249,17 +233,6 @@ export default function TasksListPage() {
     if (old && (old.flow || []).includes(task.id)) setProjectFlow(old.id, old.flow.filter((id) => id !== task.id))
     updateTask(task.id, { projectId })
     if (wasInMyDay && projectId) placeOnMap(task.id, projectId)
-  }
-
-  const setCycle = (task, recurrence, recurrenceDays) => {
-    const patch = { recurrence, recurrenceDays }
-    // Weekly / monthly with a chosen day: the task shows up on the next such day.
-    if ((recurrence === 'weekly' || recurrence === 'monthly') && recurrenceDays?.length) {
-      const next = nextRecurringDate({ ...task, ...patch }, todayISO())
-      if (next) { patch.whenDate = next; patch.deadline = null }
-    }
-    updateTask(task.id, patch)
-    spawnHabitForTask({ ...task, recurrence, recurrenceDays }, { habits, addHabit })
   }
 
   const [pathTaskId, setPathTaskId] = useState(null) // the task whose project path window is open
@@ -391,7 +364,6 @@ export default function TasksListPage() {
                     onPickProject={(tk) => setPicker({ task: tk })}
                     onOpenPath={(tk) => setPathTaskId(tk.id)}
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
-                    onSetCycle={setCycle}
                     onDelete={deleteTask}
                     selecting={selecting}
                     selected={selected.has(task.id)}
