@@ -15,7 +15,7 @@ const BACK = (
 
 // Menu opened by the «+» on a task without a project: make the task a project right away
 // («Создать подзадачу»), or add it to one of the existing projects.
-export default function PlusChoiceMenu({ rect, projects, tasks, onCreateProject, onPickProject, onClose }) {
+export default function PlusChoiceMenu({ rect, projects, tasks, parentProject, taskProject, onCreateProject, onPickProject, onAddOwn, onShowPath, onManage, onClose }) {
   const { t } = useTranslation()
   const [step, setStep] = useState('choice')
   const ref = useRef(null)
@@ -45,16 +45,29 @@ export default function PlusChoiceMenu({ rect, projects, tasks, onCreateProject,
   return (
     <div ref={ref} className="plusmenu" style={pos} role="menu">
       {step === 'choice' ? (
-        <>
-          <button type="button" className="plusmenu__opt plusmenu__opt--first" onClick={onCreateProject}>
+        parentProject ? (
+          <button type="button" className="plusmenu__opt plusmenu__opt--first" onClick={onAddOwn}>
             <span className="plusmenu__ico plusmenu__ico--a">{FOLDER_PLUS}</span>
-            <span><b>{t('tasksList.plusSubtask')}</b><small>{t('tasksList.plusSubtaskHint')}</small></span>
+            <span><b>{t('tasksList.plusAddOwn')}</b><small>{t('tasksList.plusAddOwnHint')}</small></span>
           </button>
-          <button type="button" className="plusmenu__opt" onClick={() => setStep('list')}>
-            <span className="plusmenu__ico plusmenu__ico--b">{FOLDER}</span>
-            <span><b>{t('tasksList.plusAddToProject')}</b><small>{t('tasksList.plusAddHint')}</small></span>
-          </button>
-        </>
+        ) : (
+          <>
+            <button type="button" className="plusmenu__opt plusmenu__opt--first" onClick={onCreateProject}>
+              <span className="plusmenu__ico plusmenu__ico--a">{FOLDER_PLUS}</span>
+              <span><b>{t('tasksList.plusSubtask')}</b><small>{t('tasksList.plusSubtaskHint')}</small></span>
+            </button>
+            <button type="button" className="plusmenu__opt" onClick={() => setStep('list')}>
+              <span className="plusmenu__ico plusmenu__ico--b">{FOLDER}</span>
+              <span><b>{t('tasksList.plusAddToProject')}</b><small>{t('tasksList.plusAddHint')}</small></span>
+            </button>
+            {taskProject && onShowPath && (
+              <button type="button" className="plusmenu__opt" onClick={onShowPath}>
+                <span className="plusmenu__ico plusmenu__ico--b">{FOLDER}</span>
+                <span><b>{t('tasksList.plusPath', { name: taskProject.name })}</b><small>{t('tasksList.plusPathHint')}</small></span>
+              </button>
+            )}
+          </>
+        )
       ) : (
         <>
           <div className="plusmenu__head">
@@ -77,6 +90,7 @@ export default function PlusChoiceMenu({ rect, projects, tasks, onCreateProject,
               </button>
             ))}
           </div>
+          {onManage && <button type="button" className="plusmenu__manage" onClick={onManage}>{t('tasksList.plusManage')}</button>}
         </>
       )}
     </div>

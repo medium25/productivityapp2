@@ -419,6 +419,10 @@ export const useTasksStore = create(
           return id
         },
 
+        // «+» on a project's parent row: open the add-task window for that project (closable, unlike the first-task one).
+        openProjectAddTask: (projectId) => set({ pendingFirstTask: projectId }),
+        dismissFirstTask: () => set({ pendingFirstTask: null }),
+
         // A project's own due date — lets it slot into the Tasks board's
         // Today/Future columns the same way a task's deadline does (see
         // classifyProjectColumn in taskLogic.js); a project with none stays

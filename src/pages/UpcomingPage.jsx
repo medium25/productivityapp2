@@ -17,6 +17,7 @@ import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { buildTodayRows } from '../features/tasks/todayRows'
 import { projectRowColors, projectRole, projectLinks, groupProjectRows } from '../features/tasks/projectParent'
 import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
+import PlusChoiceMenu from '../features/tasks/PlusChoiceMenu'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -141,7 +142,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, role, plinks, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -230,6 +231,17 @@ function TimedRow({ task, number, role, plinks, slot, linkPrev, linkNext, onTogg
             />
           )
         })()}
+        <button
+          type="button"
+          className="plus-btn"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => onPlus(task, e.currentTarget.getBoundingClientRect())}
+          title={t('tasksList.plusAddToProject')}
+          aria-label={t('tasksList.plusAddToProject')}
+          aria-haspopup="menu"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+        </button>
         {!pinned ? (
           <span className="timed-row__time timed-row__time--mins">
             {editing === 'mins' ? (
@@ -537,7 +549,7 @@ export default function UpcomingPage() {
   const addHabit = useHabitsStore((s) => s.addHabit)
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
   const toggleHabitCompletion = useHabitsStore((s) => s.toggleCompletion)
-  const permanentlyDeleteTask = useTasksStore((s) => s.permanentlyDeleteTask)
+  const convertTaskToProject = useTasksStore((s) => s.convertToProject)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   // Re-read at local midnight / on refocus so an unfinished Today task falls
   // into "Надо сделать" even when the page was left open overnight.
@@ -568,18 +580,20 @@ export default function UpcomingPage() {
 
   const [timerOpen, setTimerOpen] = useState(false)
 
-  // "⋮" → convert to project — the task itself becomes a new project
-  // (managed from here on via the Data page's Vazifalar panel); the task
-  // record is gone afterward (not trashed — it now exists as a project).
-  const convertToProject = (task) => {
-    addProject(task.title)
-    permanentlyDeleteTask(task.id)
-  }
-
   const [pendingDateTask, setPendingDateTask] = useState(null)
   const [schedulePrompt, setSchedulePrompt] = useState(null)
   const [conflict, setConflict] = useState(null)
   const dayStart = useUiPreferencesStore((s) => s.dayStartMinutes)
+  // «+» on a row: create a project from the task, or add it to an existing one (it stays in today's list,
+  // so it goes onto the project's map).
+  const [plusMenu, setPlusMenu] = useState(null)
+  const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
+  const openProjectAddTask = useTasksStore((s) => s.openProjectAddTask)
+  const assignProject = (task, projectId) => {
+    updateTask(task.id, { projectId })
+    const project = projects.find((p) => p.id === projectId)
+    if (project && !(project.flow || []).includes(task.id)) setProjectFlow(projectId, [...(project.flow || []), task.id])
+  }
   // «Понял» on a missed-habit card hides its bell until the next miss (kept per device, by title).
   const [seenMiss, setSeenMiss] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arkad:missedSeen') || '{}') } catch { return {} }
@@ -616,6 +630,7 @@ export default function UpcomingPage() {
     })
   }
   const taskProps = {
+    onPlus: (task, rect) => setPlusMenu({ task, rect }),
     projects,
     allTasks: tasks,
     seriesFor,
@@ -629,7 +644,6 @@ export default function UpcomingPage() {
     },
     onEdit: openEdit,
     onEditDeadline: setPendingDateTask,
-    onConvertToProject: convertToProject,
     onDelete: deleteTask,
     onSetStart: (task, minutes) => updateTask(task.id, { startMinute: Math.max(0, Math.min(1439, minutes)) }),
     onSetTitle: (task, title) => updateTask(task.id, { title }),
@@ -762,6 +776,19 @@ export default function UpcomingPage() {
     <>
       {body}
       {todayDrag.dragGhost}
+      {plusMenu && (
+        <PlusChoiceMenu
+          rect={plusMenu.rect}
+          projects={projects}
+          tasks={tasks}
+          parentProject={projectRole(plusMenu.task, tasks, projects)?.kind === 'parent' ? projectRole(plusMenu.task, tasks, projects).project : null}
+          taskProject={null}
+          onAddOwn={() => { openProjectAddTask(projectRole(plusMenu.task, tasks, projects).project.id); setPlusMenu(null) }}
+          onCreateProject={() => { convertTaskToProject(plusMenu.task.id); setPlusMenu(null) }}
+          onPickProject={(projectId) => { assignProject(plusMenu.task, projectId); setPlusMenu(null) }}
+          onClose={() => setPlusMenu(null)}
+        />
+      )}
       <button
         type="button"
         className="tasks-table__pomodoro-btn tasks-table__pomodoro-btn--floating"

@@ -24,7 +24,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggleDone, onToggleMyDay, onSetTitle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(task.title)
@@ -102,20 +102,17 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
             </svg>
           )}
         </button>
-        {/* Just a coloured dot (long names ate the row): tap = the project's path window; «+» when there is no project. */}
-        <span className="task-tag-wrap">
-          <button
-            type="button"
-            className={'task-tag task-tag--dot' + (project ? '' : ' task-tag--none')}
-            style={project ? { '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) } : undefined}
-            onPointerDown={stop}
-            onClick={(e) => (project ? onOpenPath(task) : onPlus(task, e.currentTarget.getBoundingClientRect()))}
-            title={project ? project.name : t('tasksList.project')}
-            aria-label={project ? project.name : t('tasksList.project')}
-          >
-            {project ? null : '+'}
-          </button>
-        </span>
+        <button
+          type="button"
+          className="plus-btn"
+          onPointerDown={stop}
+          onClick={(e) => onPlus(task, e.currentTarget.getBoundingClientRect())}
+          title={t('tasksList.plusAddToProject')}
+          aria-label={t('tasksList.plusAddToProject')}
+          aria-haspopup="menu"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+        </button>
       </span>
       <span className="timed-row__actions">
         {role?.kind === 'parent' && role.locked ? (
@@ -156,6 +153,7 @@ export default function TasksListPage() {
   const addProject = useTasksStore((s) => s.addProject)
   const deleteProject = useTasksStore((s) => s.deleteProject)
   const convertToProject = useTasksStore((s) => s.convertToProject)
+  const openProjectAddTask = useTasksStore((s) => s.openProjectAddTask)
   const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
@@ -351,8 +349,6 @@ export default function TasksListPage() {
                     project={projectById.get(task.projectId)}
                     onToggleDone={onToggleDone}
                     onToggleMyDay={toggleMyDay}
-                    onPickProject={(tk) => setPicker({ task: tk })}
-                    onOpenPath={(tk) => setPathTaskId(tk.id)}
                     onSetTitle={(tk, title) => updateTask(tk.id, { title })}
                     onDelete={deleteTask}
                     selecting={selecting}
@@ -399,6 +395,11 @@ export default function TasksListPage() {
           rect={plusMenu.rect}
           projects={projects}
           tasks={tasks}
+          parentProject={projectRole(plusMenu.task, tasks, projects)?.kind === 'parent' ? projectRole(plusMenu.task, tasks, projects).project : null}
+          taskProject={projectById.get(plusMenu.task.projectId) || null}
+          onAddOwn={() => { openProjectAddTask(projectRole(plusMenu.task, tasks, projects).project.id); setPlusMenu(null) }}
+          onShowPath={() => { setPathTaskId(plusMenu.task.id); setPlusMenu(null) }}
+          onManage={() => { setPicker({ task: plusMenu.task }); setPlusMenu(null) }}
           onClose={() => setPlusMenu(null)}
           onCreateProject={() => { convertToProject(plusMenu.task.id); setPlusMenu(null) }}
           onPickProject={(projectId) => { changeProject(plusMenu.task, projectId); setPlusMenu(null) }}

@@ -807,6 +807,13 @@
     "copyIdea": "G‘oyani nusxalash"
   },
   "tasksList": {
+    "plusAddOwn": "Loyihaga vazifa qo‘shish",
+    "plusAddOwnHint": "Yangi vazifa shu loyihada paydo bo‘ladi",
+    "plusPath": "«{{name}}» yo‘li",
+    "plusPathHint": "Qadamlar, sanalar va bajarilish vaqti",
+    "plusManage": "Barcha loyihalar…",
+    "addToProjectTitle": "«{{name}}» loyihasida yangi vazifa",
+    "addToProjectBody": "Vazifa loyihada va ro‘yxatda boshqalar yonida paydo bo‘ladi.",
     "plusSubtask": "Kichik vazifa yaratish",
     "plusSubtaskHint": "Vazifa darhol loyihaga aylanadi va tizim birinchi vazifani so‘raydi",
     "plusAddToProject": "Loyihaga qo‘shish",

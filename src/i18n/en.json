@@ -822,6 +822,13 @@
     "copyIdea": "Copy idea"
   },
   "tasksList": {
+    "plusAddOwn": "Add a task to the project",
+    "plusAddOwnHint": "The new task appears in this project",
+    "plusPath": "Path of “{{name}}”",
+    "plusPathHint": "Steps, dates and completion times",
+    "plusManage": "All projects…",
+    "addToProjectTitle": "New task in “{{name}}”",
+    "addToProjectBody": "The task appears in the project and in the list next to the others.",
     "plusSubtask": "Create a subtask",
     "plusSubtaskHint": "The task becomes a project right away and the system asks for its first task",
     "plusAddToProject": "Add to a project",
