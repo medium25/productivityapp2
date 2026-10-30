@@ -10,6 +10,7 @@ import SplitPane, { SplitPaneBar, usePaneTitle } from './layout/SplitPane'
 import { useSplitViewStore } from './store/useSplitViewStore'
 import AuthPage from './features/auth/AuthPage'
 import ProjectCompletionPrompt from './features/tasks/ProjectCompletionPrompt'
+import ProjectFirstTaskModal from './features/tasks/ProjectFirstTaskModal'
 import QuranAudioHost from './features/quran/QuranAudioHost'
 import { useUndoShortcut } from './features/tasks/useUndoShortcut'
 import { useSettingsStore } from './store/useSettingsStore'
@@ -86,6 +87,7 @@ function Layout() {
         )}
       </div>
       <ProjectCompletionPrompt />
+      <ProjectFirstTaskModal />
       <QuranAudioHost />
     </div>
   )

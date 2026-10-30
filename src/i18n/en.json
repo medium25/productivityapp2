@@ -822,6 +822,14 @@
     "copyIdea": "Copy idea"
   },
   "tasksList": {
+    "convertToProject": "Turn into a project",
+    "projectPill": "PROJECT",
+    "projectLocked": "The project can be checked off once all its tasks are done ({{done}}/{{total}})",
+    "projectReady": "All tasks are done — you can check off the project",
+    "firstTaskTitle": "Project “{{name}}” created. Add its first task",
+    "firstTaskBody": "The task “{{name}}” stays in the list as the project. You can close this window only by adding the first task.",
+    "firstTaskPlaceholder": "What comes first?",
+    "firstTaskAdd": "Add task",
     "title": "Tasks",
     "addTask": "Add a task",
     "empty": "No tasks yet. Add the first one.",

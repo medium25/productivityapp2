@@ -42,6 +42,8 @@ export const useTasksStore = create(
         // (absent from partialize below) — purely a same-session UI cue, a
         // reload shouldn't resurrect a stale prompt.
         pendingProjectPrompt: null,
+        // A project just made from a task, waiting for its first task (see ProjectFirstTaskModal).
+        pendingFirstTask: null,
 
         // Cmd/Ctrl+Z (see useUndoShortcut.js) — pops the last snapshot and
         // restores it wholesale. Deliberately doesn't push a "redo" entry;
@@ -160,6 +162,12 @@ export const useTasksStore = create(
 
           const nowDone = target.status !== 'done'
 
+          // The parent row of a project made from a task can only be checked once all its tasks are done.
+          if (target.parentOfProject && nowDone) {
+            const kids = get().tasks.filter((t) => t.projectId === target.parentOfProject && t.status !== 'trashed' && t.id !== id)
+            if (kids.length === 0 || kids.some((t) => t.status !== 'done')) return
+          }
+
           snapshotForUndo()
           set((state) => {
             let spawnedId = null
@@ -216,7 +224,26 @@ export const useTasksStore = create(
             return { tasks }
           })
 
+          // Checking the parent row completes its project; unchecking reopens it.
+          if (target.parentOfProject) {
+            if (nowDone) get().completeProject(target.parentOfProject)
+            else get().reopenProject(target.parentOfProject)
+            return
+          }
+
           if (!target.projectId) return
+          // A project made from a task is completed by checking its parent row, not by a prompt; a task
+          // that is un-checked takes a finished parent back to active.
+          const ownProject = get().projects.find((p) => p.id === target.projectId)
+          if (ownProject?.parentTaskId) {
+            if (!nowDone) {
+              set((state) => ({
+                tasks: state.tasks.map((t) => (t.id === ownProject.parentTaskId && t.status === 'done' ? { ...t, status: 'active', completedAt: null } : t)),
+              }))
+              if (ownProject.status === 'done') get().reopenProject(ownProject.id)
+            }
+            return
+          }
           const siblings = get().tasks.filter((t) => t.projectId === target.projectId && t.status !== 'trashed')
           const allDone = siblings.length > 0 && siblings.every((t) => t.status === 'done')
 
@@ -352,6 +379,44 @@ export const useTasksStore = create(
             return { projects: [...state.projects, project] }
           })
           return project
+        },
+
+        // «Превратить в проект»: the task's title becomes a new project's name and the task STAYS in
+        // the list as the project's parent row (checkable only once every project task is done).
+        // The first project task is then required (pendingFirstTask).
+        convertToProject: (taskId) => {
+          const task = get().tasks.find((t) => t.id === taskId)
+          if (!task || task.parentOfProject) return null
+          const project = get().addProject(task.title)
+          if (!project) return null
+          set((state) => ({
+            projects: state.projects.map((p) => (p.id === project.id ? { ...p, parentTaskId: taskId } : p)),
+            tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, parentOfProject: project.id } : t)),
+            pendingFirstTask: project.id,
+          }))
+          return project
+        },
+
+        // The required first task of a project made from a task: dated like its parent so the two
+        // show up together, and placed on the project's map.
+        addFirstProjectTask: (projectId, title) => {
+          const trimmed = (title || '').trim()
+          const project = get().projects.find((p) => p.id === projectId)
+          if (!trimmed || !project) return null
+          const parent = get().tasks.find((t) => t.id === project.parentTaskId)
+          const id = get().addTask({
+            title: trimmed,
+            stage: 'tasks',
+            projectId,
+            createdIn: parent?.createdIn || 'other',
+            whenDate: parent?.whenDate || null,
+            deadline: parent?.deadline || null,
+          })
+          set((state) => ({
+            projects: state.projects.map((p) => (p.id === projectId ? { ...p, flow: [...(p.flow || []), id] } : p)),
+            pendingFirstTask: state.pendingFirstTask === projectId ? null : state.pendingFirstTask,
+          }))
+          return id
         },
 
         // A project's own due date — lets it slot into the Tasks board's

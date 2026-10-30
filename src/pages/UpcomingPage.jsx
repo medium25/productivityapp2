@@ -15,6 +15,7 @@ import { IconFocus, IconClock } from '../icons/Icons'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { buildTodayRows } from '../features/tasks/todayRows'
+import { projectRowColors, projectRole, projectLinks, groupProjectRows } from '../features/tasks/projectParent'
 import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
@@ -140,7 +141,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, role, plinks, onConvertProject, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -156,7 +157,7 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   const hasMinutes = !!task.estimateMinutes
   const start = dragPreview?.edge === 'start' ? dragPreview.value : slot.start
   const end = dragPreview?.edge === 'end' ? dragPreview.value : slot.end
-  const color = ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
+  const color = role ? projectRowColors(role.project) : ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
 
   const startHandle = useTimeDrag(
     (delta) => setDragPreview({ edge: 'start', value: Math.max(0, Math.min(slot.end - 5, slot.start + delta)) }),
@@ -173,8 +174,8 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
   return (
     <>
     <div
-      className={'timed-row' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '')}
-      style={{ minHeight: pinned ? Math.max(34, (end - start) * PX_PER_MIN) : 34 }}
+      className={'timed-row' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '') + (plinks?.prev ? ' timed-row--plink-prev' : '') + (plinks?.next ? ' timed-row--plink-next' : '')}
+      style={{ minHeight: pinned ? Math.max(34, (end - start) * PX_PER_MIN) : 34, ...(role ? { '--proj-line': color.line } : null) }}
       onDoubleClick={selecting ? undefined : (e) => { if (!e.target.closest('button, input')) onEdit(task) }}
       onClick={selecting ? () => onSelect(task.id) : undefined}
       {...(selecting ? null : dragHandleProps)}
@@ -193,6 +194,19 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
             <span className="timed-row__title-text" onDoubleClick={startEdit('title')}>{task.title}</span>
           )}
         </span>
+        {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
+        {!role && !task.projectId && !done && !results && (
+          <button
+            type="button"
+            className="proj-btn"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onConvertProject(task)}
+            title={t('tasksList.convertToProject')}
+            aria-label={t('tasksList.convertToProject')}
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zM12 11v5M9.5 13.5h5" /></svg>
+          </button>
+        )}
         {results && (
           <span className="cycle-dots" aria-hidden="true">
             {results.map((r, i) => <i key={i} className={'cycle-dots__dot cycle-dots__dot--' + r} />)}
@@ -268,14 +282,27 @@ function TimedRow({ task, number, slot, linkPrev, linkNext, onToggleDone, onEdit
         )}
       </span>
       <span className="timed-row__actions">
-        <button
-          type="button"
-          className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '')}
-          onClick={() => onToggleDone(task.id)}
-          aria-label={done ? 'Выполнено' : 'Выполнить'}
-        >
-          {done ? '✓' : ''}
-        </button>
+        {role?.kind === 'parent' && role.locked ? (
+          <button
+            type="button"
+            className="timed-row__done-btn timed-row__done-btn--lock"
+            disabled
+            title={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+            aria-label={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+          >
+            {role.done}/{role.total}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '') + (role?.kind === 'parent' && !done ? ' timed-row__done-btn--ready' : '')}
+            onClick={() => onToggleDone(task.id)}
+            aria-label={done ? 'Выполнено' : 'Выполнить'}
+            title={role?.kind === 'parent' && !done ? t('tasksList.projectReady') : undefined}
+          >
+            {done ? '✓' : ''}
+          </button>
+        )}
       </span>
     </div>
     {cycleOpen && <CyclePicker task={task} t={t} onSet={(rec, d) => onSetCycle(task, rec, d)} onClose={closeCycle} />}
@@ -320,6 +347,7 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
     ? taskDrag.displayOrder.map((id) => baseRows.find((r) => r.id === id)).filter(Boolean)
     : baseRows
   const slots = computeSlots(rows, dayStart)
+  const plinksAll = projectLinks(rows, taskProps.projects || [])
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id))
   const deleteSelected = () => {
     onDeleteMany(rows.filter((r) => selected.has(r.id)).map((r) => r.id))
@@ -405,6 +433,8 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
               <TimedRow
                 task={task}
                 number={i + 1}
+                role={projectRole(task, taskProps.allTasks || [], taskProps.projects || [])}
+                plinks={plinksAll[i]}
                 slot={slots[i]}
                 linkPrev={task.status === 'done' && i > 0 && rows[i - 1].status === 'done'}
                 linkNext={task.status === 'done' && i < rows.length - 1 && rows[i + 1].status === 'done'}
@@ -511,6 +541,7 @@ export default function UpcomingPage() {
   const tasks = useTasksStore((s) => s.tasks)
   const projects = useTasksStore((s) => s.projects)
   const addTask = useTasksStore((s) => s.addTask)
+  const convertTaskToProject = useTasksStore((s) => s.convertToProject)
   const updateTask = useTasksStore((s) => s.updateTask)
   const deleteTask = useTasksStore((s) => s.deleteTask)
   const toggleTaskDone = useTasksStore((s) => s.toggleTaskDone)
@@ -598,6 +629,9 @@ export default function UpcomingPage() {
     })
   }
   const taskProps = {
+    projects,
+    allTasks: tasks,
+    onConvertProject: (task) => convertTaskToProject(task.id),
     seriesFor,
     seenMiss,
     onDismissMiss: dismissMiss,

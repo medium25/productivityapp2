@@ -1,5 +1,6 @@
 import { isoFromDate } from './taskLogic'
 import { isHabitTask } from './habitTaskSync'
+import { groupProjectRows } from './projectParent'
 
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
 
@@ -27,11 +28,12 @@ export function buildTodayRows(tasks, projects, today) {
   // Repeating tasks first, then the one-step ones; tasks just sent over from «Задачи»
   // (dayRank) go to the end, oldest first, until the list is reordered by hand.
   const oneStep = todayList.filter((task) => !isRecurring(task))
-  return [
+  // Rows of a project made from a task stay together: the parent row, then its tasks.
+  return groupProjectRows([
     ...todayList.filter(isRecurring),
     ...oneStep.filter((task) => task.dayRank == null),
     ...oneStep.filter((task) => task.dayRank != null).sort((a, b) => a.dayRank - b.dayRank),
-  ]
+  ], projects)
 }
 
 // «Привычки» shows (1) the habits whose task is in «Мой день» today, in that list's order, then

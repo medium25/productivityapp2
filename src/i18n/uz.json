@@ -807,6 +807,14 @@
     "copyIdea": "G‘oyani nusxalash"
   },
   "tasksList": {
+    "convertToProject": "Loyihaga aylantirish",
+    "projectPill": "LOYIHA",
+    "projectLocked": "Loyihani barcha vazifalari bajarilgach belgilash mumkin ({{done}}/{{total}})",
+    "projectReady": "Barcha vazifalar bajarildi — loyihani belgilash mumkin",
+    "firstTaskTitle": "«{{name}}» loyihasi yaratildi. Birinchi vazifani qo‘shing",
+    "firstTaskBody": "«{{name}}» vazifasi ro‘yxatda loyiha sifatida qoladi. Oynani faqat birinchi vazifani qo‘shib yopish mumkin.",
+    "firstTaskPlaceholder": "Avval nima qilish kerak?",
+    "firstTaskAdd": "Vazifa qo‘shish",
     "title": "Vazifalar",
     "addTask": "Vazifa qo‘shish",
     "empty": "Hali vazifalar yo‘q. Birinchisini qo‘shing.",

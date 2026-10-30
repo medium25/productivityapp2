@@ -6,6 +6,7 @@ import { useDragReorder } from '../features/tasks/useDragReorder'
 import { getProjectColor, todayISO, nextRecurringDate } from '../features/tasks/taskLogic'
 import { syncHabitForTask, spawnHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
+import { brightTagColor, projectRowColors, projectRole, groupProjectRows, projectLinks } from '../features/tasks/projectParent'
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
 import ProjectPathModal from '../features/tasks/ProjectPathModal'
 import ModalClose from '../features/tasks/ModalClose'
@@ -17,43 +18,20 @@ import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 // «Мой день» button that puts the task into today's list (tap again to take it out).
 // Adding a task asks for its project in a pop-up first.
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
-// Project colours in the app are deliberately dark (they carry white text elsewhere).
-// The light theme writes the project name in that colour as it is; the dark theme
-// (styles/neon.css) uses this lifted, saturated shade of the same hue instead, so the
-// name stays readable on the dark rows. Greys stay grey.
-// Bright shade of a project colour for dark rows: same perceived lightness for every hue
-// (OKLCH), so green never looks brighter than red; yellows get a touch more.
-function brightTagColor(hex) {
-  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '')
-  if (!m) return 'oklch(0.75 0.02 250)'
-  const [r, g, b] = m.slice(1).map((h) => {
-    const c = parseInt(h, 16) / 255
-    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
-  })
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
-  const mm = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
-  const A = 1.9779984951 * l - 2.428592205 * mm + 0.4505937099 * s
-  const B = 0.0259040371 * l + 0.7827717662 * mm - 0.808675766 * s
-  if (Math.hypot(A, B) < 0.04) return 'oklch(0.75 0.02 250)' // grey / near-grey
-  const hue = Math.round(((Math.atan2(B, A) * 180) / Math.PI + 360) % 360)
-  const light = hue > 80 && hue < 110 ? 0.78 : 0.75
-  return `oklch(${light} 0.16 ${hue})`
-}
 const capitalizeAfterSpace = (v) => (/\s/.test(v) && v ? v.charAt(0).toUpperCase() + v.slice(1) : v)
 
 const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onSetCycle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [cycleOpen, setCycleOpen] = useState(false)
   const closeCycle = useCallback(() => setCycleOpen(false), [])
   const [value, setValue] = useState(task.title)
   const done = task.status === 'done'
-  const color = ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
+  const color = role ? projectRowColors(role.project) : ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
   const stop = (e) => e.stopPropagation() // taps on buttons must not start a row drag
 
   const commit = () => {
@@ -65,7 +43,8 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
   return (
     <>
     <div
-      className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '')}
+      className={'timed-row timed-row--notime' + (done ? ' timed-row--done' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '') + (links?.prev ? ' timed-row--plink-prev' : '') + (links?.next ? ' timed-row--plink-next' : '')}
+      style={role ? { '--proj-line': color.line } : undefined}
       {...(editing || selecting ? null : dragHandleProps)}
       onClick={selecting ? () => onSelect(task.id) : undefined}
     >
@@ -107,6 +86,19 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
             <span className="timed-row__title-text" onDoubleClick={() => { setValue(task.title); setEditing(true) }}>{task.title}</span>
           )}
         </span>
+        {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
+        {!role && !task.projectId && !done && (
+          <button
+            type="button"
+            className="proj-btn"
+            onPointerDown={stop}
+            onClick={() => onConvert(task)}
+            title={t('tasksList.convertToProject')}
+            aria-label={t('tasksList.convertToProject')}
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zM12 11v5M9.5 13.5h5" /></svg>
+          </button>
+        )}
         <button
           type="button"
           className={'cycle-sign task-cycle' + (isRecurring(task) ? ' cycle-sign--on' : '')}
@@ -151,14 +143,27 @@ function TaskRow({ task, number, inMyDay, project, onToggleDone, onToggleMyDay, 
         </span>
       </span>
       <span className="timed-row__actions">
-        <button
-          type="button"
-          className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '')}
-          onClick={() => onToggleDone(task.id)}
-          aria-label={done ? 'Выполнено' : 'Выполнить'}
-        >
-          {done ? '✓' : ''}
-        </button>
+        {role?.kind === 'parent' && role.locked ? (
+          <button
+            type="button"
+            className="timed-row__done-btn timed-row__done-btn--lock"
+            disabled
+            title={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+            aria-label={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+          >
+            {role.done}/{role.total}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '') + (role?.kind === 'parent' && !done ? ' timed-row__done-btn--ready' : '')}
+            onClick={() => onToggleDone(task.id)}
+            aria-label={done ? 'Выполнено' : 'Выполнить'}
+            title={role?.kind === 'parent' && !done ? t('tasksList.projectReady') : undefined}
+          >
+            {done ? '✓' : ''}
+          </button>
+        )}
       </span>
     </div>
     {cycleOpen && <CyclePicker task={task} t={t} onSet={(rec, d) => onSetCycle(task, rec, d)} onClose={closeCycle} />}
@@ -176,6 +181,7 @@ export default function TasksListPage() {
   const toggleTaskDone = useTasksStore((s) => s.toggleTaskDone)
   const addProject = useTasksStore((s) => s.addProject)
   const deleteProject = useTasksStore((s) => s.deleteProject)
+  const convertToProject = useTasksStore((s) => s.convertToProject)
   const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
@@ -306,9 +312,12 @@ export default function TasksListPage() {
 
   const ids = rows.map((r) => r.id)
   const drag = useDragReorder(ids, reorderTasks)
-  const ordered = drag.displayOrder.length === rows.length
+  const orderedRaw = drag.displayOrder.length === rows.length
     ? drag.displayOrder.map((id) => rows.find((r) => r.id === id)).filter(Boolean)
     : rows
+  // Each project made from a task is shown together: the parent row, then its tasks.
+  const ordered = useMemo(() => groupProjectRows(orderedRaw, projects), [orderedRaw, projects])
+  const rowLinks = useMemo(() => projectLinks(ordered, projects), [ordered, projects])
 
   const onToggleDone = (id) => {
     const task = tasks.find((x) => x.id === id)
@@ -372,6 +381,9 @@ export default function TasksListPage() {
                   <TaskRow
                     task={task}
                     number={i + 1}
+                    role={projectRole(task, tasks, projects)}
+                    links={rowLinks[i]}
+                    onConvert={(tk) => convertToProject(tk.id)}
                     inMyDay={inMyDay(task)}
                     project={projectById.get(task.projectId)}
                     onToggleDone={onToggleDone}
