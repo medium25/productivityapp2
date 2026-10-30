@@ -838,6 +838,13 @@
     "copyIdea": "Скопировать идею"
   },
   "tasksList": {
+    "plusSubtask": "Создать подзадачу",
+    "plusSubtaskHint": "Задача сразу станет проектом, и система попросит первую задачу",
+    "plusAddToProject": "Добавить в проект",
+    "plusAddHint": "Выбрать из существующих проектов",
+    "plusPickProject": "Выбери проект",
+    "plusNoProjects": "Проектов пока нет",
+    "plusBack": "Назад",
     "convertToProject": "Превратить в проект",
     "projectPill": "ПРОЕКТ",
     "projectLocked": "Проект можно отметить, когда выполнены все его задачи ({{done}}/{{total}})",

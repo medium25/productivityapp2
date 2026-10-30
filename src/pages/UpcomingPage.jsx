@@ -141,7 +141,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, role, plinks, onConvertProject, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, role, plinks, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -195,18 +195,6 @@ function TimedRow({ task, number, role, plinks, onConvertProject, slot, linkPrev
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
-        {!role && !task.projectId && !done && !results && (
-          <button
-            type="button"
-            className="proj-btn"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => onConvertProject(task)}
-            title={t('tasksList.convertToProject')}
-            aria-label={t('tasksList.convertToProject')}
-          >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zM12 11v5M9.5 13.5h5" /></svg>
-          </button>
-        )}
         {results && (
           <span className="cycle-dots" aria-hidden="true">
             {results.map((r, i) => <i key={i} className={'cycle-dots__dot cycle-dots__dot--' + r} />)}
@@ -541,7 +529,6 @@ export default function UpcomingPage() {
   const tasks = useTasksStore((s) => s.tasks)
   const projects = useTasksStore((s) => s.projects)
   const addTask = useTasksStore((s) => s.addTask)
-  const convertTaskToProject = useTasksStore((s) => s.convertToProject)
   const updateTask = useTasksStore((s) => s.updateTask)
   const deleteTask = useTasksStore((s) => s.deleteTask)
   const toggleTaskDone = useTasksStore((s) => s.toggleTaskDone)
@@ -631,7 +618,6 @@ export default function UpcomingPage() {
   const taskProps = {
     projects,
     allTasks: tasks,
-    onConvertProject: (task) => convertTaskToProject(task.id),
     seriesFor,
     seenMiss,
     onDismissMiss: dismissMiss,

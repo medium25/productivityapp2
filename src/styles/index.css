@@ -10638,3 +10638,28 @@ body.kb-open .install-hint { display: none; }
 .pfirst__input { width: 100%; height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--text); font: inherit; margin-bottom: 10px; box-sizing: border-box; }
 .pfirst__go { width: 100%; height: 44px; border: 0; border-radius: 12px; cursor: pointer; font: inherit; font-weight: 800; background: var(--accent); color: var(--accent-contrast, #fff); }
 .pfirst__go:disabled { opacity: 0.45; cursor: default; }
+
+/* Menu of the «+» on a task without a project */
+.plusmenu { position: fixed; z-index: 70; padding: 6px; border-radius: 16px; background: var(--glass-bg-strong, var(--surface)); color: var(--text); border: 1px solid var(--glass-border, var(--border)); box-shadow: 0 22px 56px rgba(0, 0, 0, 0.45); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+:root[data-skin='neon'] .plusmenu { background: #141c2c; border-color: #2b3856; }
+.plusmenu__opt { display: flex; gap: 11px; align-items: flex-start; width: 100%; padding: 11px 10px; border: 0; border-radius: 12px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.plusmenu__opt--first { background: color-mix(in srgb, var(--text) 6%, transparent); }
+.plusmenu__opt:hover { background: color-mix(in srgb, var(--text) 10%, transparent); }
+.plusmenu__opt + .plusmenu__opt { margin-top: 2px; }
+.plusmenu__opt b { display: block; font-size: 0.86rem; font-weight: 800; }
+.plusmenu__opt small { display: block; margin-top: 1px; color: var(--text-muted); font-size: 0.74rem; line-height: 1.35; }
+.plusmenu__ico { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; }
+.plusmenu__ico--a { color: oklch(0.6 0.12 185); background: color-mix(in srgb, oklch(0.72 0.12 185) 20%, transparent); }
+.plusmenu__ico--b { color: #5b78e6; background: color-mix(in srgb, #6b8cff 20%, transparent); }
+:root[data-skin='neon'] .plusmenu__ico--a { color: oklch(0.82 0.12 185); }
+:root[data-skin='neon'] .plusmenu__ico--b { color: #8fa8ff; }
+.plusmenu__head { display: flex; align-items: center; gap: 8px; padding: 8px 10px 6px; font-size: 0.82rem; }
+.plusmenu__back { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 8px; cursor: pointer; color: inherit; background: color-mix(in srgb, var(--text) 9%, transparent); }
+.plusmenu__list { max-height: 260px; overflow-y: auto; }
+.plusmenu__proj { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 11px; background: none; color: inherit; font: inherit; font-size: 0.84rem; font-weight: 700; text-align: left; cursor: pointer; }
+.plusmenu__proj:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+.plusmenu__proj i { flex: none; width: 11px; height: 11px; border-radius: 50%; background: var(--pc); }
+:root[data-skin='neon'] .plusmenu__proj i { background: var(--pc-bright); }
+.plusmenu__name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.plusmenu__proj small { color: var(--text-muted); font-size: 0.72rem; font-weight: 600; }
+.plusmenu__empty { margin: 8px 10px; color: var(--text-muted); font-size: 0.82rem; }

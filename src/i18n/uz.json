@@ -807,6 +807,13 @@
     "copyIdea": "G‘oyani nusxalash"
   },
   "tasksList": {
+    "plusSubtask": "Kichik vazifa yaratish",
+    "plusSubtaskHint": "Vazifa darhol loyihaga aylanadi va tizim birinchi vazifani so‘raydi",
+    "plusAddToProject": "Loyihaga qo‘shish",
+    "plusAddHint": "Mavjud loyihalardan tanlash",
+    "plusPickProject": "Loyihani tanlang",
+    "plusNoProjects": "Hozircha loyihalar yo‘q",
+    "plusBack": "Orqaga",
     "convertToProject": "Loyihaga aylantirish",
     "projectPill": "LOYIHA",
     "projectLocked": "Loyihani barcha vazifalari bajarilgach belgilash mumkin ({{done}}/{{total}})",

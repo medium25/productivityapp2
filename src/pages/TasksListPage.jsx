@@ -10,6 +10,7 @@ import { brightTagColor, projectRowColors, projectRole, groupProjectRows, projec
 import ProjectPickerModal from '../features/tasks/ProjectPickerModal'
 import ProjectPathModal from '../features/tasks/ProjectPathModal'
 import ModalClose from '../features/tasks/ModalClose'
+import PlusChoiceMenu from '../features/tasks/PlusChoiceMenu'
 import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 
 // «Задачи»: every open task in one list, drawn like the rows of «Мой день» but
@@ -23,7 +24,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggleDone, onToggleMyDay, onPickProject, onOpenPath, onSetTitle, onDelete, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(task.title)
@@ -84,18 +85,6 @@ function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onTog
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
-        {!role && !task.projectId && !done && (
-          <button
-            type="button"
-            className="proj-btn"
-            onPointerDown={stop}
-            onClick={() => onConvert(task)}
-            title={t('tasksList.convertToProject')}
-            aria-label={t('tasksList.convertToProject')}
-          >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zM12 11v5M9.5 13.5h5" /></svg>
-          </button>
-        )}
         <button
           type="button"
           className={'task-myday' + (inMyDay ? ' task-myday--on' : '')}
@@ -120,7 +109,7 @@ function TaskRow({ task, number, role, links, onConvert, inMyDay, project, onTog
             className={'task-tag task-tag--dot' + (project ? '' : ' task-tag--none')}
             style={project ? { '--tag-deep': getProjectColor(project), '--tag-bright': brightTagColor(getProjectColor(project)) } : undefined}
             onPointerDown={stop}
-            onClick={() => (project ? onOpenPath(task) : onPickProject(task))}
+            onClick={(e) => (project ? onOpenPath(task) : onPlus(task, e.currentTarget.getBoundingClientRect()))}
             title={project ? project.name : t('tasksList.project')}
             aria-label={project ? project.name : t('tasksList.project')}
           >
@@ -235,6 +224,7 @@ export default function TasksListPage() {
     if (wasInMyDay && projectId) placeOnMap(task.id, projectId)
   }
 
+  const [plusMenu, setPlusMenu] = useState(null) // { task, rect } — the «+» menu (new project / add to a project)
   const [pathTaskId, setPathTaskId] = useState(null) // the task whose project path window is open
   const pathTask = pathTaskId ? tasks.find((x) => x.id === pathTaskId) : null
   const pathProject = pathTask ? projectById.get(pathTask.projectId) : null
@@ -356,7 +346,7 @@ export default function TasksListPage() {
                     number={i + 1}
                     role={projectRole(task, tasks, projects)}
                     links={rowLinks[i]}
-                    onConvert={(tk) => convertToProject(tk.id)}
+                    onPlus={(tk, rect) => setPlusMenu({ task: tk, rect })}
                     inMyDay={inMyDay(task)}
                     project={projectById.get(task.projectId)}
                     onToggleDone={onToggleDone}
@@ -404,6 +394,16 @@ export default function TasksListPage() {
         </div>
       </div>
       {drag.dragGhost}
+      {plusMenu && (
+        <PlusChoiceMenu
+          rect={plusMenu.rect}
+          projects={projects}
+          tasks={tasks}
+          onClose={() => setPlusMenu(null)}
+          onCreateProject={() => { convertToProject(plusMenu.task.id); setPlusMenu(null) }}
+          onPickProject={(projectId) => { changeProject(plusMenu.task, projectId); setPlusMenu(null) }}
+        />
+      )}
       {confirmClear && (
         <div className="task-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setConfirmClear(false) }}>
           <div className="task-modal" role="alertdialog" aria-modal="true">

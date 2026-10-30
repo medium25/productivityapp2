@@ -822,6 +822,13 @@
     "copyIdea": "Copy idea"
   },
   "tasksList": {
+    "plusSubtask": "Create a subtask",
+    "plusSubtaskHint": "The task becomes a project right away and the system asks for its first task",
+    "plusAddToProject": "Add to a project",
+    "plusAddHint": "Choose from existing projects",
+    "plusPickProject": "Choose a project",
+    "plusNoProjects": "No projects yet",
+    "plusBack": "Back",
     "convertToProject": "Turn into a project",
     "projectPill": "PROJECT",
     "projectLocked": "The project can be checked off once all its tasks are done ({{done}}/{{total}})",
