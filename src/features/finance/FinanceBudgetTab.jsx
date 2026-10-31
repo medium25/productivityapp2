@@ -3,6 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import { useTranslation } from 'react-i18next'
 import { useFinanceStore } from '../../store/useFinanceStore'
 import { categoryActuals, currentMonthKey, formatSom, monthLabel, txMonthKey, nextMonthKey, prevMonthKey } from './financeMath'
+import { todayISO } from '../tasks/taskLogic'
 import { categoryColorFor } from './financeCategoryPalette'
 import { CategoryPill } from './CategoryPill'
 
@@ -105,6 +106,7 @@ export default function FinanceBudgetTab() {
   const categories = useFinanceStore((s) => s.categories)
   const budgets = useFinanceStore((s) => s.budgets)
   const setBudget = useFinanceStore((s) => s.setBudget)
+  const copyBudget = useFinanceStore((s) => s.copyBudget)
   const addCategory = useFinanceStore((s) => s.addCategory)
   const renameCategory = useFinanceStore((s) => s.renameCategory)
   const deleteCategory = useFinanceStore((s) => s.deleteCategory)
@@ -117,6 +119,17 @@ export default function FinanceBudgetTab() {
   const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories])
   const actuals = useMemo(() => categoryActuals(transactions, monthKey, 'expense'), [transactions, monthKey])
   const monthBudget = budgets[monthKey] || {}
+
+  // Planning a month ahead: a plan typed for a coming month is stored under
+  // that month's key, so it takes effect by itself when the 1st arrives.
+  const nowKey = currentMonthKey()
+  const nextKey = nextMonthKey(nowKey)
+  const planning = monthKey > nowKey
+  const nextPlanned = Object.values(budgets[nextKey] || {}).some((v) => v > 0)
+  const daysLeft = planning
+    ? Math.max(1, Math.round((new Date(`${monthKey}-01T00:00:00`) - new Date(`${todayISO()}T00:00:00`)) / 86400000))
+    : 0
+  const startLabel = new Date(`${monthKey}-01T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
 
   const total = expenseCategories.reduce((acc, c) => {
     acc.plan += monthBudget[c.id] || 0
@@ -134,7 +147,26 @@ export default function FinanceBudgetTab() {
         <button type="button" onClick={() => setMonthKey(prevMonthKey(monthKey))}>‹</button>
         <span>{monthLabel(monthKey, i18n.language)}</span>
         <button type="button" onClick={() => setMonthKey(nextMonthKey(monthKey))}>›</button>
+        {planning ? (
+          <button type="button" className="finance-plan-next finance-plan-next--back" onClick={() => setMonthKey(nowKey)}>{t('finance.backToCurrent')}</button>
+        ) : (
+          <button type="button" className={'finance-plan-next' + (nextPlanned ? ' finance-plan-next--done' : '')} onClick={() => setMonthKey(nextKey)}>
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" /><path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4M8 8.6v3.2M6.4 10.2h3.2" /></svg>
+            <span>{t('finance.planNextMonth')}</span>
+            {nextPlanned && <em>{t('finance.planned')}</em>}
+          </button>
+        )}
       </div>
+
+      {planning && (
+        <div className="finance-plan-banner">
+          <div>
+            <b>{t('finance.planningBanner', { date: startLabel })}</b>
+            <small>{t('finance.planningCountdown', { count: daysLeft })}</small>
+          </div>
+          <button type="button" onClick={() => copyBudget(prevMonthKey(monthKey), monthKey)}>{t('finance.copyPlan')}</button>
+        </div>
+      )}
 
       <div className="finance-budget-scroll">
       <table className="finance-budget-table">

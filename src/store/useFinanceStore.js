@@ -99,6 +99,17 @@ export const useFinanceStore = create(
           [monthKey]: { ...(state.budgets[monthKey] || {}), [categoryId]: amount },
         },
       })),
+
+      // Next-month planning: fills the target month's plan from another month,
+      // keeping every amount already typed there. Plans are keyed by month, so
+      // a planned month simply becomes the current one on the 1st.
+      copyBudget: (fromKey, toKey) => set((state) => {
+        const from = state.budgets[fromKey] || {}
+        const to = state.budgets[toKey] || {}
+        const next = { ...to }
+        Object.keys(from).forEach((id) => { if (!next[id]) next[id] = from[id] })
+        return { budgets: { ...state.budgets, [toKey]: next } }
+      }),
     }),
     {
       name: 'productivity-hub-finance',

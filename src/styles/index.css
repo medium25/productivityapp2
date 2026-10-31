@@ -8904,6 +8904,57 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
   cursor: pointer;
 }
 
+/* Next-month planning button and the banner shown while a coming month is open. */
+.finance-month-switcher .finance-plan-next {
+  width: auto;
+  height: 28px;
+  margin-left: auto;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--accent-soft, var(--control-bg));
+  color: var(--accent, var(--text));
+}
+.finance-month-switcher .finance-plan-next em {
+  font-style: normal;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #2ecc71;
+  color: #06210f;
+}
+.finance-month-switcher .finance-plan-next--back { background: var(--control-bg); color: var(--text); }
+.finance-plan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -4px 0 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--accent-soft, var(--control-bg));
+  border: 1px dashed var(--accent, var(--border));
+}
+.finance-plan-banner > div { display: flex; flex-direction: column; gap: 2px; }
+.finance-plan-banner b { font-size: 13px; }
+.finance-plan-banner small { font-size: 12px; opacity: 0.7; }
+.finance-plan-banner button {
+  flex: 0 0 auto;
+  max-width: 46%;
+  text-align: center;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--control-bg);
+  color: var(--text);
+}
+
 /* Expense and income each get their own column — input form on top,
    that type's ledger table below it — instead of grouping all inputs
    together then all tables together. */
