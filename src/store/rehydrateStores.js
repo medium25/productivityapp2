@@ -1,5 +1,5 @@
 import { getCurrentUid } from '../firebase/currentUid'
-import { clearDirtyKeys, invalidateAppDataCache, isDirtyKey, primeAppData, readCachedAppData, readServerAppData, replayOutbox, setMergedHandler } from '../firebase/firestoreStorage'
+import { clearDirtyKeys, invalidateAppDataCache, isDirtyKey, primeAppData, readCachedAppData, readServerAppData, replayOutbox, setMergedHandler, hasPendingWrite } from '../firebase/firestoreStorage'
 import { useSettingsStore } from './useSettingsStore'
 import { useFocusStore } from './useFocusStore'
 import { useFocusHistoryStore } from './useFocusHistoryStore'
@@ -57,6 +57,9 @@ const PERSISTED_STORES = [
 setMergedHandler((key) => {
   const store = PERSISTED_STORES.find((st) => st.persist.getOptions().storage?.__key === key)
   if (!store || store === useFocusTimerStore) return
+  // Never swap the store's contents while the user is typing into it: unsent changes are newer than
+  // the merged copy (they would vanish). The next save merges again and the re-read happens when idle.
+  if (hasPendingWrite(key)) return
   invalidateAppDataCache()
   store.persist.rehydrate()
 })

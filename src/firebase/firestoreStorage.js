@@ -80,6 +80,9 @@ let onMerged = null // (key) => void — set by rehydrateStores: re-read a store
 
 export function setMergedHandler(fn) { onMerged = fn }
 
+// True while this device has changes of the document that are not sent yet (typing right now).
+export const hasPendingWrite = (key) => [...pendingWrites.values()].some((w) => w.key === key)
+
 const outboxKey = (uid, key) => `arkad:outbox:${uid}:${key}`
 const saveOutbox = (uid, key, payload) => { try { localStorage.setItem(outboxKey(uid, key), JSON.stringify(payload)) } catch { /* quota / private mode */ } }
 const clearOutbox = (uid, key) => { try { localStorage.removeItem(outboxKey(uid, key)) } catch { /* ignore */ } }

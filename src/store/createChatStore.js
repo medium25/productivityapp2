@@ -16,6 +16,7 @@ import { useTelegramLinksStore } from './useTelegramLinksStore'
 // public URL to give it — see notifyTelegramPhoto below, which sends the
 // actual bytes instead. Voice/file messages don't mirror at all yet.
 export function createChatStore(storageName, persistOptions = {}) {
+  let lastDraftEdit = 0 // when the composer text was last typed (see the persist merge below)
   // Mirror of new text messages to whichever Telegram channel this chat is
   // linked to (see Settings page -> TelegramLinkSetting.jsx ->
   // useTelegramLinksStore). One Apps Script web app URL for every chat
@@ -110,7 +111,7 @@ export function createChatStore(storageName, persistOptions = {}) {
         // a device switch or cleared browser data exactly like every real
         // message already does.
         draft: '',
-        setDraft: (draft) => set({ draft }),
+        setDraft: (draft) => { lastDraftEdit = Date.now(); set({ draft }) },
 
         addTextMessage: async (text) => {
           const trimmed = (text || '').trim()
@@ -310,6 +311,13 @@ export function createChatStore(storageName, persistOptions = {}) {
         storage: createFirestoreStorage(storageName),
         skipHydration: true,
         partialize: (state) => ({ messages: state.messages, draft: state.draft }),
+        // A re-read of the saved chat (another device saved, a background refresh) must not wipe what is being
+        // typed right now: the composer keeps its text if it was edited in the last 20 seconds.
+        merge: (persisted, current) => {
+          const merged = { ...current, ...(persisted || {}) }
+          if (current.draft && Date.now() - lastDraftEdit < 20000) merged.draft = current.draft
+          return merged
+        },
         ...persistOptions,
       }
     )
