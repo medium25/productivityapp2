@@ -8904,47 +8904,62 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
   cursor: pointer;
 }
 
-/* Next-month planning button and the banner shown while a coming month is open. */
-.finance-month-switcher .finance-plan-next {
-  width: auto;
-  height: 28px;
+/* Next-month planning (variant B): a quiet icon until three days before the 1st,
+   then a big card; while a coming month is open, a green "saved" bar. */
+.finance-month-switcher .finance-plan-icon {
   margin-left: auto;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  background: var(--accent-soft, var(--control-bg));
-  color: var(--accent, var(--text));
+  width: 28px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--text-muted);
+  opacity: 0.55;
 }
-.finance-month-switcher .finance-plan-next em {
-  font-style: normal;
-  font-size: 11px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: #2ecc71;
-  color: #06210f;
-}
-.finance-month-switcher .finance-plan-next--back { background: var(--control-bg); color: var(--text); }
-.finance-plan-banner {
+.finance-month-switcher .finance-plan-icon:hover { opacity: 1; background: var(--control-bg); }
+.finance-plan-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: -4px 0 16px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: var(--accent-soft, var(--control-bg));
-  border: 1px dashed var(--accent, var(--border));
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #17233f, #12202c);
+  border: 1px solid #2a3b66;
+  color: #e8eef5;
 }
-.finance-plan-banner > div { display: flex; flex-direction: column; gap: 2px; }
-.finance-plan-banner b { font-size: 13px; }
-.finance-plan-banner small { font-size: 12px; opacity: 0.7; }
-.finance-plan-banner button {
+.finance-plan-card__icon { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #22325a; color: #9fb0ff; }
+.finance-plan-card__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.finance-plan-card__text b { font-size: 14px; }
+.finance-plan-card__text small { font-size: 12px; opacity: 0.65; }
+.finance-plan-card__bar { height: 5px; margin-top: 6px; border-radius: 5px; background: #243350; overflow: hidden; }
+.finance-plan-card__bar i { display: block; height: 100%; background: #4ade80; transition: width 0.3s; }
+.finance-plan-card__go {
   flex: 0 0 auto;
-  max-width: 46%;
-  text-align: center;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  background: #6f86ff;
+  color: #0b1020;
+}
+.finance-plan-saved {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  font-size: 13px;
+}
+.finance-plan-saved__dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+.finance-plan-saved__sp { flex: 1; }
+.finance-plan-saved u { text-decoration: none; color: var(--text-muted); font-size: 12.5px; }
+.finance-plan-saved button {
   border: none;
   border-radius: 8px;
   padding: 6px 12px;

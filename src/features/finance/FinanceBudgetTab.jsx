@@ -122,13 +122,19 @@ export default function FinanceBudgetTab() {
 
   // Planning a month ahead: a plan typed for a coming month is stored under
   // that month's key, so it takes effect by itself when the 1st arrives.
+  // Three days before, the entry point is a big card; before that, a quiet icon.
   const nowKey = currentMonthKey()
   const nextKey = nextMonthKey(nowKey)
   const planning = monthKey > nowKey
-  const nextPlanned = Object.values(budgets[nextKey] || {}).some((v) => v > 0)
-  const daysLeft = planning
-    ? Math.max(1, Math.round((new Date(`${monthKey}-01T00:00:00`) - new Date(`${todayISO()}T00:00:00`)) / 86400000))
-    : 0
+  const daysTo = (key) => Math.max(1, Math.round((new Date(`${key}-01T00:00:00`) - new Date(`${todayISO()}T00:00:00`)) / 86400000))
+  const nextPlan = budgets[nextKey] || {}
+  const nextPlanned = Object.values(nextPlan).some((v) => v > 0)
+  const nextFilled = expenseCategories.filter((c) => nextPlan[c.id] > 0).length
+  const soon = !planning && daysTo(nextKey) <= 3
+  const bigMonth = (key) => {
+    const name = new Date(`${key}-01T00:00:00`).toLocaleDateString(i18n.language, { month: 'long' })
+    return name.charAt(0).toUpperCase() + name.slice(1)
+  }
   const startLabel = new Date(`${monthKey}-01T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })
 
   const total = expenseCategories.reduce((acc, c) => {
@@ -147,24 +153,35 @@ export default function FinanceBudgetTab() {
         <button type="button" onClick={() => setMonthKey(prevMonthKey(monthKey))}>‹</button>
         <span>{monthLabel(monthKey, i18n.language)}</span>
         <button type="button" onClick={() => setMonthKey(nextMonthKey(monthKey))}>›</button>
-        {planning ? (
-          <button type="button" className="finance-plan-next finance-plan-next--back" onClick={() => setMonthKey(nowKey)}>{t('finance.backToCurrent')}</button>
-        ) : (
-          <button type="button" className={'finance-plan-next' + (nextPlanned ? ' finance-plan-next--done' : '')} onClick={() => setMonthKey(nextKey)}>
-            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" /><path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4M8 8.6v3.2M6.4 10.2h3.2" /></svg>
-            <span>{t('finance.planNextMonth')}</span>
-            {nextPlanned && <em>{t('finance.planned')}</em>}
+        {!planning && !soon && (
+          <button type="button" className="finance-plan-icon" title={t('finance.planNextMonth')} aria-label={t('finance.planNextMonth')} onClick={() => setMonthKey(nextKey)}>
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" /><path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4M8 8.6v3.2M6.4 10.2h3.2" /></svg>
           </button>
         )}
       </div>
 
-      {planning && (
-        <div className="finance-plan-banner">
-          <div>
-            <b>{t('finance.planningBanner', { date: startLabel })}</b>
-            <small>{t('finance.planningCountdown', { count: daysLeft })}</small>
+      {soon && (
+        <div className="finance-plan-card">
+          <span className="finance-plan-card__icon">
+            <svg viewBox="0 0 16 16" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2" /><path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4M8 8.6v3.2M6.4 10.2h3.2" /></svg>
+          </span>
+          <div className="finance-plan-card__text">
+            <b>{t('finance.nextMonthSoon', { month: bigMonth(nextKey), count: daysTo(nextKey) })}</b>
+            <small>{t('finance.planProgress', { done: nextFilled, total: expenseCategories.length })}</small>
+            <div className="finance-plan-card__bar"><i style={{ width: `${expenseCategories.length ? Math.round((nextFilled / expenseCategories.length) * 100) : 0}%` }} /></div>
           </div>
-          <button type="button" onClick={() => copyBudget(prevMonthKey(monthKey), monthKey)}>{t('finance.copyPlan')}</button>
+          <button type="button" className="finance-plan-card__go" onClick={() => setMonthKey(nextKey)}>{t(nextPlanned ? 'finance.planEdit' : 'finance.planAction')}</button>
+        </div>
+      )}
+
+      {planning && (
+        <div className="finance-plan-saved">
+          <span className="finance-plan-saved__dot" />
+          <b>{t('finance.autoSaved')}</b>
+          <span className="finance-plan-saved__sp" />
+          <u>{t('finance.startsOn', { date: startLabel })}</u>
+          <button type="button" onClick={() => copyBudget(prevMonthKey(monthKey), monthKey)}>{t('finance.copyFromPrev')}</button>
+          <button type="button" onClick={() => setMonthKey(nowKey)}>{t('finance.planDone')}</button>
         </div>
       )}
 
