@@ -137,7 +137,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
       <button
         ref={btnRef}
         type="button"
-        className={'hmiss__bell hmiss__bell--' + run.kind + (run.n >= 5 ? ' hmiss__bell--hot' : '') + (open ? ' hmiss__bell--on' : '')}
+        className={'hmiss__bell hmiss__bell--' + run.kind + (open ? ' hmiss__bell--on' : '')}
         onClick={toggle}
         title={runLabel}
         aria-label={runLabel}
