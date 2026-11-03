@@ -729,6 +729,8 @@
     "statPercent": "bajarilgan",
     "statRatio": "{{total}} dan {{done}}",
     "heroLabel": "kun bajarilgan",
+    "doneThisYear": "Shu yil bajarilgan: {{n}}",
+    "doneLast365": "Oxirgi 365 kunda bajarilgan: {{n}}",
     "emptyHint": "Hali odatlar yo'q — pastda qo'shing.",
     "addPlaceholder": "Yangi odat",
     "streakUnit": "kun",

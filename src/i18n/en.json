@@ -744,6 +744,8 @@
     "statPercent": "done",
     "statRatio": "{{done}} of {{total}}",
     "heroLabel": "days done",
+    "doneThisYear": "Done this year: {{n}}",
+    "doneLast365": "Done in the last 365 days: {{n}}",
     "emptyHint": "No habits yet — add one below.",
     "addPlaceholder": "New habit",
     "streakUnit": "day",

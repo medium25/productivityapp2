@@ -90,6 +90,19 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     return list
   }, [habit, today, applies, locale])
   const current = months.find((m) => m.key === month) || months[months.length - 1]
+  // Plain totals: days done this calendar year, and in the last 365 days.
+  const totals = useMemo(() => {
+    const yearStart = `${today.slice(0, 4)}-01-01`
+    const yearAgo = addDays(today, -364)
+    let year = 0
+    let last = 0
+    Object.keys(habit.completions).forEach((d) => {
+      if (!habit.completions[d] || d > today) return
+      if (d >= yearStart) year += 1
+      if (d >= yearAgo) last += 1
+    })
+    return { year, last }
+  }, [habit, today])
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
   const alert = unseen && !!missedIso
@@ -131,6 +144,10 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
             <div className="hmpage__bar">
               <button type="button" className="hmpage__back" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>‹</button>
               <h2>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h2>
+            </div>
+            <div className="hmpage__totals">
+              <span>{t('habits.doneThisYear', { n: totals.year })}</span>
+              <span>{t('habits.doneLast365', { n: totals.last })}</span>
             </div>
             <div className="hmpage__months" role="tablist">
               {months.map((m) => (
