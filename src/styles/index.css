@@ -10641,47 +10641,36 @@ body.kb-open .install-hint { display: none; }
 .hmiss__bell--bad { color: #fff; background: #c8213f; border-color: #c8213f; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); }
 .hmiss__bell--none { color: inherit; opacity: 0.55; background: color-mix(in srgb, currentColor 10%, transparent); border-color: color-mix(in srgb, currentColor 32%, transparent); }
 .hmiss__bell--on { box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 28%, transparent); }
-.hmiss__card {
-  --hm-bad: #ff5a67;
-  --hm-c: var(--habit-color, var(--hm-color, #2bb673));
-  position: fixed; z-index: 60; width: min(340px, 86vw);
-  padding: 0; border-radius: 18px; text-align: left; cursor: default;
-  background: var(--glass-bg-strong, var(--surface)); color: var(--text);
-  border: 1px solid var(--glass-border, var(--border)); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+/* The activity map as its own page over the main column: back arrow, month tiles («done / days») as the only filter, the month as a calendar. */
+.main-column { position: relative; }
+.hmpage {
+  --hm-bad: #ff5a67; --hm-c: var(--habit-color, var(--hm-color, #2bb673));
+  position: absolute; inset: 0; z-index: 40; overflow-y: auto; cursor: default;
+  padding: 20px 48px 48px; box-sizing: border-box; text-align: left; color: var(--text); background: var(--bg, var(--surface));
 }
-:root[data-skin='neon'] .hmiss__card { --hm-c: var(--hc-dark, var(--h, var(--habit-color, #2bff88))); background: #111826; }
-.hmiss__head { display: flex; gap: 10px; align-items: flex-start; padding: 14px 12px 8px 14px; }
-.hmiss__icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; color: var(--hm-bad); background: color-mix(in srgb, var(--hm-bad) 18%, transparent); }
-.hmiss__icon--info { color: var(--text-muted); background: color-mix(in srgb, var(--text) 10%, transparent); }
-.hmiss__text { flex: 1; min-width: 0; }
-.hmiss__text h3 { margin: 0; font-size: 0.9rem; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
-.hmiss__text p { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; }
-.hmiss__x { flex: none; width: 26px; height: 26px; border: 0; border-radius: 50%; cursor: pointer; font-size: 1rem; color: var(--text-muted); background: color-mix(in srgb, var(--text) 10%, transparent); }
-/* Map card (user pick: month blocks, emerald and raspberry). */
-.hmiss__card--map { --hm-cell: 11px; padding: 18px 18px 18px; border-radius: 24px; }
-:root[data-skin='neon'] .hmiss__card--map { background: linear-gradient(180deg, #161e2e 0%, #0f1522 100%); border-color: rgba(255, 255, 255, 0.07); }
-.hmiss__top { display: flex; align-items: center; gap: 12px; }
-.hmiss__top h3 { flex: 1; margin: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
-.hmiss__seg { display: flex; margin: 14px 0 16px; padding: 3px; border-radius: 12px; background: color-mix(in srgb, var(--text) 7%, transparent); }
-.hmiss__seg button { flex: 1; padding: 7px 0; border: 0; border-radius: 9px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); background: transparent; white-space: nowrap; }
-.hmiss__seg .hmiss__seg-on { color: var(--text); background: color-mix(in srgb, var(--text) 14%, transparent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px color-mix(in srgb, var(--text) 16%, transparent); }
-.hmiss__hero { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 14px; }
-.hmiss__hero b { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
-.hmiss__hero i { font-style: normal; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
-.hmiss__hero span { margin-left: 8px; font-size: 0.78rem; color: var(--text-muted); }
-.hmiss__blocks { display: flex; flex-wrap: wrap; gap: 20px 22px; }
-.hmiss__blk-name { margin-bottom: 7px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text-muted); }
-.hmiss__map { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--hm-cell)); gap: 3px; width: max-content; }
-.hmiss__cell--pad { visibility: hidden; }
-.hmiss__cell { display: block; width: var(--hm-cell); height: var(--hm-cell); border-radius: 5px; background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
-/* Two colours only: green = done, red = not done. Days with nothing due (before the habit existed, off-days) stay empty. */
-.hmiss__cell--done { background: #10b981; box-shadow: none; }
-.hmiss__cell--miss { background: #e11d68; box-shadow: none; }
-.hmiss__cell--now { box-shadow: 0 0 0 2px var(--surface, #111826), 0 0 0 3.5px var(--hm-bad); }
-.hmiss__stats { display: flex; gap: 18px; padding: 16px 0 0; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
-.hmiss__stats b { color: var(--text); font-size: 0.82rem; }
-.hmiss__actions { display: flex; gap: 8px; padding: 14px 0 0; }
+:root[data-skin='neon'] .hmpage { background: #070a10; }
+.hmpage__inner { max-width: 760px; margin: 0 auto; }
+.hmpage__bar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.hmpage__bar h2 { flex: 1; margin: 0; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.hmpage__back { flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%; cursor: pointer; font-size: 1.3rem; line-height: 1; color: var(--text); background: color-mix(in srgb, var(--text) 10%, transparent); }
+.hmpage__months { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; margin-bottom: 26px; }
+.hmpage__month { padding: 10px 11px 9px; border: 0; border-radius: 14px; cursor: pointer; text-align: left; font: inherit; color: var(--text); background: color-mix(in srgb, var(--text) 6%, transparent); box-shadow: inset 0 0 0 1px transparent; }
+.hmpage__month--on { background: color-mix(in srgb, var(--text) 11%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 24%, transparent); }
+.hmpage__month small { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.hmpage__month b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.hmpage__month b span { font-weight: 600; color: var(--text-muted); }
+.hmpage__month i { display: block; height: 4px; margin-top: 7px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--text) 10%, transparent); }
+.hmpage__month s { display: block; height: 100%; background: #10b981; }
+.hmpage__month--low s { background: #e11d68; }
+.hmpage__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; max-width: 520px; }
+.hmpage__wd { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+.hmpage__day { display: grid; place-items: start; height: 48px; padding: 7px 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
+.hmpage__day--done { color: #fff; background: #10b981; box-shadow: none; }
+.hmpage__day--miss { color: #fff; background: #e11d68; box-shadow: none; }
+.hmpage__day--today { color: var(--text); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent); }
+.hmpage__day--done.hmpage__day--today, .hmpage__day--miss.hmpage__day--today { color: #fff; }
+.hmpage__day--now { box-shadow: 0 0 0 2px var(--surface, #111826), 0 0 0 3.5px var(--hm-bad); }
+.hmpage .hmiss__actions { display: flex; gap: 8px; padding: 14px 0 0; }
 .hmiss__btn { flex: 1; height: 40px; border: 0; border-radius: 12px; cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 800; color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent); }
 .hmiss__btn--primary { color: #0b1018; background: var(--hm-c); }
 

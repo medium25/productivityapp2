@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { addDays } from './taskLogic'
 
 // The latest day before today the habit was due on, if it was not done that day (looking back a week).
@@ -46,87 +47,49 @@ const BELL = (
   </svg>
 )
 
-// Small bell on a habit's card (shown once a due day was missed). Pressing it opens the habit's
-// activity map — a calendar-like grid of the last 16 weeks, like a contribution graph — with the
-// missed day marked, the streak numbers and two actions.
+const WEEKDAYS_MON = [1, 2, 3, 4, 5, 6, 0]
+
+// The streak circle on a habit's card (green = days done in a row, red = days missed, grey 0 = neither).
+// Pressing it opens the habit's activity map as its own page over the main column: one filter — the
+// month — as tiles with «done / days», the chosen month as a calendar below.
 export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, locale, color, onMark, onDismiss }) {
   const [open, setOpen] = useState(false)
-  const [anchor, setAnchor] = useState(null)
-  const [range, setRange] = useState('month')
-  const ref = useRef(null)
-  const btnRef = useRef(null)
+  const [month, setMonth] = useState(today.slice(0, 7))
 
   useEffect(() => {
     if (!open) return undefined
-    const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
-    const close = () => setOpen(false)
-    document.addEventListener('pointerdown', onDown, true)
     document.addEventListener('keydown', onKey)
-    window.addEventListener('scroll', close, true)
-    window.addEventListener('resize', close)
-    return () => {
-      document.removeEventListener('pointerdown', onDown, true)
-      document.removeEventListener('keydown', onKey)
-      window.removeEventListener('scroll', close, true)
-      window.removeEventListener('resize', close)
-    }
+    return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
-  // The card is positioned against the window (lists clip their overflow), under the bell or above it near the bottom.
-  // Year ranges need a wider card than the month.
-  const toggle = () => {
-    if (open) { setOpen(false); return }
-    const r = btnRef.current?.getBoundingClientRect()
-    if (r) setAnchor({ right: r.right, top: r.top, bottom: r.bottom })
-    setOpen(true)
-  }
-  const pos = (() => {
-    if (!anchor) return null
-    const width = Math.min(680, window.innerWidth - 24)
-    const left = Math.max(12, Math.min(window.innerWidth - width - 12, anchor.right - width + 8))
-    return anchor.bottom + 340 <= window.innerHeight
-      ? { left, top: anchor.bottom + 10, width }
-      : { left, bottom: window.innerHeight - anchor.top + 10, width }
-  })()
-
-  const stats = useMemo(() => {
+  // The last twelve calendar months up to now, from the month the habit was created; each with «done / days».
+  const months = useMemo(() => {
     const created = habit.createdAt.slice(0, 10)
     const yesterday = addDays(today, -1)
-    // The days the map covers: the current month, the current year, or the last 365 days.
-    const year = today.slice(0, 4)
-    const monthEnd = new Date(Number(year), Number(today.slice(5, 7)), 0).getDate()
-    const [from, to] = range === 'month'
-      ? [`${today.slice(0, 7)}-01`, `${today.slice(0, 7)}-${String(monthEnd).padStart(2, '0')}`]
-      : range === 'year' ? [`${year}-01-01`, `${year}-12-31`] : [addDays(today, -364), today]
-    // One block per calendar month, weeks running down the columns (Monday first).
-    const blocks = []
-    let due = 0
-    let done = 0
-    for (let iso = from; iso <= to; iso = addDays(iso, 1)) {
-      const key = iso.slice(0, 7)
-      let block = blocks[blocks.length - 1]
-      if (!block || block.key !== key) {
-        block = { key, cells: [] }
-        for (let k = (new Date(`${iso}T00:00:00`).getDay() + 6) % 7; k > 0; k -= 1) block.cells.push({ iso: `pad${key}${k}`, kind: 'pad' })
-        blocks.push(block)
+    const list = []
+    for (let k = 11; k >= 0; k -= 1) {
+      const d = new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1 - k, 1)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      if (key < created.slice(0, 7) && key !== today.slice(0, 7)) continue
+      const n = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+      const cells = []
+      let due = 0
+      let done = 0
+      for (let day = 1; day <= n; day += 1) {
+        const iso = `${key}-${String(day).padStart(2, '0')}`
+        const isDone = !!habit.completions[iso]
+        const isDue = iso >= created && iso <= yesterday && applies(habit, iso)
+        cells.push({ iso, day, kind: isDone ? 'done' : isDue ? 'miss' : 'none' })
+        // «done of days»: the month's days up to today that the habit was due on (or done anyway).
+        if (iso >= created && iso <= today && (isDone || applies(habit, iso))) { due += 1; if (isDone) done += 1 }
       }
-      const isDone = !!habit.completions[iso]
-      const isDue = iso >= created && iso <= yesterday && applies(habit, iso)
-      block.cells.push({ iso, kind: isDone ? 'done' : isDue ? 'miss' : 'none' })
-      // «done of days»: the period's days up to today that the habit was due on (or done anyway).
-      if (iso >= created && iso <= today && (isDone || applies(habit, iso))) { due += 1; if (isDone) done += 1 }
+      const name = new Intl.DateTimeFormat(locale, { month: 'long' }).format(d)
+      list.push({ key, name: name.charAt(0).toUpperCase() + name.slice(1), year: d.getFullYear(), lead: (d.getDay() + 6) % 7, cells, done, due })
     }
-    // current streak up to today, and the best run ever
-    let streak = 0
-    let cursor = habit.completions[today] ? today : yesterday
-    while (habit.completions[cursor]) { streak += 1; cursor = addDays(cursor, -1) }
-    const dates = Object.keys(habit.completions).filter((d) => habit.completions[d]).sort()
-    let best = 0
-    let run = 0
-    dates.forEach((d, i) => { run = i > 0 && addDays(dates[i - 1], 1) === d ? run + 1 : 1; best = Math.max(best, run) })
-    return { blocks, streak, best, done, due }
-  }, [habit, today, applies, range])
+    return list
+  }, [habit, today, applies, locale])
+  const current = months.find((m) => m.key === month) || months[months.length - 1]
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
   const alert = unseen && !!missedIso
@@ -139,9 +102,12 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
   }, [habit, today, applies])
   const runLabel = run.kind === 'good' ? t('habits.doneRun', { n: run.n }) : run.kind === 'bad' ? t('habits.missedStreak', { n: run.n }) : t('habits.missedBell')
 
+  const openPage = () => { setMonth(missedIso && alert ? missedIso.slice(0, 7) : today.slice(0, 7)); setOpen(true) }
+  const host = open ? document.querySelector('.main-column') : null
+  const weekday = (i) => new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(2024, 0, 1 + i))
+
   return (
     <span
-      ref={ref}
       className="hmiss"
       style={color ? { '--hm-color': color } : undefined}
       onClick={(e) => e.stopPropagation()}
@@ -150,56 +116,54 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
       onDoubleClick={(e) => e.stopPropagation()}
     >
       <button
-        ref={btnRef}
         type="button"
         className={'hmiss__bell hmiss__bell--' + run.kind + (open ? ' hmiss__bell--on' : '')}
-        onClick={toggle}
+        onClick={openPage}
         title={runLabel}
         aria-label={runLabel}
         aria-expanded={open}
       >
         {run.n > 99 ? '99+' : run.n}
       </button>
-      {open && (
-        <div className="hmiss__card hmiss__card--map" role="dialog" style={pos || undefined}>
-          <div className="hmiss__top">
-            <h3>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h3>
-            <button type="button" className="hmiss__x" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>×</button>
-          </div>
-          <div className="hmiss__seg">
-            {[['last', 'habits.rangeLast'], ['year', 'habits.rangeYear'], ['month', 'habits.rangeMonth']].map(([key, label]) => (
-              <button key={key} type="button" className={range === key ? 'hmiss__seg-on' : ''} onClick={() => setRange(key)}>{t(label)}</button>
-            ))}
-          </div>
-          <div className="hmiss__hero"><b>{stats.done}</b><i>/ {stats.due}</i><span>{t('habits.heroLabel')}</span></div>
-          <div className="hmiss__blocks">
-            {stats.blocks.map((block) => {
-              const first = block.cells.find((c) => c.kind !== 'pad').iso
-              const name = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(`${first}T00:00:00`))
-              const label = name.charAt(0).toUpperCase() + name.slice(1) + (range === 'last' && (first.slice(5, 7) === '01' || block === stats.blocks[0]) ? ` ${first.slice(0, 4)}` : '')
-              return (
-                <div key={block.key} className="hmiss__blk">
-                  <div className="hmiss__blk-name">{label}</div>
-                  <div className="hmiss__map" style={{ gridTemplateColumns: `repeat(${Math.ceil(block.cells.length / 7)}, var(--hm-cell))` }}>
-                    {block.cells.map((c) => (
-                      <i key={c.iso} className={'hmiss__cell hmiss__cell--' + c.kind + (c.iso === missedIso ? ' hmiss__cell--now' : '')} title={c.kind === 'pad' ? undefined : c.iso} />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <div className="hmiss__stats">
-            <span><b>{stats.streak}</b> {t('habits.statStreak')}</span>
-            <span><b>{stats.best}</b> {t('habits.statBest')}</span>
-          </div>
-          {alert && (
-            <div className="hmiss__actions">
-              <button type="button" className="hmiss__btn hmiss__btn--primary" onClick={() => { onMark(missedIso); setOpen(false) }}>{t('habits.markNow')}</button>
-              <button type="button" className="hmiss__btn" onClick={() => { onDismiss(); setOpen(false) }}>{t('habits.gotIt')}</button>
+      {open && host && current && createPortal(
+        <div className="hmpage" role="dialog" aria-label={t('habits.mapTitle', { name: habit.title })} onClick={(e) => e.stopPropagation()}>
+          <div className="hmpage__inner">
+            <div className="hmpage__bar">
+              <button type="button" className="hmpage__back" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>‹</button>
+              <h2>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h2>
             </div>
-          )}
-        </div>
+            <div className="hmpage__months" role="tablist">
+              {months.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={m.key === current.key}
+                  className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '') + (m.due && m.done / m.due < 0.6 ? ' hmpage__month--low' : '')}
+                  onClick={() => setMonth(m.key)}
+                >
+                  <small>{m.name}{m.key.slice(0, 4) !== today.slice(0, 4) ? ` ${m.year}` : ''}</small>
+                  <b>{m.done}<span> / {m.due}</span></b>
+                  <i><s style={{ width: `${m.due ? Math.round((m.done / m.due) * 100) : 0}%` }} /></i>
+                </button>
+              ))}
+            </div>
+            <div className="hmpage__cal">
+              {WEEKDAYS_MON.map((d, i) => <div key={d} className="hmpage__wd">{weekday(i)}</div>)}
+              {Array.from({ length: current.lead }, (_, i) => <div key={`p${i}`} />)}
+              {current.cells.map((c) => (
+                <div key={c.iso} className={'hmpage__day hmpage__day--' + c.kind + (c.iso === missedIso ? ' hmpage__day--now' : '') + (c.iso === today ? ' hmpage__day--today' : '')}>{c.day}</div>
+              ))}
+            </div>
+            {alert && (
+              <div className="hmiss__actions">
+                <button type="button" className="hmiss__btn hmiss__btn--primary" onClick={() => { onMark(missedIso); setOpen(false) }}>{t('habits.markNow')}</button>
+                <button type="button" className="hmiss__btn" onClick={() => { onDismiss(); setOpen(false) }}>{t('habits.gotIt')}</button>
+              </div>
+            )}
+          </div>
+        </div>,
+        host,
       )}
     </span>
   )
