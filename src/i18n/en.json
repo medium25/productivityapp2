@@ -725,6 +725,7 @@
     "mapTitle": "Activity map of “{{name}}”",
     "mapText": "Misses in the last 16 weeks: {{n}}.",
     "missedBell": "Missed — open the map",
+    "missedStreak": "Missed in a row: {{n}} — open the map",
     "missedTitle": "You missed the habit “{{name}}”",
     "missedText": "It was not checked off on {{date}}. The system would rather you did not skip habits.",
     "markNow": "Mark now",

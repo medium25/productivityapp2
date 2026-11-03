@@ -14,6 +14,21 @@ export function lastMissedDay(habit, today, applies) {
   return null
 }
 
+// How many due days in a row were missed, counting back from yesterday (days the habit was not due
+// on are skipped); stops at a day it was done or before it was created.
+export function missedStreak(habit, today, applies) {
+  const created = habit.createdAt.slice(0, 10)
+  let n = 0
+  for (let k = 1; k <= 120; k += 1) {
+    const iso = addDays(today, -k)
+    if (iso < created) break
+    if (!applies(habit, iso)) continue
+    if (habit.completions[iso]) break
+    n += 1
+  }
+  return n
+}
+
 const BELL = (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0" />
@@ -86,6 +101,9 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
   const alert = unseen && !!missedIso
+  const streakMiss = useMemo(() => missedStreak(habit, today, applies), [habit, today, applies])
+  const heat = streakMiss >= 5 ? ' hmiss__bell--s5' : streakMiss >= 3 ? ' hmiss__bell--s3' : ''
+  const bellLabel = streakMiss > 0 ? t('habits.missedStreak', { n: streakMiss }) : t('habits.missedBell')
   const dateLabel = missedIso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${missedIso}T00:00:00`)) : ''
 
   return (
@@ -101,13 +119,14 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
       <button
         ref={btnRef}
         type="button"
-        className={'hmiss__bell' + (open ? ' hmiss__bell--on' : '') + (alert ? '' : ' hmiss__bell--quiet')}
+        className={'hmiss__bell' + (open ? ' hmiss__bell--on' : '') + (alert || streakMiss > 0 ? '' : ' hmiss__bell--quiet') + heat}
         onClick={toggle}
-        title={t('habits.missedBell')}
-        aria-label={t('habits.missedBell')}
+        title={bellLabel}
+        aria-label={bellLabel}
         aria-expanded={open}
       >
         {BELL}
+        {streakMiss > 0 && <i className="hmiss__badge">{streakMiss >= 7 ? '7+' : streakMiss}</i>}
       </button>
       {open && (
         <div className="hmiss__card" role="dialog" style={pos || undefined}>

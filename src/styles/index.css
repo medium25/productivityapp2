@@ -10650,6 +10650,16 @@ body.kb-open .install-hint { display: none; }
   border-radius: 50%; cursor: pointer;
   color: #ff8791; background: rgba(255, 90, 103, 0.14); border: 1.5px solid rgba(255, 90, 103, 0.55);
 }
+.hmiss__bell { position: relative; }
+/* Missed in a row (variant A): a red counter pill on the bell's corner; the bell fills in as the run grows. */
+.hmiss__badge {
+  position: absolute; top: -7px; right: -9px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: #ff5a67; color: #fff; font: 800 10.5px/17px -apple-system, system-ui, sans-serif;
+  font-style: normal; text-align: center; box-shadow: 0 0 0 2px rgba(11, 16, 22, 0.9); pointer-events: none;
+}
+.hmiss__bell--s3 { background: rgba(255, 90, 103, 0.24); }
+.hmiss__bell--s5 { background: rgba(255, 90, 103, 0.34); border-color: #ff5a67; }
+:root:not([data-skin='neon']) .hmiss__badge { box-shadow: 0 0 0 2px var(--surface, #fff); }
 .hmiss__bell--on { background: #ff5a67; border-color: #ff5a67; color: #fff; }
 /* No fresh miss — only a calm marker that the map shows some older misses. */
 .hmiss__bell--quiet { color: inherit; opacity: 0.6; background: color-mix(in srgb, currentColor 12%, transparent); border-color: color-mix(in srgb, currentColor 35%, transparent); }
