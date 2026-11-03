@@ -162,7 +162,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
                     className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '') + (m.due && pct < 60 ? ' hmpage__month--low' : '')}
                     onClick={() => setMonth(m.key)}
                   >
-                    <span className="hmpage__ring" style={{ '--p': pct }}><b>{m.done}</b></span>
+                    <span className="hmpage__ring" style={{ '--p': pct }}><b>{m.done}/{m.due}</b></span>
                     <small>{m.name}{m.key.slice(0, 4) !== today.slice(0, 4) ? ` ${m.year}` : ''}</small>
                   </button>
                 )
