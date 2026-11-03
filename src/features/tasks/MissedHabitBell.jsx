@@ -159,7 +159,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
                     role="tab"
                     aria-selected={m.key === current.key}
                     title={`${m.done} / ${m.due}`}
-                    className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '') + (m.due && pct < 60 ? ' hmpage__month--low' : '')}
+                    className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '')}
                     onClick={() => setMonth(m.key)}
                   >
                     <span className="hmpage__ring" style={{ '--p': pct }}><b>{m.done}/{m.due}</b></span>
