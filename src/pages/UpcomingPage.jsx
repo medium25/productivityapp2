@@ -197,17 +197,6 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
-        <button
-          type="button"
-          className={'cycle-sign' + (isRecurring(task) ? ' cycle-sign--on' : '')}
-          data-cycle-trigger
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => setCycleOpen((v) => !v)}
-          title={t('tasksHub.cycleTitle')}
-          aria-label={t('tasksHub.cycleTitle')}
-        >
-          {CYCLE_ICON}
-        </button>
         {results && seriesFor && (() => {
           const series = seriesFor(task)
           const applies = (h, iso) => recursOnDate({ recurrence: h.recurrence, recurrenceDays: h.recurrenceDays, whenDate: h.createdAt.slice(0, 10) }, iso)
@@ -229,6 +218,17 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
           )
         })()}
         {!isRecurring(task) && <OneStepBadge days={daysLeftUndone(task, todayISO())} t={t} />}
+        <button
+          type="button"
+          className={'cycle-sign' + (isRecurring(task) ? ' cycle-sign--on' : '')}
+          data-cycle-trigger
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setCycleOpen((v) => !v)}
+          title={t('tasksHub.cycleTitle')}
+          aria-label={t('tasksHub.cycleTitle')}
+        >
+          {CYCLE_ICON}
+        </button>
         <button
           type="button"
           className="plus-btn"
