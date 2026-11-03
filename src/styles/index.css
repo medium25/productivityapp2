@@ -10655,11 +10655,10 @@ body.kb-open .install-hint { display: none; }
 .timed-row__body .hmiss__bell { height: 26px; min-width: 26px; width: auto; }
 .hmiss__bell--good { color: #6df0a0; background: rgba(46, 204, 113, 0.16); border-color: rgba(46, 204, 113, 0.6); }
 .hmiss__bell--good.hmiss__bell--hot { color: #05230f; background: #2ecc71; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.45); }
-.hmiss__bell--bad { color: #ff8791; background: rgba(255, 90, 103, 0.16); border-color: rgba(255, 90, 103, 0.6); }
-.hmiss__bell--bad.hmiss__bell--hot { color: #fff; background: #ff5a67; border-color: #ff5a67; box-shadow: 0 0 10px rgba(255, 90, 103, 0.45); }
+/* Missed in a row: solid cherry red with a white number (user pick, variant 6). */
+.hmiss__bell--bad { color: #fff; background: #c8213f; border-color: #c8213f; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); }
 .hmiss__bell--none { color: inherit; opacity: 0.55; background: color-mix(in srgb, currentColor 10%, transparent); border-color: color-mix(in srgb, currentColor 32%, transparent); }
 :root:not([data-skin='neon']) .hmiss__bell--good { color: #168a4c; }
-:root:not([data-skin='neon']) .hmiss__bell--bad { color: #d6293b; }
 :root:not([data-skin='neon']) .hmiss__bell--good.hmiss__bell--hot { color: #fff; background: #1fae62; border-color: #1fae62; }
 .hmiss__bell--on { box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 28%, transparent); }
 .hmiss__card {
