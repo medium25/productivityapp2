@@ -10653,8 +10653,8 @@ body.kb-open .install-hint { display: none; }
    Soft fill by default, solid from five. */
 .hmiss__bell { width: auto; min-width: 26px; padding: 0 7px; border-radius: 13px; font: 800 12px/1 -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
 .timed-row__body .hmiss__bell { height: 26px; min-width: 26px; width: auto; }
-/* Done in a row: solid jade green with a white number (user pick, variant 4). */
-.hmiss__bell--good { color: #fff; background: #2a9d78; border-color: #2a9d78; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); }
+/* Done in a row: solid bright green with a white number (same punch as the red). */
+.hmiss__bell--good { color: #fff; background: #09af51; border-color: #09af51; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); }
 .hmiss__bell--bad { color: #fff; background: #c8213f; border-color: #c8213f; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28); }
 .hmiss__bell--none { color: inherit; opacity: 0.55; background: color-mix(in srgb, currentColor 10%, transparent); border-color: color-mix(in srgb, currentColor 32%, transparent); }
 .hmiss__bell--on { box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 28%, transparent); }
