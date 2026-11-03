@@ -17,6 +17,7 @@ import { CYCLE_ICON, CyclePicker } from '../features/tasks/CyclePicker'
 import { buildTodayRows } from '../features/tasks/todayRows'
 import { projectRowColors, projectRole, projectLinks, groupProjectRows } from '../features/tasks/projectParent'
 import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
+import OneStepBadge, { daysLeftUndone } from '../features/tasks/OneStepBadge'
 import PlusChoiceMenu from '../features/tasks/PlusChoiceMenu'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
@@ -226,6 +227,7 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
             />
           )
         })()}
+        {!isRecurring(task) && <OneStepBadge days={daysLeftUndone(task, todayISO())} t={t} />}
         <button
           type="button"
           className="plus-btn"

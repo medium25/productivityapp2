@@ -10674,6 +10674,7 @@ body.kb-open .install-hint { display: none; }
 :root[data-skin='neon'] .hmiss__card { --hm-c: var(--hc-dark, var(--h, var(--habit-color, #2bff88))); background: #111826; }
 .hmiss__head { display: flex; gap: 10px; align-items: flex-start; padding: 14px 12px 8px 14px; }
 .hmiss__icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; color: var(--hm-bad); background: color-mix(in srgb, var(--hm-bad) 18%, transparent); }
+.hmiss__icon--info { color: var(--text-muted); background: color-mix(in srgb, var(--text) 10%, transparent); }
 .hmiss__text { flex: 1; min-width: 0; }
 .hmiss__text h3 { margin: 0; font-size: 0.9rem; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
 .hmiss__text p { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; }
