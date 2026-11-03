@@ -52,7 +52,7 @@ const WEEKDAYS_MON = [1, 2, 3, 4, 5, 6, 0]
 // The streak circle on a habit's card (green = days done in a row, red = days missed, grey 0 = neither).
 // Pressing it opens the habit's activity map as its own page over the main column: one filter — the
 // month — as tiles with «done / days», the chosen month as a calendar below.
-export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, locale, color, onMark, onDismiss }) {
+export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, locale, color, onMark, onDismiss, onToggleDay }) {
   const [open, setOpen] = useState(false)
   const [month, setMonth] = useState(today.slice(0, 7))
 
@@ -67,11 +67,13 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
   const months = useMemo(() => {
     const created = habit.createdAt.slice(0, 10)
     const yesterday = addDays(today, -1)
+    const earliest = Object.keys(habit.completions).filter((d) => habit.completions[d]).sort()[0] || created
+    const firstKey = (earliest < created ? earliest : created).slice(0, 7)
     const list = []
     for (let k = 11; k >= 0; k -= 1) {
       const d = new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)) - 1 - k, 1)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      if (key < created.slice(0, 7) && key !== today.slice(0, 7)) continue
+      if (key < firstKey && key !== today.slice(0, 7)) continue
       const n = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
       const cells = []
       let due = 0
@@ -82,7 +84,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
         const isDue = iso >= created && iso <= yesterday && applies(habit, iso)
         cells.push({ iso, day, kind: isDone ? 'done' : isDue ? 'miss' : 'none' })
         // «done of days»: the month's days up to today that the habit was due on (or done anyway).
-        if (iso >= created && iso <= today && (isDone || applies(habit, iso))) { due += 1; if (isDone) done += 1 }
+        if (isDone || (iso >= created && iso <= today && applies(habit, iso))) { due += 1; if (isDone) done += 1 }
       }
       const name = new Intl.DateTimeFormat(locale, { month: 'long' }).format(d)
       list.push({ key, name: name.charAt(0).toUpperCase() + name.slice(1), year: d.getFullYear(), lead: (d.getDay() + 6) % 7, cells, done, due })
@@ -171,9 +173,13 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
             <div className="hmpage__cal">
               {WEEKDAYS_MON.map((d, i) => <div key={d} className="hmpage__wd">{weekday(i)}</div>)}
               {Array.from({ length: current.lead }, (_, i) => <div key={`p${i}`} />)}
-              {current.cells.map((c) => (
-                <div key={c.iso} className={'hmpage__day hmpage__day--' + c.kind + (c.iso === missedIso ? ' hmpage__day--now' : '') + (c.iso === today ? ' hmpage__day--today' : '')}>{c.day}</div>
-              ))}
+              {current.cells.map((c) => {
+                const cls = 'hmpage__day hmpage__day--' + c.kind + (c.iso === missedIso ? ' hmpage__day--now' : '') + (c.iso === today ? ' hmpage__day--today' : '')
+                // Any day up to today can be ticked or unticked by hand, as many as you like.
+                return onToggleDay && c.iso <= today
+                  ? <button key={c.iso} type="button" className={cls + ' hmpage__day--tap'} onClick={() => onToggleDay(c.iso)}>{c.day}</button>
+                  : <div key={c.iso} className={cls}>{c.day}</div>
+              })}
             </div>
             {alert && (
               <div className="hmiss__actions">

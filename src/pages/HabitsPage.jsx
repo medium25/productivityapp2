@@ -394,6 +394,7 @@ export default function HabitsPage() {
                             t={t}
                             locale={i18n.language || 'ru'}
                             onMark={(iso) => toggleCompletion(habit.id, iso)}
+                            onToggleDay={(iso) => toggleCompletion(habit.id, iso)}
                             onDismiss={() => dismissMiss(habit.title, missedIso)}
                           />
                         )

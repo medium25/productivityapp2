@@ -143,7 +143,7 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, onToggleDay, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
   const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
@@ -223,6 +223,7 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
               locale={i18n.language || 'ru'}
               color={color.border}
               onMark={(iso) => onMarkMissed(task, series, iso)}
+              onToggleDay={(iso) => onToggleDay(task, series, iso)}
               onDismiss={() => onDismissMiss(task.title, missedIso)}
             />
           )
@@ -626,6 +627,16 @@ export default function UpcomingPage() {
       whenDate: iso, status: 'done', completedAt: `${iso}T12:00:00`,
     })
   }
+  // Ticks or unticks any day on the activity map by hand: the linked habit's day, or a finished copy of the task
+  // (unticking sends that copy to the trash, which can be restored).
+  const toggleDay = (task, series, iso) => {
+    const habit = isHabitTask(task) ? findLinkedHabit(habits, task.title) : null
+    if (habit) { toggleHabitCompletion(habit.id, iso); return }
+    if (!series.completions[iso]) { markMissed(task, series, iso); return }
+    tasks.forEach((x) => {
+      if (x.title === task.title && x.recurrence && x.recurrence !== 'none' && x.status === 'done' && x.completedAt && isoFromDate(new Date(x.completedAt)) === iso) deleteTask(x.id)
+    })
+  }
   const taskProps = {
     onPlus: (task, rect) => setPlusMenu({ task, rect }),
     projects,
@@ -634,6 +645,7 @@ export default function UpcomingPage() {
     seenMiss,
     onDismissMiss: dismissMiss,
     onMarkMissed: markMissed,
+    onToggleDay: toggleDay,
     onToggleDone: (id) => {
       const task = tasks.find((t) => t.id === id)
       toggleTaskDone(id)
