@@ -3895,17 +3895,6 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   cursor: grabbing;
 }
 
-/* useDragReorder sets `document.body.style.userSelect = 'none'` while
-   dragging, but that's an inherited value — .insights-chat__bubble's own
-   `user-select: text` (see below) targets the bubble directly, so it wins
-   over the inherited none regardless of timing. Chat messages are the one
-   draggable row with a directly-selectable-text rule of their own, so
-   only they need this override; other draggables (TaskCard etc.) have no
-   conflicting rule to begin with. */
-.task-card-reorder--dragging .insights-chat__bubble {
-  user-select: none;
-}
-
 .task-section--reordering {
   opacity: 0.6;
   cursor: grabbing;
@@ -5266,17 +5255,7 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   margin-bottom: 6px;
 }
 
-/* Message can be dragged onto a task target to become a task (see
-   chatMessageToTask.js) — grab cursor on the bubble, and no text selection
-   while dragging: a press-and-drag on the bubble text used to start a
-   native selection that ran down into the messages below (per user
-   report). The Copy button on each message covers "I just want the text".
-   -webkit- prefix for the macOS Tauri (WKWebView) build. */
-.insights-chat__draggable {
-  -webkit-user-select: none;
-  user-select: none;
-}
-.insights-chat__draggable .insights-chat__bubble { cursor: grab; }
+.insights-chat__bubble { cursor: grab; }
 .insights-chat__draggable:active .insights-chat__bubble { cursor: grabbing; }
 /* An open editor still needs normal selection/caret behaviour. */
 .insights-chat__draggable .insights-chat__edit-input {

@@ -10,7 +10,6 @@ import { PRINCIPLES_PROMPT } from '../../store/usePrinciplesStore'
 import { formatDateBadge, TASK_BULLET, messageHasTask, isTaskLine, isTaskLineDone, taskLineText, toggleTaskLineInText, insertTaskContinuation, todayISO } from './taskLogic'
 import { syncRoutineTaskStatus } from './dailyRoutineTasks'
 import { useAutoGrowTextarea } from './useAutoGrowTextarea'
-import { useDragReorder } from './useDragReorder'
 import { useLocalMediaUrl } from './useLocalMediaUrl'
 import { getLocalMedia, saveLocalMedia } from '../../storage/localMedia'
 import VoicePlayer from './VoicePlayer'
@@ -449,13 +448,8 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
 // switches the bubble color (see .insights-chat--reference in index.css,
 // per user request that Reference Info's messages read as visually
 // distinct from Insights') and which draft field persists the unsent text.
-// `onCrossDropSection` / `onCrossDrop` — when either is passed, every
-// message becomes grab-and-drop: dropping one on a task-bucket sidebar link
-// (onCrossDropSection: Inbox / Vazifalar / Sometime) or on a project card /
-// project row (onCrossDrop) turns it into a task (see chatMessageToTask.js),
-// same drag mechanism useDragReorder.js already gives tasks. Reordering
-// itself is a no-op here (the chat always stays in its own chronological
-// order); only the cross-drop side matters.
+// Messages are not draggable (per user request): pressing and dragging over a message always
+// selects its text instead of picking the whole message up.
 // Typing in the composer updates the draft in the chat store, which re-renders
 // the whole chat; without this a chat with hundreds of messages re-rendered
 // every bubble on each keystroke (laggy input on phones). A bubble only needs
@@ -478,10 +472,9 @@ const MessageBubble = memo(MessageBubbleImpl, (a, b) =>
 // user was reading (per user request). Keyed by the chat's store name.
 const chatScrollMemory = new Map()
 
-export default function InsightsChat({ useStore = useInsightsStore, variant = 'insights', onCrossDropSection, onCrossDrop, onCrossDropNewProject }) {
+export default function InsightsChat({ useStore = useInsightsStore, variant = 'insights' }) {
   const { t, i18n } = useTranslation()
   const messages = useStore((s) => s.messages)
-  const messageIds = messages.map((m) => m.id)
 
   // Per-section bubble color picker (per user request — Инсайты/Дневник/
   // Входящие all share this component, so one implementation covers all
@@ -514,7 +507,6 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   const reminderMessages = variant === 'insights'
     ? messages.slice((reminderCursor % reminderBatchCount) * 20, (reminderCursor % reminderBatchCount) * 20 + 20)
     : []
-  const crossDropEnabled = !!(onCrossDropSection || onCrossDrop || onCrossDropNewProject)
   // Multi-select (per user request — "выделять и группами удалять
   // сообщения"): entered via a message's own "⋮" menu ("Select"), which
   // both flips this on and pre-selects that message. While active, drag
@@ -524,12 +516,6 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   const [selecting, setSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState(() => new Set())
   const [confirmingBulkDelete, setConfirmingBulkDelete] = useState(false)
-  const { draggingId, bindHandle: bindMessageHandle, dragGhost } =
-    useDragReorder(
-      messageIds,
-      () => {},
-      crossDropEnabled ? { onCrossDropSection, onCrossDrop, onCrossDropNewProject } : {}
-    )
   const addTextMessage = useStore((s) => s.addTextMessage)
   const addPhotoMessage = useStore((s) => s.addPhotoMessage)
   const addVoiceMessage = useStore((s) => s.addVoiceMessage)
@@ -876,18 +862,8 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
               </div>
               {group.items.map((message) => {
                 const isReminder = !!message._reminderKey
-                const draggable = crossDropEnabled && !selecting && !isReminder
                 return (
-                  <div
-                    key={message._reminderKey || message.id}
-                    {...(draggable
-                      ? bindMessageHandle(message.id, message.text?.slice(0, 40) || t(`insights.type${message.type}`))
-                      : null)}
-                    className={
-                      (draggable ? 'insights-chat__draggable' : '')
-                      + (draggingId === message.id ? ' task-card-reorder--dragging' : '')
-                    }
-                  >
+                  <div key={message._reminderKey || message.id}>
                     <MessageBubble
                       message={message}
                       isReminder={isReminder}
@@ -914,7 +890,6 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
           </>
         )}
       </div>
-      {crossDropEnabled && dragGhost}
 
       {recordingMicError && <div className="insights-chat__error">{t('insights.micPermissionDenied')}</div>}
       {recordingSaveError && <div className="insights-chat__error">{t('insights.mediaSaveFailed')}</div>}
