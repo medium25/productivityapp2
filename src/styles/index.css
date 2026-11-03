@@ -10643,16 +10643,27 @@ body.kb-open .install-hint { display: none; }
 .hmpage__month b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
 .hmpage__month b span { font-weight: 600; color: var(--text-muted); }
 .hmpage__month i { display: block; height: 4px; margin-top: 7px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--text) 10%, transparent); }
-.hmpage__month s { display: block; height: 100%; background: #10b981; }
-.hmpage__month--low s { background: #e11d68; }
+.hmpage__month s { display: block; height: 100%; background: #00ac80; }
+.hmpage__month--low s { background: #c8213f; }
 .hmpage__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-width: 520px; }
 .hmpage__wd { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
-.hmpage__day { display: grid; place-items: center start; height: 24px; padding: 0 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
-.hmpage__day--done { color: #fff; background: #10b981; box-shadow: none; }
-.hmpage__day--miss { color: #fff; background: #e11d68; box-shadow: none; }
+.hmpage__day { display: grid; place-items: center start; height: 28px; padding: 0 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
+.hmpage__day--done { color: #fff; background: #00ac80; box-shadow: none; }
+.hmpage__day--miss { color: #fff; background: #c8213f; box-shadow: none; }
 .hmpage__day--today { color: var(--text); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent); }
 .hmpage__day--done.hmpage__day--today, .hmpage__day--miss.hmpage__day--today { color: #fff; }
 .hmpage__day--now { box-shadow: 0 0 0 2px var(--surface, #111826), 0 0 0 3.5px var(--hm-bad); }
+/* Dark (neon) skin: the same jade / red as the streak circles, lifted to light — bright edge, glow out and in, glowing number. */
+:root[data-skin='neon'] .hmpage { --hm-gn: #2ee6b6; --hm-rn: #ff4d6d; }
+@supports (color: oklch(0.6 0.1 160)) { :root[data-skin='neon'] .hmpage { --hm-gn: oklch(0.8 0.17 166.7); --hm-rn: oklch(0.7 0.21 11); } }
+:root[data-skin='neon'] .hmpage__day--done { color: var(--hm-gn); background: linear-gradient(180deg, color-mix(in srgb, #00ac80 30%, transparent), color-mix(in srgb, #00ac80 10%, transparent)); box-shadow: inset 0 0 0 1px var(--hm-gn), inset 0 0 10px color-mix(in srgb, var(--hm-gn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-gn) 40%, transparent); text-shadow: 0 0 8px var(--hm-gn); }
+:root[data-skin='neon'] .hmpage__day--miss { color: var(--hm-rn); background: linear-gradient(180deg, color-mix(in srgb, #c8213f 34%, transparent), color-mix(in srgb, #c8213f 12%, transparent)); box-shadow: inset 0 0 0 1px var(--hm-rn), inset 0 0 10px color-mix(in srgb, var(--hm-rn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-rn) 40%, transparent); text-shadow: 0 0 8px var(--hm-rn); }
+:root[data-skin='neon'] .hmpage__day--today { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent); }
+:root[data-skin='neon'] .hmpage__day--done.hmpage__day--today { box-shadow: inset 0 0 0 1px var(--hm-gn), inset 0 0 10px color-mix(in srgb, var(--hm-gn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-gn) 40%, transparent), 0 0 0 2px color-mix(in srgb, var(--text) 55%, transparent); }
+:root[data-skin='neon'] .hmpage__day--miss.hmpage__day--today { box-shadow: inset 0 0 0 1px var(--hm-rn), inset 0 0 10px color-mix(in srgb, var(--hm-rn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-rn) 40%, transparent), 0 0 0 2px color-mix(in srgb, var(--text) 55%, transparent); }
+:root[data-skin='neon'] .hmpage__day--now { box-shadow: inset 0 0 0 1px var(--hm-rn), inset 0 0 10px color-mix(in srgb, var(--hm-rn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-rn) 40%, transparent), 0 0 0 2px #0b1018, 0 0 0 3.5px #ff7a9d; }
+:root[data-skin='neon'] .hmpage__month s { background: var(--hm-gn); box-shadow: 0 0 8px color-mix(in srgb, var(--hm-gn) 60%, transparent); }
+:root[data-skin='neon'] .hmpage__month--low s { background: var(--hm-rn); box-shadow: 0 0 8px color-mix(in srgb, var(--hm-rn) 60%, transparent); }
 .hmpage .hmiss__actions { display: flex; gap: 8px; padding: 14px 0 0; }
 .hmiss__btn { flex: 1; height: 40px; border: 0; border-radius: 12px; cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 800; color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent); }
 .hmiss__btn--primary { color: #0b1018; background: var(--hm-c); }
