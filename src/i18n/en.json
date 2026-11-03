@@ -742,6 +742,7 @@
     "statStreak": "day streak",
     "statBest": "best",
     "statPercent": "done",
+    "statRatio": "{{done}} of {{total}}",
     "emptyHint": "No habits yet — add one below.",
     "addPlaceholder": "New habit",
     "streakUnit": "day",

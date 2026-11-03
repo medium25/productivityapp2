@@ -756,6 +756,7 @@
     "statStreak": "дн. серия",
     "statBest": "лучшая",
     "statPercent": "выполнено",
+    "statRatio": "{{done}} из {{total}}",
     "emptyHint": "Пока нет привычек — добавь ниже.",
     "addPlaceholder": "Новая привычка",
     "streakUnit": "день",

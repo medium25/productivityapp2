@@ -10682,13 +10682,12 @@ body.kb-open .install-hint { display: none; }
 .hmiss__filters { display: flex; gap: 6px; padding: 4px 14px 6px; }
 .hmiss__chip { flex: 1 1 auto; height: 28px; padding: 0 8px; white-space: nowrap; border: 0; border-radius: 14px; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); background: color-mix(in srgb, var(--text) 8%, transparent); }
 .hmiss__chip--on { color: var(--text); background: color-mix(in srgb, var(--text) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 30%, transparent); }
-.hmiss__map { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); gap: 3px; padding: 6px 14px 4px; }
-.hmiss__map--month { grid-auto-flow: row; grid-template-rows: none; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.hmiss__map--month .hmiss__cell { aspect-ratio: auto; height: 30px; border-radius: 6px; }
-.hmiss__map--year { gap: 2px; }
-.hmiss__map--year .hmiss__cell { border-radius: 2px; }
+.hmiss__mapwrap { overflow-x: auto; padding: 6px 14px 4px; scrollbar-width: thin; }
+/* One look for every range: weeks run down the columns, the cell size never changes. */
+.hmiss__card { --hm-cell: 10px; }
+.hmiss__map { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--hm-cell)); gap: 2px; width: max-content; }
 .hmiss__cell--pad { visibility: hidden; }
-.hmiss__cell { display: block; aspect-ratio: 1; border-radius: 3px; background: transparent; }
+.hmiss__cell { display: block; width: var(--hm-cell); height: var(--hm-cell); border-radius: 2px; background: transparent; }
 /* Two colours only: green = done, red = not done. Days with nothing due (before the habit existed, off-days) stay empty. */
 .hmiss__cell--done { background: #2ecc71; }
 :root:not([data-skin='neon']) .hmiss__cell--done { background: #1f9d55; }

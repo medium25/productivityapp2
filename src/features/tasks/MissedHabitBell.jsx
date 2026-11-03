@@ -53,6 +53,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState(null)
   const [range, setRange] = useState('month')
+  const mapRef = useRef(null)
   const ref = useRef(null)
   const btnRef = useRef(null)
 
@@ -83,12 +84,17 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
   }
   const pos = (() => {
     if (!anchor) return null
-    const width = Math.min(range === 'month' ? 340 : 560, window.innerWidth - 24)
+    const width = Math.min(680, window.innerWidth - 24)
     const left = Math.max(12, Math.min(window.innerWidth - width - 12, anchor.right - width + 8))
-    return anchor.bottom + (range === 'month' ? 330 : 380) <= window.innerHeight
+    return anchor.bottom + 340 <= window.innerHeight
       ? { left, top: anchor.bottom + 10, width }
       : { left, bottom: window.innerHeight - anchor.top + 10, width }
   })()
+
+  // On a narrow screen the year map scrolls; keep the newest week in view.
+  useEffect(() => {
+    if (open && mapRef.current) mapRef.current.scrollLeft = mapRef.current.scrollWidth
+  }, [open, range])
 
   const stats = useMemo(() => {
     const created = habit.createdAt.slice(0, 10)
@@ -107,9 +113,11 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     for (let iso = from; iso <= to; iso = addDays(iso, 1)) {
       const isDone = !!habit.completions[iso]
       const isDue = iso >= created && iso <= yesterday && applies(habit, iso)
-      if (isDone) { cells.push({ iso, kind: 'done' }); done += 1; due += 1 }
-      else if (isDue) { cells.push({ iso, kind: 'miss' }); due += 1 }
+      if (isDone) cells.push({ iso, kind: 'done' })
+      else if (isDue) cells.push({ iso, kind: 'miss' })
       else cells.push({ iso, kind: 'none' })
+      // «done of days»: the period's days up to today that the habit was due on (or done anyway).
+      if (iso >= created && iso <= today && (isDone || applies(habit, iso))) { due += 1; if (isDone) done += 1 }
     }
     // current streak up to today, and the best run ever
     let streak = 0
@@ -119,7 +127,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     let best = 0
     let run = 0
     dates.forEach((d, i) => { run = i > 0 && addDays(dates[i - 1], 1) === d ? run + 1 : 1; best = Math.max(best, run) })
-    return { cells, cols: Math.ceil(cells.length / 7), streak, best, pct: due ? Math.round((done / due) * 100) : 0 }
+    return { cells, cols: Math.ceil(cells.length / 7), streak, best, done, due }
   }, [habit, today, applies, range])
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
@@ -155,7 +163,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
         {run.n > 99 ? '99+' : run.n}
       </button>
       {open && (
-        <div className={'hmiss__card' + (range === 'month' ? '' : ' hmiss__card--wide')} role="dialog" style={pos || undefined}>
+        <div className="hmiss__card" role="dialog" style={pos || undefined}>
           <div className="hmiss__head">
             <span className="hmiss__icon">{BELL}</span>
             <div className="hmiss__text">
@@ -168,15 +176,17 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
               <button key={key} type="button" className={'hmiss__chip' + (range === key ? ' hmiss__chip--on' : '')} onClick={() => setRange(key)}>{t(label)}</button>
             ))}
           </div>
-          <div className={'hmiss__map' + (range === 'month' ? ' hmiss__map--month' : ' hmiss__map--year')} style={range === 'month' ? undefined : { gridTemplateColumns: `repeat(${stats.cols}, 1fr)` }}>
-            {stats.cells.map((c) => (
-              <i key={c.iso} className={'hmiss__cell hmiss__cell--' + c.kind + (c.iso === missedIso ? ' hmiss__cell--now' : '')} title={c.kind === 'pad' ? undefined : c.iso} />
-            ))}
+          <div className="hmiss__mapwrap" ref={mapRef}>
+            <div className="hmiss__map" style={{ gridTemplateColumns: `repeat(${stats.cols}, var(--hm-cell))` }}>
+              {stats.cells.map((c) => (
+                <i key={c.iso} className={'hmiss__cell hmiss__cell--' + c.kind + (c.iso === missedIso ? ' hmiss__cell--now' : '')} title={c.kind === 'pad' ? undefined : c.iso} />
+              ))}
+            </div>
           </div>
           <div className="hmiss__stats">
             <span><b>{stats.streak}</b> {t('habits.statStreak')}</span>
             <span><b>{stats.best}</b> {t('habits.statBest')}</span>
-            <span><b>{stats.pct}%</b> {t('habits.statPercent')}</span>
+            <span><b>{t('habits.statRatio', { done: stats.done, total: stats.due })}</b></span>
           </div>
           {alert && (
             <div className="hmiss__actions">
