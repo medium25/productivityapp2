@@ -29,6 +29,19 @@ export function missedStreak(habit, today, applies) {
   return n
 }
 
+// How many due days in a row the habit was done, up to now: today counts when done (when not done yet it
+// is simply still open), then back from yesterday over due days; stops at the first miss.
+export function doneStreak(habit, today, applies) {
+  const created = habit.createdAt.slice(0, 10)
+  let n = habit.completions[today] ? 1 : 0
+  for (let k = 1; k <= 400; k += 1) {
+    const iso = addDays(today, -k)
+    if (habit.completions[iso]) { n += 1; continue }
+    if (iso < created || applies(habit, iso)) break
+  }
+  return n
+}
+
 const BELL = (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0" />
@@ -101,9 +114,14 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
   const alert = unseen && !!missedIso
-  const streakMiss = useMemo(() => missedStreak(habit, today, applies), [habit, today, applies])
-  const heat = streakMiss >= 5 ? ' hmiss__bell--s5' : streakMiss >= 3 ? ' hmiss__bell--s3' : ''
-  const bellLabel = streakMiss > 0 ? t('habits.missedStreak', { n: streakMiss }) : t('habits.missedBell')
+  // The indicator: green with the run of days done, or red with the run of days missed (grey zero when neither).
+  const run = useMemo(() => {
+    const good = doneStreak(habit, today, applies)
+    if (good > 0) return { kind: 'good', n: good }
+    const bad = missedStreak(habit, today, applies)
+    return bad > 0 ? { kind: 'bad', n: bad } : { kind: 'none', n: 0 }
+  }, [habit, today, applies])
+  const runLabel = run.kind === 'good' ? t('habits.doneRun', { n: run.n }) : run.kind === 'bad' ? t('habits.missedStreak', { n: run.n }) : t('habits.missedBell')
   const dateLabel = missedIso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(new Date(`${missedIso}T00:00:00`)) : ''
 
   return (
@@ -119,14 +137,13 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
       <button
         ref={btnRef}
         type="button"
-        className={'hmiss__bell' + (open ? ' hmiss__bell--on' : '') + (alert || streakMiss > 0 ? '' : ' hmiss__bell--quiet') + heat}
+        className={'hmiss__bell hmiss__bell--' + run.kind + (run.n >= 5 ? ' hmiss__bell--hot' : '') + (open ? ' hmiss__bell--on' : '')}
         onClick={toggle}
-        title={bellLabel}
-        aria-label={bellLabel}
+        title={runLabel}
+        aria-label={runLabel}
         aria-expanded={open}
       >
-        {BELL}
-        {streakMiss > 0 && <i className="hmiss__badge">{streakMiss >= 7 ? '7+' : streakMiss}</i>}
+        {run.n > 99 ? '99+' : run.n}
       </button>
       {open && (
         <div className="hmiss__card" role="dialog" style={pos || undefined}>

@@ -711,6 +711,7 @@
     "mapText": "Oxirgi 16 haftada o‘tkazib yuborilgan: {{n}}.",
     "missedBell": "O‘tkazib yuborildi — xaritani ochish",
     "missedStreak": "Ketma-ket o‘tkazib yuborildi: {{n}} — xaritani ochish",
+    "doneRun": "Ketma-ket bajarildi: {{n}} — xaritani ochish",
     "missedTitle": "Siz «{{name}}» odatini o‘tkazib yubordingiz",
     "missedText": "U {{date}} kuni belgilanmadi. Tizim odatlar o‘tkazib yuborilishini xohlamaydi.",
     "markNow": "Hozir belgilash",
