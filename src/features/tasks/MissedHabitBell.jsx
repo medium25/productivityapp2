@@ -145,25 +145,28 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
               <button type="button" className="hmpage__back" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>‹</button>
               <h2>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h2>
             </div>
-            <div className="hmpage__totals">
-              <span>{t('habits.doneThisYear', { n: totals.year })}</span>
-              <span>{t('habits.doneLast365', { n: totals.last })}</span>
+            <div className="hmpage__stats">
+              <div className="hmpage__stat"><b>{totals.year}</b><span>{t('habits.doneThisYear')}</span></div>
+              <div className="hmpage__stat"><b>{totals.last}</b><span>{t('habits.doneLast365')}</span></div>
             </div>
             <div className="hmpage__months" role="tablist">
-              {months.map((m) => (
-                <button
-                  key={m.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={m.key === current.key}
-                  className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '') + (m.due && m.done / m.due < 0.6 ? ' hmpage__month--low' : '')}
-                  onClick={() => setMonth(m.key)}
-                >
-                  <small>{m.name}{m.key.slice(0, 4) !== today.slice(0, 4) ? ` ${m.year}` : ''}</small>
-                  <b>{m.done}<span> / {m.due}</span></b>
-                  <i><s style={{ width: `${m.due ? Math.round((m.done / m.due) * 100) : 0}%` }} /></i>
-                </button>
-              ))}
+              {months.map((m) => {
+                const pct = m.due ? Math.round((m.done / m.due) * 100) : 0
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={m.key === current.key}
+                    title={`${m.done} / ${m.due}`}
+                    className={'hmpage__month' + (m.key === current.key ? ' hmpage__month--on' : '') + (m.due && pct < 60 ? ' hmpage__month--low' : '')}
+                    onClick={() => setMonth(m.key)}
+                  >
+                    <span className="hmpage__ring" style={{ '--p': pct }}><b>{m.done}</b></span>
+                    <small>{m.name}{m.key.slice(0, 4) !== today.slice(0, 4) ? ` ${m.year}` : ''}</small>
+                  </button>
+                )
+              })}
             </div>
             <div className="hmpage__cal">
               {WEEKDAYS_MON.map((d, i) => <div key={d} className="hmpage__wd">{weekday(i)}</div>)}

@@ -10635,16 +10635,18 @@ body.kb-open .install-hint { display: none; }
 .hmpage__bar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
 .hmpage__bar h2 { flex: 1; margin: 0; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .hmpage__back { flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%; cursor: pointer; font-size: 1.3rem; line-height: 1; color: var(--text); background: color-mix(in srgb, var(--text) 10%, transparent); }
-.hmpage__totals { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: -8px 0 18px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.hmpage__months { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; margin-bottom: 26px; }
-.hmpage__month { padding: 10px 11px 9px; border: 0; border-radius: 14px; cursor: pointer; text-align: left; font: inherit; color: var(--text); background: color-mix(in srgb, var(--text) 6%, transparent); box-shadow: inset 0 0 0 1px transparent; }
-.hmpage__month--on { background: color-mix(in srgb, var(--text) 11%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 24%, transparent); }
-.hmpage__month small { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
-.hmpage__month b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-.hmpage__month b span { font-weight: 600; color: var(--text-muted); }
-.hmpage__month i { display: block; height: 4px; margin-top: 7px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--text) 10%, transparent); }
-.hmpage__month s { display: block; height: 100%; background: #00ac80; }
-.hmpage__month--low s { background: #c8213f; }
+.hmpage__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 520px; margin-bottom: 20px; }
+.hmpage__stat { padding: 12px 16px 13px; border-radius: 16px; background: linear-gradient(180deg, color-mix(in srgb, #00ac80 22%, transparent), color-mix(in srgb, #00ac80 6%, transparent)); box-shadow: inset 0 0 0 1px color-mix(in srgb, #00ac80 55%, transparent); }
+.hmpage__stat b { display: block; font-size: 1.9rem; font-weight: 700; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.hmpage__stat span { display: block; margin-top: 7px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+.hmpage__months { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.hmpage__month { display: grid; justify-items: center; gap: 6px; width: 74px; padding: 8px 0; border: 0; border-radius: 16px; cursor: pointer; font: inherit; color: var(--text-muted); background: transparent; }
+.hmpage__month--on { color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent); }
+.hmpage__month small { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+.hmpage__ring { --c: #00ac80; position: relative; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 55%, transparent)); }
+.hmpage__month--low .hmpage__ring { --c: #c8213f; }
+.hmpage__ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--c) calc(var(--p) * 1%), color-mix(in srgb, var(--text) 10%, transparent) 0); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px)); }
+.hmpage__ring b { position: relative; font-size: 0.78rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
 .hmpage__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-width: 520px; }
 .hmpage__wd { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
 .hmpage__day { display: grid; place-items: center start; height: 28px; padding: 0 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
@@ -10662,8 +10664,6 @@ body.kb-open .install-hint { display: none; }
 :root[data-skin='neon'] .hmpage__day--done.hmpage__day--today { box-shadow: inset 0 0 0 1px var(--hm-gn), inset 0 0 10px color-mix(in srgb, var(--hm-gn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-gn) 40%, transparent), 0 0 0 2px color-mix(in srgb, var(--text) 55%, transparent); }
 :root[data-skin='neon'] .hmpage__day--miss.hmpage__day--today { box-shadow: inset 0 0 0 1px var(--hm-rn), inset 0 0 10px color-mix(in srgb, var(--hm-rn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-rn) 40%, transparent), 0 0 0 2px color-mix(in srgb, var(--text) 55%, transparent); }
 :root[data-skin='neon'] .hmpage__day--now { box-shadow: inset 0 0 0 1px var(--hm-rn), inset 0 0 10px color-mix(in srgb, var(--hm-rn) 35%, transparent), 0 0 12px color-mix(in srgb, var(--hm-rn) 40%, transparent), 0 0 0 2px #0b1018, 0 0 0 3.5px #ff7a9d; }
-:root[data-skin='neon'] .hmpage__month s { background: var(--hm-gn); box-shadow: 0 0 8px color-mix(in srgb, var(--hm-gn) 60%, transparent); }
-:root[data-skin='neon'] .hmpage__month--low s { background: var(--hm-rn); box-shadow: 0 0 8px color-mix(in srgb, var(--hm-rn) 60%, transparent); }
 .hmpage .hmiss__actions { display: flex; gap: 8px; padding: 14px 0 0; }
 .hmiss__btn { flex: 1; height: 40px; border: 0; border-radius: 12px; cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 800; color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent); }
 .hmiss__btn--primary { color: #0b1018; background: var(--hm-c); }
