@@ -638,6 +638,8 @@
     "yesterday": "Yesterday",
     "done": "Done",
     "noOperations": "No operations this month.",
+    "scopeAll": "All time",
+    "scopeMonth": "Month",
     "category": "Category",
     "plan": "Plan",
     "fact": "Actual",

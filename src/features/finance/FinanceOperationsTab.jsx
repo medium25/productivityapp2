@@ -1,5 +1,5 @@
 // src/features/finance/FinanceOperationsTab.jsx
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFinanceStore } from '../../store/useFinanceStore'
 import { currentMonthKey, formatSom, monthKeyOf, monthLabel, txMonthKey, nextMonthKey, prevMonthKey } from './financeMath'
@@ -190,7 +190,7 @@ function EditingRow({ tx, categories, updateTransaction, addCategory, onDone, t 
 // One plain table per type (Расход / Доход) — matches the user's original
 // Numbers-file ledger (two side-by-side "Sana;Kategoriyalar;Chiqim/
 // Tushum" tables) instead of one mixed flat list.
-function TxTable({ type, rows, categories, updateTransaction, deleteTransaction, addCategory, editingId, setEditingId, confirmingDeleteId, setConfirmingDeleteId, t }) {
+function TxTable({ type, rows, categories, updateTransaction, deleteTransaction, addCategory, editingId, setEditingId, confirmingDeleteId, setConfirmingDeleteId, t, grouped, language }) {
   const categoryName = (id) => categories.find((c) => c.id === id)?.name || id
   // Columns, in order: date (dd.mm), funds, category, comment (expenses
   // only), amount, delete.
@@ -213,8 +213,12 @@ function TxTable({ type, rows, categories, updateTransaction, deleteTransaction,
         {rows.length === 0 && (
           <tr><td colSpan={columns}><p className="finance-empty">{t('finance.noOperations')}</p></td></tr>
         )}
-        {rows.map((tx) => (
-          editingId === tx.id ? (
+        {rows.map((tx, index) => (
+          <Fragment key={tx.id}>
+          {grouped && (index === 0 || txMonthKey(rows[index - 1]) !== txMonthKey(tx)) && (
+            <tr className="finance-tx-month-row"><td colSpan={columns}>{monthLabel(txMonthKey(tx), language)}</td></tr>
+          )}
+          {editingId === tx.id ? (
             <tr key={tx.id}>
               <td colSpan={columns}>
                 <EditingRow
@@ -249,7 +253,8 @@ function TxTable({ type, rows, categories, updateTransaction, deleteTransaction,
                 )}
               </td>
             </tr>
-          )
+          )}
+          </Fragment>
         ))}
       </tbody>
     </table>
@@ -271,21 +276,32 @@ export default function FinanceOperationsTab() {
   const [editingId, setEditingId] = useState(null)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null)
 
+  // «Месяц» shows the chosen month; «Всё время» lists the whole history, newest first, with a month heading between.
+  const [scope, setScope] = useState(() => { try { return localStorage.getItem('arkad:financeScope') === 'month' ? 'month' : 'all' } catch { return 'all' } })
+  const chooseScope = (value) => { setScope(value); try { localStorage.setItem('arkad:financeScope', value) } catch { /* ignore */ } }
+  const allTime = scope === 'all'
+
   const rows = useMemo(() => (
     transactions
-      .filter((tx) => txMonthKey(tx) === monthKey)
+      .filter((tx) => allTime || txMonthKey(tx) === monthKey)
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-  ), [transactions, monthKey])
+  ), [transactions, monthKey, allTime])
 
-  const monthTransfers = transfers.filter((x) => monthKeyOf(x.date) === monthKey).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  const monthTransfers = transfers.filter((x) => allTime || monthKeyOf(x.date) === monthKey).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
   const expenseRows = rows.filter((tx) => tx.type === 'expense')
   const incomeRows = rows.filter((tx) => tx.type === 'income')
 
-  const tableProps = { categories, updateTransaction, deleteTransaction, addCategory, editingId, setEditingId, confirmingDeleteId, setConfirmingDeleteId, t }
+  const tableProps = { categories, updateTransaction, deleteTransaction, addCategory, editingId, setEditingId, confirmingDeleteId, setConfirmingDeleteId, t, grouped: allTime, language: i18n.language }
 
   return (
     <div className="finance-operations">
-      <MonthSwitcher monthKey={monthKey} onChange={setMonthKey} language={i18n.language} />
+      <div className="finance-ops-bar">
+        <div className="finance-scope" role="tablist">
+          <button type="button" role="tab" aria-selected={allTime} className={allTime ? 'finance-scope--on' : ''} onClick={() => chooseScope('all')}>{t('finance.scopeAll')}</button>
+          <button type="button" role="tab" aria-selected={!allTime} className={!allTime ? 'finance-scope--on' : ''} onClick={() => chooseScope('month')}>{t('finance.scopeMonth')}</button>
+        </div>
+        {!allTime && <MonthSwitcher monthKey={monthKey} onChange={setMonthKey} language={i18n.language} />}
+      </div>
 
       <div className="finance-type-columns">
         <div className="finance-type-column">
