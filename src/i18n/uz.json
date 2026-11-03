@@ -728,6 +728,7 @@
     "statBest": "eng yaxshi",
     "statPercent": "bajarilgan",
     "statRatio": "{{total}} dan {{done}}",
+    "heroLabel": "kun bajarilgan",
     "emptyHint": "Hali odatlar yo'q — pastda qo'shing.",
     "addPlaceholder": "Yangi odat",
     "streakUnit": "kun",

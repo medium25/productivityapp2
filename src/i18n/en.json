@@ -743,6 +743,7 @@
     "statBest": "best",
     "statPercent": "done",
     "statRatio": "{{done}} of {{total}}",
+    "heroLabel": "days done",
     "emptyHint": "No habits yet — add one below.",
     "addPlaceholder": "New habit",
     "streakUnit": "day",

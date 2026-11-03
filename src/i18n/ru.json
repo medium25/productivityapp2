@@ -757,6 +757,7 @@
     "statBest": "лучшая",
     "statPercent": "выполнено",
     "statRatio": "{{done}} из {{total}}",
+    "heroLabel": "дней выполнено",
     "emptyHint": "Пока нет привычек — добавь ниже.",
     "addPlaceholder": "Новая привычка",
     "streakUnit": "день",

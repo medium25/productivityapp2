@@ -10679,24 +10679,30 @@ body.kb-open .install-hint { display: none; }
 .hmiss__text h3 { margin: 0; font-size: 0.9rem; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
 .hmiss__text p { margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; }
 .hmiss__x { flex: none; width: 26px; height: 26px; border: 0; border-radius: 50%; cursor: pointer; font-size: 1rem; color: var(--text-muted); background: color-mix(in srgb, var(--text) 10%, transparent); }
-.hmiss__filters { display: flex; gap: 6px; padding: 4px 14px 6px; }
-.hmiss__chip { flex: 1 1 auto; height: 28px; padding: 0 8px; white-space: nowrap; border: 0; border-radius: 14px; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); background: color-mix(in srgb, var(--text) 8%, transparent); }
-.hmiss__chip--on { color: var(--text); background: color-mix(in srgb, var(--text) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 30%, transparent); }
-.hmiss__mapwrap { overflow-x: auto; padding: 6px 14px 4px; scrollbar-width: thin; }
-/* One look for every range: weeks run down the columns, the cell size never changes. */
-.hmiss__card { --hm-cell: 10px; }
-.hmiss__map { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--hm-cell)); gap: 2px; width: max-content; }
+/* Map card (user pick: month blocks, emerald and raspberry). */
+.hmiss__card--map { --hm-cell: 11px; padding: 18px 18px 18px; border-radius: 24px; }
+:root[data-skin='neon'] .hmiss__card--map { background: linear-gradient(180deg, #161e2e 0%, #0f1522 100%); border-color: rgba(255, 255, 255, 0.07); }
+.hmiss__top { display: flex; align-items: center; gap: 12px; }
+.hmiss__top h3 { flex: 1; margin: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.hmiss__seg { display: flex; margin: 14px 0 16px; padding: 3px; border-radius: 12px; background: color-mix(in srgb, var(--text) 7%, transparent); }
+.hmiss__seg button { flex: 1; padding: 7px 0; border: 0; border-radius: 9px; cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); background: transparent; white-space: nowrap; }
+.hmiss__seg .hmiss__seg-on { color: var(--text); background: color-mix(in srgb, var(--text) 14%, transparent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px color-mix(in srgb, var(--text) 16%, transparent); }
+.hmiss__hero { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 14px; }
+.hmiss__hero b { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.hmiss__hero i { font-style: normal; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
+.hmiss__hero span { margin-left: 8px; font-size: 0.78rem; color: var(--text-muted); }
+.hmiss__blocks { display: flex; flex-wrap: wrap; gap: 20px 22px; }
+.hmiss__blk-name { margin-bottom: 7px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; color: var(--text-muted); }
+.hmiss__map { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, var(--hm-cell)); gap: 3px; width: max-content; }
 .hmiss__cell--pad { visibility: hidden; }
-.hmiss__cell { display: block; width: var(--hm-cell); height: var(--hm-cell); border-radius: 2px; background: transparent; }
+.hmiss__cell { display: block; width: var(--hm-cell); height: var(--hm-cell); border-radius: 5px; background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
 /* Two colours only: green = done, red = not done. Days with nothing due (before the habit existed, off-days) stay empty. */
-.hmiss__cell--done { background: #2ecc71; }
-:root:not([data-skin='neon']) .hmiss__cell--done { background: #1f9d55; }
-.hmiss__cell--miss { background: #ff5a67; }
-:root:not([data-skin='neon']) .hmiss__cell--miss { background: #d6364a; }
+.hmiss__cell--done { background: #10b981; box-shadow: none; }
+.hmiss__cell--miss { background: #e11d68; box-shadow: none; }
 .hmiss__cell--now { box-shadow: 0 0 0 2px var(--surface, #111826), 0 0 0 3.5px var(--hm-bad); }
-.hmiss__stats { display: flex; gap: 14px; padding: 8px 14px 10px; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+.hmiss__stats { display: flex; gap: 18px; padding: 16px 0 0; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
 .hmiss__stats b { color: var(--text); font-size: 0.82rem; }
-.hmiss__actions { display: flex; gap: 8px; padding: 0 14px 14px; }
+.hmiss__actions { display: flex; gap: 8px; padding: 14px 0 0; }
 .hmiss__btn { flex: 1; height: 40px; border: 0; border-radius: 12px; cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 800; color: var(--text); background: color-mix(in srgb, var(--text) 9%, transparent); }
 .hmiss__btn--primary { color: #0b1018; background: var(--hm-c); }
 

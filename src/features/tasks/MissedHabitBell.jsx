@@ -49,11 +49,10 @@ const BELL = (
 // Small bell on a habit's card (shown once a due day was missed). Pressing it opens the habit's
 // activity map — a calendar-like grid of the last 16 weeks, like a contribution graph — with the
 // missed day marked, the streak numbers and two actions.
-export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, color, onMark, onDismiss }) {
+export default function MissedHabitBell({ habit, missedIso, unseen, today, applies, t, locale, color, onMark, onDismiss }) {
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState(null)
   const [range, setRange] = useState('month')
-  const mapRef = useRef(null)
   const ref = useRef(null)
   const btnRef = useRef(null)
 
@@ -91,11 +90,6 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
       : { left, bottom: window.innerHeight - anchor.top + 10, width }
   })()
 
-  // On a narrow screen the year map scrolls; keep the newest week in view.
-  useEffect(() => {
-    if (open && mapRef.current) mapRef.current.scrollLeft = mapRef.current.scrollWidth
-  }, [open, range])
-
   const stats = useMemo(() => {
     const created = habit.createdAt.slice(0, 10)
     const yesterday = addDays(today, -1)
@@ -105,17 +99,21 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     const [from, to] = range === 'month'
       ? [`${today.slice(0, 7)}-01`, `${today.slice(0, 7)}-${String(monthEnd).padStart(2, '0')}`]
       : range === 'year' ? [`${year}-01-01`, `${year}-12-31`] : [addDays(today, -364), today]
-    const cells = []
-    // Weeks run Monday to Sunday down the columns, so pad the first column up to the weekday of `from`.
-    for (let k = (new Date(`${from}T00:00:00`).getDay() + 6) % 7; k > 0; k -= 1) cells.push({ iso: `pad${k}`, kind: 'pad' })
+    // One block per calendar month, weeks running down the columns (Monday first).
+    const blocks = []
     let due = 0
     let done = 0
     for (let iso = from; iso <= to; iso = addDays(iso, 1)) {
+      const key = iso.slice(0, 7)
+      let block = blocks[blocks.length - 1]
+      if (!block || block.key !== key) {
+        block = { key, cells: [] }
+        for (let k = (new Date(`${iso}T00:00:00`).getDay() + 6) % 7; k > 0; k -= 1) block.cells.push({ iso: `pad${key}${k}`, kind: 'pad' })
+        blocks.push(block)
+      }
       const isDone = !!habit.completions[iso]
       const isDue = iso >= created && iso <= yesterday && applies(habit, iso)
-      if (isDone) cells.push({ iso, kind: 'done' })
-      else if (isDue) cells.push({ iso, kind: 'miss' })
-      else cells.push({ iso, kind: 'none' })
+      block.cells.push({ iso, kind: isDone ? 'done' : isDue ? 'miss' : 'none' })
       // «done of days»: the period's days up to today that the habit was due on (or done anyway).
       if (iso >= created && iso <= today && (isDone || applies(habit, iso))) { due += 1; if (isDone) done += 1 }
     }
@@ -127,7 +125,7 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
     let best = 0
     let run = 0
     dates.forEach((d, i) => { run = i > 0 && addDays(dates[i - 1], 1) === d ? run + 1 : 1; best = Math.max(best, run) })
-    return { cells, cols: Math.ceil(cells.length / 7), streak, best, done, due }
+    return { blocks, streak, best, done, due }
   }, [habit, today, applies, range])
 
   // Always available: red when there is a fresh miss, calm otherwise — the map is how you see the whole history.
@@ -163,30 +161,37 @@ export default function MissedHabitBell({ habit, missedIso, unseen, today, appli
         {run.n > 99 ? '99+' : run.n}
       </button>
       {open && (
-        <div className="hmiss__card" role="dialog" style={pos || undefined}>
-          <div className="hmiss__head">
-            <span className="hmiss__icon">{BELL}</span>
-            <div className="hmiss__text">
-              <h3>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h3>
-            </div>
+        <div className="hmiss__card hmiss__card--map" role="dialog" style={pos || undefined}>
+          <div className="hmiss__top">
+            <h3>{alert ? t('habits.missedTitle', { name: habit.title }) : t('habits.mapTitle', { name: habit.title })}</h3>
             <button type="button" className="hmiss__x" onClick={() => setOpen(false)} aria-label={t('tasksHub.close')}>×</button>
           </div>
-          <div className="hmiss__filters">
+          <div className="hmiss__seg">
             {[['last', 'habits.rangeLast'], ['year', 'habits.rangeYear'], ['month', 'habits.rangeMonth']].map(([key, label]) => (
-              <button key={key} type="button" className={'hmiss__chip' + (range === key ? ' hmiss__chip--on' : '')} onClick={() => setRange(key)}>{t(label)}</button>
+              <button key={key} type="button" className={range === key ? 'hmiss__seg-on' : ''} onClick={() => setRange(key)}>{t(label)}</button>
             ))}
           </div>
-          <div className="hmiss__mapwrap" ref={mapRef}>
-            <div className="hmiss__map" style={{ gridTemplateColumns: `repeat(${stats.cols}, var(--hm-cell))` }}>
-              {stats.cells.map((c) => (
-                <i key={c.iso} className={'hmiss__cell hmiss__cell--' + c.kind + (c.iso === missedIso ? ' hmiss__cell--now' : '')} title={c.kind === 'pad' ? undefined : c.iso} />
-              ))}
-            </div>
+          <div className="hmiss__hero"><b>{stats.done}</b><i>/ {stats.due}</i><span>{t('habits.heroLabel')}</span></div>
+          <div className="hmiss__blocks">
+            {stats.blocks.map((block) => {
+              const first = block.cells.find((c) => c.kind !== 'pad').iso
+              const name = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(`${first}T00:00:00`))
+              const label = name.charAt(0).toUpperCase() + name.slice(1) + (range === 'last' && (first.slice(5, 7) === '01' || block === stats.blocks[0]) ? ` ${first.slice(0, 4)}` : '')
+              return (
+                <div key={block.key} className="hmiss__blk">
+                  <div className="hmiss__blk-name">{label}</div>
+                  <div className="hmiss__map" style={{ gridTemplateColumns: `repeat(${Math.ceil(block.cells.length / 7)}, var(--hm-cell))` }}>
+                    {block.cells.map((c) => (
+                      <i key={c.iso} className={'hmiss__cell hmiss__cell--' + c.kind + (c.iso === missedIso ? ' hmiss__cell--now' : '')} title={c.kind === 'pad' ? undefined : c.iso} />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </div>
           <div className="hmiss__stats">
             <span><b>{stats.streak}</b> {t('habits.statStreak')}</span>
             <span><b>{stats.best}</b> {t('habits.statBest')}</span>
-            <span><b>{t('habits.statRatio', { done: stats.done, total: stats.due })}</b></span>
           </div>
           {alert && (
             <div className="hmiss__actions">
