@@ -11,7 +11,7 @@ import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import EmptyStateCelebration from '../features/tasks/EmptyStateCelebration'
 import { syncTaskForHabit, spawnTaskForHabit } from '../features/tasks/habitTaskSync'
 import { COLOR_PALETTE } from '../constants/colorPalette'
-import { IconFlame, IconSettings } from '../icons/Icons'
+import { IconSettings } from '../icons/Icons'
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 const STRIP_DAYS_BEFORE = 14 // 2 full weeks before this week's Monday
@@ -34,21 +34,6 @@ function buildDateStrip(today) {
   const start = addDays(thisMonday, -STRIP_DAYS_BEFORE)
   const length = STRIP_DAYS_BEFORE + STRIP_DAYS_AFTER + 1
   return Array.from({ length }, (_, i) => addDays(start, i))
-}
-
-// Consecutive done-days ending at `date` (inclusive if `date` itself is
-// done) — walks backward day by day until it hits a gap. A habit that's
-// still pending for the selected date still shows whatever streak it
-// already had going into that date (see the reference: an unchecked row
-// keeps its streak number, just dimmer/orange instead of red).
-function computeStreak(habit, date) {
-  let count = 0
-  let cursor = habit.completions[date] ? date : addDays(date, -1)
-  while (habit.completions[cursor]) {
-    count += 1
-    cursor = addDays(cursor, -1)
-  }
-  return count
 }
 
 // Whether a habit is even "due" on a given date, per its own cyclicity
@@ -363,7 +348,6 @@ export default function HabitsPage() {
                   const habit = habitsById.get(habitId)
                   if (!habit) return null
                   const done = !!habit.completions[selectedDate]
-                  const streak = computeStreak(habit, selectedDate)
                   // "Daily"/"Weekly"/etc no longer shown as its own line (per
                   // user request) — only an actual day count does: the
                   // total-days goal's progress if one's set ("30 дней пить
@@ -414,7 +398,6 @@ export default function HabitsPage() {
                           />
                         )
                       })()}
-                      <span className="habits-streak-pill"><IconFlame size={13} /> x{streak} {t('habits.streakUnit')}</span>
                       <button
                         type="button"
                         className="habits-toggle-btn"

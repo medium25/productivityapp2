@@ -6089,24 +6089,7 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 
 /* Streak, shown next to the habit (per user request, "x{n} день"-style)
    instead of the earlier floating corner badge. */
-.habits-streak-pill {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
 
-.habits-row--pending .habits-streak-pill {
-  color: var(--text);
-  background: var(--surface-hover);
-}
 
 .habits-row__body {
   flex: 1;
@@ -10622,7 +10605,6 @@ body.kb-open .install-hint { display: none; }
 /* «Привычки»: small bell on a card with a missed day — opens the activity map. */
 .hmiss { position: relative; display: inline-flex; flex: none; order: 1; }
 .timed-row__body > .hmiss { order: 0; }
-.habits-row .hmiss + .habits-streak-pill { order: 2; }
 .hmiss__bell {
   display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
   border-radius: 50%; cursor: pointer;
@@ -10663,9 +10645,9 @@ body.kb-open .install-hint { display: none; }
 .hmpage__month i { display: block; height: 4px; margin-top: 7px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--text) 10%, transparent); }
 .hmpage__month s { display: block; height: 100%; background: #10b981; }
 .hmpage__month--low s { background: #e11d68; }
-.hmpage__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; max-width: 520px; }
+.hmpage__cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-width: 520px; }
 .hmpage__wd { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
-.hmpage__day { display: grid; place-items: start; height: 48px; padding: 7px 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
+.hmpage__day { display: grid; place-items: center start; height: 24px; padding: 0 9px; box-sizing: border-box; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent); }
 .hmpage__day--done { color: #fff; background: #10b981; box-shadow: none; }
 .hmpage__day--miss { color: #fff; background: #e11d68; box-shadow: none; }
 .hmpage__day--today { color: var(--text); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 45%, transparent); }
