@@ -100,7 +100,7 @@ function PlanInput({ monthKey, categoryId, plan, setBudget, color }) {
   )
 }
 
-export default function FinanceBudgetTab() {
+export default function FinanceBudgetTab({ monthKey, setMonthKey }) {
   const { t, i18n } = useTranslation()
   const transactions = useFinanceStore((s) => s.transactions)
   const categories = useFinanceStore((s) => s.categories)
@@ -111,7 +111,6 @@ export default function FinanceBudgetTab() {
   const renameCategory = useFinanceStore((s) => s.renameCategory)
   const deleteCategory = useFinanceStore((s) => s.deleteCategory)
 
-  const [monthKey, setMonthKey] = useState(() => currentMonthKey())
   const [newCategoryName, setNewCategoryName] = useState('')
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null)
   const [expandedId, setExpandedId] = useState(null)

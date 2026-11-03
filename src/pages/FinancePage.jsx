@@ -1,5 +1,5 @@
 // src/pages/FinancePage.jsx
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFinanceStore } from '../store/useFinanceStore'
 import { currentMonthKey, formatSom, monthKeyOf, monthSummary, txMonthKey } from '../features/finance/financeMath'
@@ -21,6 +21,8 @@ export default function FinancePage() {
   const transfers = useFinanceStore((s) => s.transfers) || []
   const fundOpening = useFinanceStore((s) => s.fundOpening) || { cash: 0, card: 0, usd: 0 }
   const addTransfer = useFinanceStore((s) => s.addTransfer)
+  // One month for the whole page: the switch in the budget block also picks which month's operations are listed below.
+  const [monthKey, setMonthKey] = useState(() => currentMonthKey())
 
   const balance = useMemo(
     () => monthSummary(currentMonthKey(), { transactions, historySeed: HISTORY_SEED }).remaining,
@@ -56,11 +58,11 @@ export default function FinancePage() {
 
       <section className="finance-section">
         <h2 className="finance-section__title">{t('finance.tabBudget')}</h2>
-        <FinanceBudgetTab />
+        <FinanceBudgetTab monthKey={monthKey} setMonthKey={setMonthKey} />
       </section>
       <section className="finance-section">
         <h2 className="finance-section__title">{t('finance.tabOperations')}</h2>
-        <FinanceOperationsTab />
+        <FinanceOperationsTab monthKey={monthKey} />
       </section>
       <section className="finance-section">
         <h2 className="finance-section__title">{t('finance.tabHistory')}</h2>

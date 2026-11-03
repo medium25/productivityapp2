@@ -2,21 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFinanceStore } from '../../store/useFinanceStore'
-import { currentMonthKey, formatSom, monthKeyOf, monthLabel, txMonthKey, nextMonthKey, prevMonthKey } from './financeMath'
+import { formatSom, monthKeyOf, txMonthKey } from './financeMath'
 import { addDays, isoFromDate, todayISO } from '../tasks/taskLogic'
 import CategoryPicker from './CategoryPicker'
 import { FundPill, FundSelect } from './FundPill'
 import { CategoryPill, categoryHexFor } from './CategoryPill'
-
-function MonthSwitcher({ monthKey, onChange, language }) {
-  return (
-    <div className="finance-month-switcher">
-      <button type="button" onClick={() => onChange(prevMonthKey(monthKey))}>‹</button>
-      <span>{monthLabel(monthKey, language)}</span>
-      <button type="button" onClick={() => onChange(nextMonthKey(monthKey))}>›</button>
-    </div>
-  )
-}
 
 const groupDigits = (digits) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 
@@ -256,7 +246,7 @@ function TxTable({ type, rows, categories, updateTransaction, deleteTransaction,
   )
 }
 
-export default function FinanceOperationsTab() {
+export default function FinanceOperationsTab({ monthKey }) {
   const { t, i18n } = useTranslation()
   const transactions = useFinanceStore((s) => s.transactions)
   const categories = useFinanceStore((s) => s.categories)
@@ -267,7 +257,6 @@ export default function FinanceOperationsTab() {
   const transfers = useFinanceStore((s) => s.transfers) || []
   const deleteTransfer = useFinanceStore((s) => s.deleteTransfer)
 
-  const [monthKey, setMonthKey] = useState(() => currentMonthKey())
   const [editingId, setEditingId] = useState(null)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null)
 
@@ -285,7 +274,6 @@ export default function FinanceOperationsTab() {
 
   return (
     <div className="finance-operations">
-      <MonthSwitcher monthKey={monthKey} onChange={setMonthKey} language={i18n.language} />
 
       <div className="finance-type-columns">
         <div className="finance-type-column">
