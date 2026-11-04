@@ -20,6 +20,7 @@ let audio = null
 let echo = null // { ctx, wet, feedback }, built lazily on first echo > 0
 let autoplayNext = false
 let seekTarget = 0
+let playAllowed = false // true only while quranPlay() is starting the element
 let userEngaged = false // has the user pressed play / picked a surah this session
 let saveTimer = null
 let listenTimer = null
@@ -72,7 +73,9 @@ function updateMediaSession() {
       album: i18n.t('quran.title'),
     })
     navigator.mediaSession.playbackState = useQuranPlaybackStore.getState().playing ? 'playing' : 'paused'
-    navigator.mediaSession.setActionHandler('play', quranPlay)
+    // Media keys / headphone events must not start the recitation: a no-op
+    // handler also stops the browser's default "play the element" action.
+    navigator.mediaSession.setActionHandler('play', () => {})
     navigator.mediaSession.setActionHandler('pause', quranPause)
     // Case наушников next/prev случайно жмут и сбивают позицию в суре —
     // отключено по запросу пользователя. play/pause остаются рабочими.
@@ -124,14 +127,19 @@ export function quranPlay() {
   if (!audio) return
   userEngaged = true
   if (echo && echo.ctx.state === 'suspended') echo.ctx.resume().catch(() => {})
+  playAllowed = true
   audio
     .play()
     .then(() => {
+      playAllowed = false
       setPlayback({ playing: true })
       startTimers()
       updateMediaSession()
     })
-    .catch(() => setPlayback({ playing: false }))
+    .catch(() => {
+      playAllowed = false
+      setPlayback({ playing: false })
+    })
 }
 
 export function quranPause() {
@@ -204,6 +212,11 @@ export function ensureQuranEngine() {
       autoplayNext = false
       quranPlay()
     }
+  })
+  // Anything that starts the element other than quranPlay() (OS media key,
+  // headphones connecting, a stray default action) is undone at once.
+  audio.addEventListener('play', () => {
+    if (!playAllowed) audio.pause()
   })
   audio.addEventListener('timeupdate', () => setPlayback({ currentTime: audio.currentTime }))
   audio.addEventListener('ended', () => {
