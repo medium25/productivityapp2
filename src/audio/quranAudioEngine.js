@@ -109,6 +109,11 @@ function stopTimers() {
 function loadSurah(n, position, autoplay) {
   autoplayNext = !!autoplay
   seekTarget = position || 0
+  if (!autoplayNext) {
+    // New source silences the element — don't leave the UI saying "playing".
+    stopTimers()
+    setPlayback({ playing: false })
+  }
   setPlayback({ loading: true, error: false, duration: 0, currentTime: seekTarget })
   audio.src = surahAudioUrl(n)
   audio.load()
@@ -161,11 +166,11 @@ export function quranSeekBy(delta) {
 }
 
 // Selecting a surah goes through useQuranStore; the subscription below
-// notices currentSurah changed and (re)loads the audio, carrying the
-// autoplay intent.
-export function quranGoToSurah(n, autoplay) {
+// notices currentSurah changed and (re)loads the audio. Never starts sound
+// by itself — the user presses play.
+export function quranGoToSurah(n) {
   if (n < 1 || n > 114) return
-  autoplayNext = !!autoplay
+  autoplayNext = false
   userEngaged = true
   useQuranStore.getState().selectSurah(n)
 }
@@ -203,15 +208,12 @@ export function ensureQuranEngine() {
   audio.addEventListener('timeupdate', () => setPlayback({ currentTime: audio.currentTime }))
   audio.addEventListener('ended', () => {
     useQuranStore.getState().savePosition(0)
-    const next = useQuranStore.getState().completeAndAdvance()
-    if (next) {
-      // completeAndAdvance moved currentSurah — the subscription reloads it;
-      // tell that reload to keep playing.
-      autoplayNext = true
-    } else {
-      setPlayback({ playing: false })
-      stopTimers()
-    }
+    // completeAndAdvance may move currentSurah — the subscription then
+    // loads the next surah, paused: the user presses play for it.
+    useQuranStore.getState().completeAndAdvance()
+    autoplayNext = false
+    setPlayback({ playing: false })
+    stopTimers()
   })
   audio.addEventListener('error', () => setPlayback({ error: true, loading: false, playing: false }))
 

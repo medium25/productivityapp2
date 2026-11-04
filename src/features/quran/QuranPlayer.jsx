@@ -71,8 +71,8 @@ export default function QuranPlayer() {
     window.addEventListener('pointerup', onUp)
   }
 
-  const prev = () => quranGoToSurah(currentSurah - 1, playing)
-  const next = () => quranGoToSurah(currentSurah + 1, playing)
+  const prev = () => quranGoToSurah(currentSurah - 1)
+  const next = () => quranGoToSurah(currentSurah + 1)
 
   return (
     <div className="quran-player">
@@ -161,7 +161,7 @@ export default function QuranPlayer() {
             key={s.n}
             className={'quran-player__row' + (s.n === currentSurah ? ' quran-player__row--current' : '')}
             data-current={s.n === currentSurah}
-            onClick={() => quranGoToSurah(s.n, playing)}
+            onClick={() => quranGoToSurah(s.n)}
           >
             <span className="quran-player__row-num">{s.n}</span>
             <span className="quran-player__row-names">
