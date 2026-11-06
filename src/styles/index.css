@@ -5610,19 +5610,24 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 }
 
 /* How many days this insight has been repeated over its whole history —
-   plain number sitting on the bubble's top edge, right side. The dark
-   text-shadow knocks the bubble's border out behind the digits so it reads
-   as a label on the edge rather than a struck-through number. */
+   outlined number on the bubble's top edge, right side. The outline takes
+   the bubble's own border color (neon --bh); the dark fill only hides the
+   bubble border behind it, so the number reads as a tag on the edge. */
 .insights-chat__row--counted { margin-top: 12px; }
 .insights-chat__repeat-count {
   position: absolute;
-  top: -9px;
+  top: -11px;
   right: 16px;
-  font-size: 14px;
+  min-width: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--bh, #8f93b8) 75%, transparent);
+  background: #0b1018;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 18px;
-  color: rgba(255, 255, 255, 0.72);
-  text-shadow: 0 0 3px #0b1018, 0 0 3px #0b1018, 0 0 4px #0b1018, 0 0 6px #0b1018;
+  line-height: 19px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.78);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
   user-select: none;
