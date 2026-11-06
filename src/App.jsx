@@ -129,6 +129,15 @@ export default function App() {
     }
   }, [language, i18n])
 
+  // Tell the start splash (public/hello-splash.js) the app may be shown: the
+  // stores hold their data (auth is no longer 'loading') and the first page
+  // has been rendered — checked after paint, hence the extra frame.
+  useEffect(() => {
+    if (authStatus === 'loading') return
+    const id = requestAnimationFrame(() => window.helloSplash && window.helloSplash.ready())
+    return () => cancelAnimationFrame(id)
+  }, [authStatus])
+
   if (authStatus === 'loading') {
     return <div className="auth-loading">{t('auth.loading')}</div>
   }
