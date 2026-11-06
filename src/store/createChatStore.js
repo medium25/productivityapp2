@@ -239,6 +239,23 @@ export function createChatStore(storageName, persistOptions = {}) {
           messages: state.messages.map((m) => (m.id === id ? { ...m, done: !m.done } : m)),
         })),
 
+        // Insights flashback tick: marks / unmarks the message as repeated on
+        // `day`. Keeps `done` in step (checked today) for older readers.
+        toggleReview: (id, day) => set((state) => ({
+          messages: state.messages.map((m) => {
+            if (m.id !== id) return m
+            const days = m.reviewDays || []
+            const base = m.reviewDays ? (m.reviewBase || 0) : (m.done ? 1 : 0)
+            const has = days.includes(day)
+            return {
+              ...m,
+              reviewDays: has ? days.filter((d) => d !== day) : [...days, day],
+              reviewBase: base,
+              done: !has,
+            }
+          }),
+        })),
+
         editMessage: (id, text) => {
           const trimmed = (text || '').trim()
           if (!trimmed) return

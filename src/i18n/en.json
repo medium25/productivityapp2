@@ -719,7 +719,8 @@
     "deselectMessage": "Deselect",
     "cancelSelect": "Cancel",
     "selectedCount": "{{count}} selected",
-    "deleteSelected": "Delete selected"
+    "deleteSelected": "Delete selected",
+    "repeatCount": "Repeated {{count}} times"
   },
   "habits": {
     "mapTitle": "Activity map of “{{name}}”",

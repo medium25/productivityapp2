@@ -704,7 +704,8 @@
     "deselectMessage": "Tanlovni olib tashlash",
     "cancelSelect": "Bekor qilish",
     "selectedCount": "Tanlandi: {{count}}",
-    "deleteSelected": "Tanlanganlarni oʻchirish"
+    "deleteSelected": "Tanlanganlarni oʻchirish",
+    "repeatCount": "Takrorlangan: {{count}} marta"
   },
   "habits": {
     "mapTitle": "«{{name}}» faollik xaritasi",

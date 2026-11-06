@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { useInsightsStore } from '../../store/useInsightsStore'
@@ -9,6 +9,7 @@ import { useChatColorsStore } from '../../store/useChatColorsStore'
 import { PRINCIPLES_PROMPT } from '../../store/usePrinciplesStore'
 import { formatDateBadge, TASK_BULLET, messageHasTask, isTaskLine, isTaskLineDone, taskLineText, toggleTaskLineInText, insertTaskContinuation, todayISO } from './taskLogic'
 import { syncRoutineTaskStatus } from './dailyRoutineTasks'
+import { reviewDayKey, reviewedOn, reviewCount } from './insightReview'
 import { useAutoGrowTextarea } from './useAutoGrowTextarea'
 import { useLocalMediaUrl } from './useLocalMediaUrl'
 import { getLocalMedia, saveLocalMedia } from '../../storage/localMedia'
@@ -320,6 +321,14 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
           — no room for it) — that section is a lookup list, not a
           processing queue like Insights. */}
       {showCheckbox && (
+        <span
+          className="insights-chat__repeat-count"
+          title={t('insights.repeatCount', { count: message.repeatCount || 0 })}
+        >
+          {message.repeatCount || 0}
+        </span>
+      )}
+      {showCheckbox && (
         <button
           type="button"
           className={'insights-chat__checkbox' + (message.done ? ' insights-chat__checkbox--checked' : '')}
@@ -343,7 +352,7 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
         className={
           'insights-chat__bubble'
           + (message.type !== 'text' ? ' insights-chat__bubble--media' : '')
-          + (message.done ? ' insights-chat__bubble--done' : '')
+          + (message.done && isReminder ? ' insights-chat__bubble--done' : '')
           + (editing ? ' insights-chat__bubble--editing' : '')
           + (isReminder ? ' insights-chat__bubble--reminder' : '')
           + (isTask ? ' insights-chat__bubble--task' : '')
@@ -498,15 +507,28 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   // today's already-decided batch and injects it into today's render group
   // below (same message objects, same ids — deleting/editing a reminder
   // card is deleting/editing the one real message, no separate copy).
-  const reminderCursor = useInsightsReminderStore((s) => s.cursorIndex)
+  const reminderBatchIds = useInsightsReminderStore((s) => s.batchIds)
+  const reminderDate = useInsightsReminderStore((s) => s.lastAdvancedDate)
   const advanceReminderIfNewDay = useInsightsReminderStore((s) => s.advanceIfNewDay)
+  const hasMessages = messages.length > 0
   useEffect(() => {
-    if (variant === 'insights') advanceReminderIfNewDay(messages.length)
-  }, [variant, messages.length, advanceReminderIfNewDay])
-  const reminderBatchCount = variant === 'insights' ? Math.max(1, Math.ceil(messages.length / 20)) : 1
-  const reminderMessages = variant === 'insights'
-    ? messages.slice((reminderCursor % reminderBatchCount) * 20, (reminderCursor % reminderBatchCount) * 20 + 20)
-    : []
+    if (variant === 'insights') advanceReminderIfNewDay(messages)
+    // Re-runs when the pool first appears or the stored day/batch changes
+    // (hydration); not on every edit of a message.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant, hasMessages, reminderDate, reminderBatchIds, advanceReminderIfNewDay])
+  const reviewToday = reviewDayKey()
+  // Today's batch: same message ids as the chat, in batch order (unticked
+  // ones from yesterday first), with today's tick and the all-time repeat
+  // count folded in. Rebuilt only when the messages or the batch change.
+  const reminderMessages = useMemo(() => {
+    if (variant !== 'insights' || !reminderBatchIds) return []
+    const byId = new Map(messages.map((m) => [m.id, m]))
+    return reminderBatchIds
+      .map((id) => byId.get(id))
+      .filter(Boolean)
+      .map((m) => ({ ...m, done: reviewedOn(m, reviewToday), repeatCount: reviewCount(m), _reminderKey: `reminder-${m.id}` }))
+  }, [variant, reminderBatchIds, messages, reviewToday])
   // Multi-select (per user request — "выделять и группами удалять
   // сообщения"): entered via a message's own "⋮" menu ("Select"), which
   // both flips this on and pre-selects that message. While active, drag
@@ -524,6 +546,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   const deleteMessage = useStore((s) => s.deleteMessage)
   const deleteMessages = useStore((s) => s.deleteMessages)
   const toggleMessageDone = useStore((s) => s.toggleMessageDone)
+  const toggleReview = useStore((s) => s.toggleReview)
 
   // Daily "Сегодня" routine tasks (see dailyRoutineTasks.js) — "Освежить
   // инсайты"/"Добавить инсайты"/"Дневник" don't complete from their own
@@ -756,7 +779,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   // flagged so MessageBubble can tint them, not separate stored copies.
   if (reminderMessages.length > 0) {
     const todayDateKey = new Date().toISOString().slice(0, 10)
-    const reminderItems = reminderMessages.map((m) => ({ ...m, _reminderKey: `reminder-${m.id}` }))
+    const reminderItems = reminderMessages
     const todayIndex = groups.findIndex((g) => g.dateKey === todayDateKey)
     if (todayIndex >= 0) {
       groups = groups.map((g, i) => (i === todayIndex ? { ...g, items: [...reminderItems, ...g.items] } : g))
@@ -772,7 +795,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
   // Every message processed (per user request — same celebration as Tasks/
   // Wishes/Inbox, here as a banner above the still-visible history instead
   // of replacing it, since "done" doesn't remove a message from the chat).
-  const allProcessed = showCheckbox && messages.length > 0 && messages.every((m) => m.done)
+  const allProcessed = showCheckbox && reminderMessages.length > 0 && reminderMessages.every((m) => m.done)
 
   return (
     <div className={'insights-chat' + (variant !== 'insights' ? ` insights-chat--${variant}` : '')}>
@@ -869,7 +892,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
                       isReminder={isReminder}
                       onEdit={(text) => editMessage(message.id, text)}
                       onDelete={() => deleteMessage(message.id)}
-                      onToggleDone={() => toggleMessageDone(message.id)}
+                      onToggleDone={() => (isReminder ? toggleReview(message.id, reviewToday) : toggleMessageDone(message.id))}
                       onToggleTaskLine={(lineIndex) => editMessage(message.id, toggleTaskLineInText(message.text, lineIndex))}
                       showCheckbox={showCheckbox && isReminder}
                       bubbleColors={{

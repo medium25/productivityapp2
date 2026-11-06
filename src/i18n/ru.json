@@ -733,7 +733,8 @@
     "deselectMessage": "Снять выделение",
     "cancelSelect": "Отмена",
     "selectedCount": "Выбрано: {{count}}",
-    "deleteSelected": "Удалить выбранные"
+    "deleteSelected": "Удалить выбранные",
+    "repeatCount": "Повторён раз: {{count}}"
   },
   "habits": {
     "mapTitle": "Карта активности «{{name}}»",
