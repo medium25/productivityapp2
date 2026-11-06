@@ -249,7 +249,7 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
   }
 
   return (
-    <div className={'insights-chat__row' + (showCheckbox ? ' insights-chat__row--counted' : '')}>
+    <div className="insights-chat__row">
       {selecting && canSelect && (
         <button
           type="button"
@@ -321,6 +321,14 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
           — no room for it) — that section is a lookup list, not a
           processing queue like Insights. */}
       {showCheckbox && (
+        <span
+          className="insights-chat__repeat-count"
+          title={t('insights.repeatCount', { count: message.repeatCount || 0 })}
+        >
+          {message.repeatCount || 0}
+        </span>
+      )}
+      {showCheckbox && (
         <button
           type="button"
           className={'insights-chat__checkbox' + (message.done ? ' insights-chat__checkbox--checked' : '')}
@@ -353,14 +361,6 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
         onDoubleClick={selecting ? undefined : startEditing}
         onClick={selecting && canSelect ? (e) => { if (e.target.closest('a')) e.preventDefault(); onToggleSelected() } : undefined}
       >
-        {showCheckbox && !editing && (
-          <span
-            className="insights-chat__repeat-count"
-            title={t('insights.repeatCount', { count: message.repeatCount || 0 })}
-          >
-            {message.repeatCount || 0}
-          </span>
-        )}
         {editing ? (
           <textarea
             ref={(el) => {

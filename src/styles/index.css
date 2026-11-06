@@ -5610,22 +5610,17 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 }
 
 /* How many days this insight has been repeated over its whole history —
-   plain number sitting on the bubble's top edge, right side. The dark
-   text-shadow knocks the bubble's border out behind the digits so it reads
-   as a label on the edge rather than a struck-through number. */
-.insights-chat__row--counted { margin-top: 12px; }
+   quiet number to the left of the circle. */
 .insights-chat__repeat-count {
-  position: absolute;
-  top: -9px;
-  right: 16px;
+  min-width: 22px;
+  margin-top: 3px;
+  text-align: right;
   font-size: 14px;
   font-weight: 600;
-  line-height: 18px;
-  color: rgba(255, 255, 255, 0.72);
-  text-shadow: 0 0 3px #0b1018, 0 0 3px #0b1018, 0 0 4px #0b1018, 0 0 6px #0b1018;
+  line-height: 19px;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  pointer-events: none;
-  user-select: none;
+  flex-shrink: 0;
 }
 
 .insights-chat__checkbox--checked {
