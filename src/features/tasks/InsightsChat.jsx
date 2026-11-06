@@ -439,7 +439,6 @@ function MessageBubbleImpl({ message, onEdit, onDelete, onToggleDone, onToggleTa
               </div>
             ) : (
               <div className="insights-chat__meta">
-                {message.editedAt && <span className="insights-chat__edited">{t('insights.edited')}</span>}
                 <span>{formatTime(message.createdAt)}</span>
               </div>
             )}
