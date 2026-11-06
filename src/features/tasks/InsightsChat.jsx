@@ -480,6 +480,40 @@ const MessageBubble = memo(MessageBubbleImpl, (a, b) =>
 // user was reading (per user request). Keyed by the chat's store name.
 const chatScrollMemory = new Map()
 
+// The same spot is also kept across launches (per device, localStorage): the
+// first message at the top of the view plus how far its top is from the
+// list's top — anchored to a message rather than a pixel offset so it still
+// lands right after messages were added or today's batch changed the layout.
+const SCROLL_STORAGE_PREFIX = 'arkad:chat-scroll:'
+function loadSavedScroll(key) {
+  try {
+    const raw = localStorage.getItem(SCROLL_STORAGE_PREFIX + key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+function persistScroll(key, listEl) {
+  if (!listEl) return
+  try {
+    const atBottom = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 40
+    const listTop = listEl.getBoundingClientRect().top
+    let anchor = null
+    let offset = 0
+    for (const node of listEl.querySelectorAll('[data-mkey]')) {
+      const r = node.getBoundingClientRect()
+      if (r.bottom > listTop + 1) {
+        anchor = node.getAttribute('data-mkey')
+        offset = r.top - listTop
+        break
+      }
+    }
+    localStorage.setItem(SCROLL_STORAGE_PREFIX + key, JSON.stringify({ atBottom, top: listEl.scrollTop, anchor, offset }))
+  } catch {
+    /* storage unavailable — resuming the spot is a convenience only */
+  }
+}
+
 export default function InsightsChat({ useStore = useInsightsStore, variant = 'insights' }) {
   const { t, i18n } = useTranslation()
   const messages = useStore((s) => s.messages)
@@ -652,11 +686,19 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
     if (!el) return
     if (!restoredRef.current && messages.length > 0) {
       restoredRef.current = true
-      const saved = chatScrollMemory.get(scrollKey)
-      // Returning visit: back to the spot the user left (unless they were at
-      // the bottom — then stay glued to the newest messages).
+      const saved = chatScrollMemory.get(scrollKey) || loadSavedScroll(scrollKey)
+      // Returning visit (or a fresh launch): back to the spot the user left
+      // (unless they were at the bottom — then stay glued to the newest
+      // messages).
       if (saved && !saved.atBottom) {
-        el.scrollTop = saved.top
+        const target = saved.anchor
+          ? [...el.querySelectorAll('[data-mkey]')].find((n) => n.getAttribute('data-mkey') === saved.anchor)
+          : null
+        if (target) {
+          el.scrollTop += target.getBoundingClientRect().top - el.getBoundingClientRect().top - (saved.offset || 0)
+        } else {
+          el.scrollTop = saved.top
+        }
         prevMessagesLengthRef.current = messages.length
         return
       }
@@ -668,13 +710,32 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
     prevMessagesLengthRef.current = messages.length
   }, [messages.length, scrollKey])
 
+  const persistTimerRef = useRef(null)
   const rememberScroll = (e) => {
     const el = e.currentTarget
     chatScrollMemory.set(scrollKey, {
       top: el.scrollTop,
       atBottom: el.scrollHeight - el.scrollTop - el.clientHeight < 40,
     })
+    clearTimeout(persistTimerRef.current)
+    persistTimerRef.current = setTimeout(() => persistScroll(scrollKey, el), 250)
   }
+  // Settle the spot on the way out too (leaving the page / closing the app).
+  useEffect(() => {
+    const flush = () => {
+      // On unmount the list element is already detached — a still-pending
+      // debounced save holds its own reference, so let that one fire.
+      const el = listRef.current
+      if (!el || !restoredRef.current) return
+      clearTimeout(persistTimerRef.current)
+      persistScroll(scrollKey, el)
+    }
+    window.addEventListener('pagehide', flush)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      flush()
+    }
+  }, [scrollKey])
 
   const clearPendingAttachment = () => {
     if (pendingAttachment?.previewUrl) URL.revokeObjectURL(pendingAttachment.previewUrl)
@@ -885,7 +946,7 @@ export default function InsightsChat({ useStore = useInsightsStore, variant = 'i
               {group.items.map((message) => {
                 const isReminder = !!message._reminderKey
                 return (
-                  <div key={message._reminderKey || message.id}>
+                  <div key={message._reminderKey || message.id} data-mkey={message._reminderKey || message.id}>
                     <MessageBubble
                       message={message}
                       isReminder={isReminder}
