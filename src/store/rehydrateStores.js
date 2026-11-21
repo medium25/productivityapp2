@@ -20,6 +20,7 @@ import { useTelegramLinksStore } from './useTelegramLinksStore'
 import { useWorkoutStore } from './useWorkoutStore'
 import { useQaydlarStore, useKnowledgeStore } from './useQaydlarStore'
 import { useQuranStore } from './useQuranStore'
+import { useIdeasStore } from './useIdeasStore'
 import { stopQuranEngine } from '../audio/quranAudioEngine'
 import { SPORT_DAY_CHAT_STORES } from './useSportDayChatStore'
 
@@ -49,6 +50,7 @@ const PERSISTED_STORES = [
   useQaydlarStore,
   useKnowledgeStore,
   useQuranStore,
+  useIdeasStore,
   ...SPORT_DAY_CHAT_STORES,
 ]
 

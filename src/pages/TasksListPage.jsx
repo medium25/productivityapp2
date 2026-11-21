@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
+import { useIdeasStore } from '../store/useIdeasStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
 import { syncHabitForTask } from '../features/tasks/habitTaskSync'
@@ -142,6 +143,79 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
   )
 }
 
+// One idea: same row look as a task, but no project / «Мой день» / done circle —
+// only «Сделать задачей» (moves it up into the tasks list). Double-click edits the
+// title; while editing, × deletes the idea.
+function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProps, dragging }) {
+  const { t } = useTranslation()
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(idea.title)
+  const color = ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
+  const stop = (e) => e.stopPropagation()
+
+  const commit = () => {
+    const title = value.trim()
+    if (title && title !== idea.title) onSetTitle(idea.id, title)
+    setEditing(false)
+  }
+
+  return (
+    <div className={'timed-row timed-row--notime' + (dragging ? ' timed-row--dragging' : '')} {...(editing ? null : dragHandleProps)}>
+      <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
+        <DragGrip />
+        <span className="timed-row__title">
+          <span className="timed-row__num">{number}.</span>
+          {editing ? (
+            <>
+              <input
+                type="text"
+                className="timed-inline timed-inline--title"
+                value={value}
+                autoFocus
+                onChange={(e) => setValue(capitalizeAfterSpace(e.target.value))}
+                onBlur={commit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+                  if (e.key === 'Escape') { setValue(idea.title); setEditing(false) }
+                }}
+              />
+              <button
+                type="button"
+                className="task-row__delete"
+                onPointerDown={stop}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onDelete(idea.id)}
+                aria-label={t('tasksList.ideaDelete')}
+                title={t('tasksList.ideaDelete')}
+              >
+                ×
+              </button>
+            </>
+          ) : (
+            <span className="timed-row__title-text" onDoubleClick={() => { setValue(idea.title); setEditing(true) }}>{idea.title}</span>
+          )}
+        </span>
+        <button
+          type="button"
+          className="plus-btn"
+          onPointerDown={stop}
+          onClick={() => onPromote(idea)}
+          title={t('tasksList.ideaToTask')}
+          aria-label={t('tasksList.ideaToTask')}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+        </button>
+      </span>
+    </div>
+  )
+}
+
+const IdeaBulb = ({ size = 15 }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" />
+  </svg>
+)
+
 export default function TasksListPage() {
   const { t } = useTranslation()
   const tasks = useTasksStore((s) => s.tasks)
@@ -158,6 +232,11 @@ export default function TasksListPage() {
   const reorderTasks = useTasksStore((s) => s.reorderTasks)
   const habits = useHabitsStore((s) => s.habits)
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
+  const ideas = useIdeasStore((s) => s.ideas)
+  const addIdea = useIdeasStore((s) => s.addIdea)
+  const updateIdea = useIdeasStore((s) => s.updateIdea)
+  const deleteIdea = useIdeasStore((s) => s.deleteIdea)
+  const reorderIdeas = useIdeasStore((s) => s.reorderIdeas)
 
   // Re-read the date on refocus / midnight so «Мой день» stays right overnight.
   const [today, setToday] = useState(todayISO)
@@ -271,6 +350,28 @@ export default function TasksListPage() {
   const closePicker = () => setPicker(null)
   const finishAdd = () => { setDraft(''); setAdding(false) }
 
+  // «Идеи»: the second list under the tasks — its own quick-add field and drag order.
+  const [addingIdea, setAddingIdea] = useState(false)
+  const [ideaDraft, setIdeaDraft] = useState('')
+  const ideaDraftRef = useRef(null)
+  useEffect(() => { if (addingIdea) ideaDraftRef.current?.focus() }, [addingIdea])
+  const submitIdea = () => {
+    if (!ideaDraft.trim()) return
+    addIdea(ideaDraft)
+    setIdeaDraft('')
+    ideaDraftRef.current?.focus()
+  }
+  const finishIdea = () => { setIdeaDraft(''); setAddingIdea(false) }
+  const promoteIdea = (idea) => {
+    addTask({ title: idea.title, stage: 'tasks', projectId: null, createdIn: 'tasks' })
+    deleteIdea(idea.id)
+  }
+  const ideaIds = ideas.map((i) => i.id)
+  const ideaDrag = useDragReorder(ideaIds, reorderIdeas)
+  const orderedIdeas = ideaDrag.displayOrder.length === ideas.length
+    ? ideaDrag.displayOrder.map((id) => ideas.find((i) => i.id === id)).filter(Boolean)
+    : ideas
+
   const ids = rows.map((r) => r.id)
   const drag = useDragReorder(ids, reorderTasks)
   const orderedRaw = drag.displayOrder.length === rows.length
@@ -295,7 +396,7 @@ export default function TasksListPage() {
   return (
     <>
       <div className="tasks-page tasks-page--edge-to-edge">
-        <div className="tasks-board tasks-board--fill tasks-board--stacked">
+        <div className="tasks-board tasks-board--fill tasks-board--stacked tasks-board--vstack">
           <div className="tasks-column tasks-column--bucket">
             <div className="tasks-column__header tasks-column__header--today">
               <span className="tasks-column__header-title tasks-column__header-title--center">
@@ -387,9 +488,59 @@ export default function TasksListPage() {
               )}
             </div>
           </div>
+          <div className="tasks-column tasks-column--bucket tasks-column--ideas">
+            <div className="tasks-column__header tasks-column__header--today tasks-column__header--ideas">
+              <span className="tasks-column__header-title tasks-column__header-title--center">
+                <IdeaBulb />{t('tasksList.ideasTitle')}
+              </span>
+            </div>
+            <div className="timed-list">
+              {orderedIdeas.length === 0 && !addingIdea && <p className="tasks-cards__empty">{t('tasksList.ideasEmpty')}</p>}
+              {orderedIdeas.map((idea, i) => (
+                <div key={idea.id} className={i < orderedIdeas.length - 1 ? 'task-row-gap' : undefined}>
+                  <IdeaRow
+                    idea={idea}
+                    number={i + 1}
+                    onSetTitle={updateIdea}
+                    onDelete={deleteIdea}
+                    onPromote={promoteIdea}
+                    dragHandleProps={ideaDrag.bindHandle(idea.id, idea.title)}
+                    dragging={ideaDrag.draggingId === idea.id}
+                  />
+                </div>
+              ))}
+              {addingIdea ? (
+                <div className="timed-row timed-ghost timed-ghost--simple">
+                  <span className="timed-row__title">
+                    <input
+                      ref={ideaDraftRef}
+                      type="text"
+                      className="timed-ghost__title"
+                      value={ideaDraft}
+                      placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
+                      onChange={(e) => setIdeaDraft(capitalizeAfterSpace(e.target.value))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); submitIdea() }
+                        if (e.key === 'Escape') finishIdea()
+                      }}
+                    />
+                  </span>
+                  <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!ideaDraft.trim()} onClick={submitIdea}>
+                    {t('tasksActivity.addBtn')}
+                  </button>
+                  <button type="button" className="timed-ghost__cancel" onClick={finishIdea} aria-label={t('tasks.cancel')} title={t('tasks.cancel')}>×</button>
+                </div>
+              ) : (
+                <button type="button" className="timed-add-slot" onClick={() => setAddingIdea(true)}>
+                  {t('tasksList.addIdea')}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
       {drag.dragGhost}
+      {ideaDrag.dragGhost}
       {plusMenu && (
         <PlusChoiceMenu
           rect={plusMenu.rect}

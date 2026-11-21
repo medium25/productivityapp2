@@ -3240,6 +3240,30 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   color: var(--accent);
 }
 
+/* Tasks page: «Задачи» on top, «Идеи» below — one column of two sections. */
+.tasks-board--vstack {
+  flex-direction: column;
+  align-items: stretch;
+}
+.tasks-board--fill.tasks-board--vstack .tasks-column {
+  flex: 0 0 auto;
+  width: 100%;
+}
+.tasks-board--fill.tasks-board--vstack .tasks-column + .tasks-column {
+  margin-left: 0;
+}
+
+/* «Идеи» — the second section of the Tasks page, under the task list. */
+.tasks-column--bucket .tasks-column__header--ideas {
+  border-bottom-color: #f5b942;
+}
+.tasks-column--bucket .tasks-column__header--ideas .tasks-column__header-title {
+  color: #f5b942;
+}
+.tasks-column--ideas {
+  margin-top: 18px;
+}
+
 /* Date-bucket column header (Overdue/Today/Tomorrow, see UpcomingPage.jsx's
    BucketColumn) — icon + label + a count badge, replacing the old plain
    text-only Projects/Tasks header. */

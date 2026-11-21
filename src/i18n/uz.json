@@ -886,6 +886,11 @@
     "deleteSelectedYes": "O‘chirish",
     "clearDoneConfirm": "Bajarilgan vazifalar ({{n}}) ro‘yxatdan olib tashlansinmi? Ular bajarilgan holda boshqa bo‘limlarda qoladi.",
     "clearDoneYes": "Olib tashlash",
-    "deleteTask": "Vazifani o‘chirish"
+    "deleteTask": "Vazifani o‘chirish",
+    "ideasTitle": "G'oyalar",
+    "addIdea": "G'oya qo'shish",
+    "ideasEmpty": "Hozircha g'oya yo'q. Birinchisini qo'shing.",
+    "ideaToTask": "Vazifaga aylantirish",
+    "ideaDelete": "G'oyani o'chirish"
   }
 }

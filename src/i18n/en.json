@@ -901,6 +901,11 @@
     "deleteSelectedYes": "Delete",
     "clearDoneConfirm": "Remove the completed tasks ({{n}}) from this list? They stay completed and remain visible in other sections.",
     "clearDoneYes": "Remove",
-    "deleteTask": "Delete task"
+    "deleteTask": "Delete task",
+    "ideasTitle": "Ideas",
+    "addIdea": "Add an idea",
+    "ideasEmpty": "No ideas yet. Add the first one.",
+    "ideaToTask": "Make it a task",
+    "ideaDelete": "Delete idea"
   }
 }
