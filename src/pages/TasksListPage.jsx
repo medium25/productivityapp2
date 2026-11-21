@@ -5,7 +5,7 @@ import { useHabitsStore } from '../store/useHabitsStore'
 import { useIdeasStore } from '../store/useIdeasStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
 import { useAutoGrowTextarea } from '../features/tasks/useAutoGrowTextarea'
-import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
+import { getProjectColor, todayISO, isTaskLine, isTaskLineDone, taskLineText, toggleTaskLineInText, insertTaskContinuation, applyTaskBulletTrigger } from '../features/tasks/taskLogic'
 import { syncHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { brightTagColor, projectRowColors, projectRole, groupProjectRows, projectLinks } from '../features/tasks/projectParent'
@@ -35,6 +35,63 @@ function GrowArea({ value, inputRef, ...props }) {
       {...props}
     />
   )
+}
+
+// Checklist lines in a title («--» makes a «○ » line, like Apple Notes): a ring
+// that ticks the item off and strikes it through. The state lives in the title
+// text itself («○ » open, «● » done), so it saves with the title.
+function renderTitle(title, onToggleLine) {
+  if (!title.split('\n').some(isTaskLine)) return title
+  return title.split('\n').map((line, i) => {
+    if (!isTaskLine(line)) return <div key={i}>{line === '' ? <br /> : line}</div>
+    const done = isTaskLineDone(line)
+    return (
+      <div key={i} className="title-check">
+        <button
+          type="button"
+          className={'title-check__ring' + (done ? ' title-check__ring--done' : '')}
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onToggleLine(i) }}
+          aria-pressed={done}
+        >
+          {done && <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+        </button>
+        <span className={done ? 'title-check__text--done' : undefined}>{taskLineText(line)}</span>
+      </div>
+    )
+  })
+}
+
+// Keys / typing for a title field: «--» starts a checklist line; Enter on a
+// checklist line starts the next one (on an empty one it ends the list);
+// otherwise Enter confirms and Shift+Enter is a new line.
+function titleFieldHandlers(setValue, onConfirm, onEscape) {
+  return {
+    onChange: (e) => {
+      const el = e.target
+      const hit = applyTaskBulletTrigger(el.value, el.selectionStart)
+      if (hit) {
+        setValue(hit.value)
+        requestAnimationFrame(() => el.setSelectionRange(hit.cursor, hit.cursor))
+        return
+      }
+      setValue(capitalizeAfterSpace(el.value))
+    },
+    onKeyDown: (e) => {
+      if (e.key === 'Escape') { onEscape(); return }
+      if (e.key !== 'Enter') return
+      const cont = insertTaskContinuation(e.target.value, e.target.selectionStart)
+      if (cont) {
+        e.preventDefault()
+        setValue(cont.value)
+        const el = e.target
+        requestAnimationFrame(() => el.setSelectionRange(cont.cursor, cont.cursor))
+        return
+      }
+      if (!e.shiftKey) { e.preventDefault(); onConfirm(e.currentTarget) }
+    },
+  }
 }
 
 const DragGrip = () => (
@@ -69,7 +126,7 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
             {selected && <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
           </span>
         ) : <DragGrip />}
-        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '')}>
+        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '') + (!editing && task.title.split('\n').some(isTaskLine) ? ' timed-row__title--block' : '')}>
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
@@ -77,12 +134,8 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
                 className="timed-inline timed-inline--title"
                 value={value}
                 autoFocus
-                onChange={(e) => setValue(capitalizeAfterSpace(e.target.value))}
                 onBlur={commit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur() }
-                  if (e.key === 'Escape') { setValue(task.title); setEditing(false) }
-                }}
+                {...titleFieldHandlers(setValue, (el) => el.blur(), () => { setValue(task.title); setEditing(false) })}
               />
               <button
                 type="button"
@@ -97,7 +150,7 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
               </button>
             </>
           ) : (
-            <span className="timed-row__title-text" onDoubleClick={() => { setValue(task.title); setEditing(true) }}>{task.title}</span>
+            <span className="timed-row__title-text" onDoubleClick={() => { setValue(task.title); setEditing(true) }}>{renderTitle(task.title, (i) => onSetTitle(task, toggleTaskLineInText(task.title, i)))}</span>
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
@@ -178,7 +231,7 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
     <div className={'timed-row timed-row--notime' + (dragging ? ' timed-row--dragging' : '')} {...(editing ? null : dragHandleProps)}>
       <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
         <DragGrip />
-        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '')}>
+        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '') + (!editing && idea.title.split('\n').some(isTaskLine) ? ' timed-row__title--block' : '')}>
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
@@ -186,12 +239,8 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
                 className="timed-inline timed-inline--title"
                 value={value}
                 autoFocus
-                onChange={(e) => setValue(capitalizeAfterSpace(e.target.value))}
                 onBlur={commit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur() }
-                  if (e.key === 'Escape') { setValue(idea.title); setEditing(false) }
-                }}
+                {...titleFieldHandlers(setValue, (el) => el.blur(), () => { setValue(idea.title); setEditing(false) })}
               />
               <button
                 type="button"
@@ -206,7 +255,7 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
               </button>
             </>
           ) : (
-            <span className="timed-row__title-text" onDoubleClick={() => { setValue(idea.title); setEditing(true) }}>{idea.title}</span>
+            <span className="timed-row__title-text" onDoubleClick={() => { setValue(idea.title); setEditing(true) }}>{renderTitle(idea.title, (i) => onSetTitle(idea.id, toggleTaskLineInText(idea.title, i)))}</span>
           )}
         </span>
         <button
@@ -482,11 +531,7 @@ export default function TasksListPage() {
                       className="timed-ghost__title"
                       value={draft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
-                      onChange={(e) => setDraft(capitalizeAfterSpace(e.target.value))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitDraft() }
-                        if (e.key === 'Escape') finishAdd()
-                      }}
+                      {...titleFieldHandlers(setDraft, submitDraft, finishAdd)}
                     />
                   </span>
                   <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!draft.trim()} onClick={submitDraft}>
@@ -530,11 +575,7 @@ export default function TasksListPage() {
                       className="timed-ghost__title"
                       value={ideaDraft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
-                      onChange={(e) => setIdeaDraft(capitalizeAfterSpace(e.target.value))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitIdea() }
-                        if (e.key === 'Escape') finishIdea()
-                      }}
+                      {...titleFieldHandlers(setIdeaDraft, submitIdea, finishIdea)}
                     />
                   </span>
                   <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!ideaDraft.trim()} onClick={submitIdea}>

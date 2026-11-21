@@ -8366,6 +8366,8 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .timed-row__title-text { white-space: pre-line; }
 .timed-row__title--editing { display: flex; align-items: flex-start; gap: 6px; }
 .timed-row__title--editing .timed-row__num { padding-top: 3px; }
+.timed-row__title--block { display: flex; align-items: flex-start; gap: 6px; }
+.timed-row__title--block .timed-row__title-text { flex: 1 1 auto; min-width: 0; }
 textarea.timed-inline,
 textarea.timed-ghost__title {
   display: block;
@@ -8376,6 +8378,28 @@ textarea.timed-ghost__title {
   overflow-wrap: anywhere;
 }
 textarea.timed-inline--title { flex: 1 1 auto; width: auto; min-width: 0; }
+
+/* «--» checklist lines inside a task / idea title (like Apple Notes): a ring
+   that ticks the item off; the done item is struck through. */
+.title-check { display: flex; align-items: flex-start; gap: 8px; white-space: normal; }
+.title-check__ring {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+}
+.title-check__ring--done { opacity: 0.7; }
+.title-check__text--done { text-decoration: line-through; opacity: 0.6; }
 
 /* Circle complete button (per user pick, variant 1 of 5) — thin outline
    until done, then a solid filled circle with a checkmark. Today-only;

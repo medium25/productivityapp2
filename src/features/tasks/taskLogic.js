@@ -166,6 +166,22 @@ export function insertTaskContinuation(value, cursor) {
   return { value: value.slice(0, cursor) + insertion + value.slice(cursor), cursor: cursor + insertion.length }
 }
 
+// Typing "--" turns the spot into a task-bullet line (the same trigger as the
+// Insights composer; macOS' text replacement may already have turned the two
+// hyphens into one "—", so that counts too). `cursor` is right after the typed
+// trigger; returns the new { value, cursor }, or null when there is no trigger.
+export function applyTaskBulletTrigger(value, cursor) {
+  const triggerLen = (cursor >= 2 && value.slice(cursor - 2, cursor) === '--') ? 2
+    : (cursor >= 1 && value[cursor - 1] === '—') ? 1
+    : 0
+  if (triggerLen === 0) return null
+  const before = value.slice(0, cursor - triggerLen)
+  const after = value.slice(cursor)
+  const atLineStart = before.length === 0 || before.endsWith('\n')
+  const insertion = (atLineStart ? '' : '\n') + TASK_BULLET
+  return { value: before + insertion + after, cursor: before.length + insertion.length }
+}
+
 export function toggleTaskLineInText(text, lineIndex) {
   const lines = text.split('\n')
   const line = lines[lineIndex]
