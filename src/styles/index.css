@@ -8360,6 +8360,23 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .timed-inline--num { width: 58px; text-align: center; font-size: 0.78rem; }
 .timed-row__time, .timed-row__title { cursor: text; }
 
+/* Titles on the Tasks page («Задачи» / «Идеи»): every word visible at once — the
+   text wraps, line breaks typed in the title are kept, the row grows with it, and
+   the edit field is a textarea that grows too (rows need not be the same height). */
+.timed-row__title-text { white-space: pre-line; }
+.timed-row__title--editing { display: flex; align-items: flex-start; gap: 6px; }
+.timed-row__title--editing .timed-row__num { padding-top: 3px; }
+textarea.timed-inline,
+textarea.timed-ghost__title {
+  display: block;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+textarea.timed-inline--title { flex: 1 1 auto; width: auto; min-width: 0; }
+
 /* Circle complete button (per user pick, variant 1 of 5) — thin outline
    until done, then a solid filled circle with a checkmark. Today-only;
    "Надо сделать" shows no button at all (per user request). */

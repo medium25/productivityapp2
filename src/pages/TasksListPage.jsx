@@ -4,6 +4,7 @@ import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useIdeasStore } from '../store/useIdeasStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
+import { useAutoGrowTextarea } from '../features/tasks/useAutoGrowTextarea'
 import { getProjectColor, todayISO } from '../features/tasks/taskLogic'
 import { syncHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
@@ -20,6 +21,21 @@ import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 // Adding a task asks for its project in a pop-up first.
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
 const capitalizeAfterSpace = (v) => (/\s/.test(v) && v ? v.charAt(0).toUpperCase() + v.slice(1) : v)
+
+// A text field that grows with its content, so a long (or multi-line) title is
+// fully visible at once instead of scrolling inside one line. Enter confirms,
+// Shift+Enter starts a new line.
+function GrowArea({ value, inputRef, ...props }) {
+  const own = useAutoGrowTextarea(value)
+  return (
+    <textarea
+      rows={1}
+      value={value}
+      ref={(el) => { own.current = el; if (inputRef) inputRef.current = el }}
+      {...props}
+    />
+  )
+}
 
 const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
@@ -53,19 +69,18 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
             {selected && <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
           </span>
         ) : <DragGrip />}
-        <span className="timed-row__title">
+        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '')}>
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
-              <input
-                type="text"
+              <GrowArea
                 className="timed-inline timed-inline--title"
                 value={value}
                 autoFocus
                 onChange={(e) => setValue(capitalizeAfterSpace(e.target.value))}
                 onBlur={commit}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur() }
                   if (e.key === 'Escape') { setValue(task.title); setEditing(false) }
                 }}
               />
@@ -163,19 +178,18 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
     <div className={'timed-row timed-row--notime' + (dragging ? ' timed-row--dragging' : '')} {...(editing ? null : dragHandleProps)}>
       <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
         <DragGrip />
-        <span className="timed-row__title">
+        <span className={'timed-row__title' + (editing ? ' timed-row__title--editing' : '')}>
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
-              <input
-                type="text"
+              <GrowArea
                 className="timed-inline timed-inline--title"
                 value={value}
                 autoFocus
                 onChange={(e) => setValue(capitalizeAfterSpace(e.target.value))}
                 onBlur={commit}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur() }
                   if (e.key === 'Escape') { setValue(idea.title); setEditing(false) }
                 }}
               />
@@ -463,15 +477,14 @@ export default function TasksListPage() {
               {adding ? (
                 <div className="timed-row timed-ghost timed-ghost--simple">
                   <span className="timed-row__title">
-                    <input
-                      ref={draftRef}
-                      type="text"
+                    <GrowArea
+                      inputRef={draftRef}
                       className="timed-ghost__title"
                       value={draft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
                       onChange={(e) => setDraft(capitalizeAfterSpace(e.target.value))}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); submitDraft() }
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitDraft() }
                         if (e.key === 'Escape') finishAdd()
                       }}
                     />
@@ -512,15 +525,14 @@ export default function TasksListPage() {
               {addingIdea ? (
                 <div className="timed-row timed-ghost timed-ghost--simple">
                   <span className="timed-row__title">
-                    <input
-                      ref={ideaDraftRef}
-                      type="text"
+                    <GrowArea
+                      inputRef={ideaDraftRef}
                       className="timed-ghost__title"
                       value={ideaDraft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
                       onChange={(e) => setIdeaDraft(capitalizeAfterSpace(e.target.value))}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); submitIdea() }
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitIdea() }
                         if (e.key === 'Escape') finishIdea()
                       }}
                     />
