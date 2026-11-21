@@ -8379,16 +8379,20 @@ textarea.timed-ghost__title {
 }
 textarea.timed-inline--title { flex: 1 1 auto; width: auto; min-width: 0; }
 
-/* «--» checklist lines inside a task / idea title (like Apple Notes): a ring
-   that ticks the item off; the done item is struck through. */
-.title-check { display: flex; align-items: flex-start; gap: 8px; white-space: normal; }
+/* «--» checklist lines inside a task / idea title, drawn like Apple Notes: a thin
+   grey ring; ticked = filled yellow disc with a white check, the text turns grey
+   and is struck through. */
+.title-check { display: flex; align-items: flex-start; gap: 10px; white-space: normal; line-height: 22px; }
 .title-check__ring {
   flex: none;
-  width: 18px;
-  height: 18px;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  min-width: 0;
+  min-height: 0;
   margin-top: 1px;
   padding: 0;
-  border: 2px solid currentColor;
+  border: 1.5px solid color-mix(in srgb, currentColor 48%, transparent);
   border-radius: 50%;
   background: transparent;
   color: inherit;
@@ -8396,10 +8400,18 @@ textarea.timed-inline--title { flex: 1 1 auto; width: auto; min-width: 0; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.9;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
 }
-.title-check__ring--done { opacity: 0.7; }
-.title-check__text--done { text-decoration: line-through; opacity: 0.6; }
+.title-check__ring:hover { border-color: color-mix(in srgb, currentColor 75%, transparent); }
+.title-check__ring:active { transform: scale(0.88); }
+.title-check__ring svg { color: #fff; }
+.title-check__ring--done,
+.title-check__ring--done:hover {
+  background: #ffd60a;
+  border-color: #ffd60a;
+}
+.title-check__text { transition: color 0.16s ease, opacity 0.16s ease; }
+.title-check__text--done { text-decoration: line-through; text-decoration-thickness: 1px; opacity: 0.5; }
 
 /* Circle complete button (per user pick, variant 1 of 5) — thin outline
    until done, then a solid filled circle with a checkmark. Today-only;

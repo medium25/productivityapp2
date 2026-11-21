@@ -55,9 +55,9 @@ function renderTitle(title, onToggleLine) {
           onClick={(e) => { e.stopPropagation(); onToggleLine(i) }}
           aria-pressed={done}
         >
-          {done && <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+          {done && <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
         </button>
-        <span className={done ? 'title-check__text--done' : undefined}>{taskLineText(line)}</span>
+        <span className={'title-check__text' + (done ? ' title-check__text--done' : '')}>{taskLineText(line)}</span>
       </div>
     )
   })
@@ -80,6 +80,19 @@ function titleFieldHandlers(setValue, onConfirm, onEscape) {
     },
     onKeyDown: (e) => {
       if (e.key === 'Escape') { onEscape(); return }
+      if (e.key === 'Backspace') {
+        // Backspace right after an empty bullet takes the bullet away (as in Notes).
+        const { value, selectionStart, selectionEnd } = e.target
+        const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1
+        const lineBefore = value.slice(lineStart, selectionStart)
+        if (selectionStart === selectionEnd && isTaskLine(lineBefore) && taskLineText(lineBefore) === '') {
+          e.preventDefault()
+          const el = e.target
+          setValue(value.slice(0, lineStart) + value.slice(selectionStart))
+          requestAnimationFrame(() => el.setSelectionRange(lineStart, lineStart))
+        }
+        return
+      }
       if (e.key !== 'Enter') return
       const cont = insertTaskContinuation(e.target.value, e.target.selectionStart)
       if (cont) {
