@@ -8410,6 +8410,30 @@ textarea.timed-inline--title { flex: 1 1 auto; width: auto; min-width: 0; }
   background: #ffd60a;
   border-color: #ffd60a;
 }
+/* Live editor for a title with checklist lines (ChecklistEditor.jsx). */
+.title-edit { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.title-edit__line { display: flex; align-items: flex-start; gap: 10px; }
+.title-edit__ta {
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 22px;
+  resize: none;
+  overflow: hidden;
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.title-edit__ta::placeholder { color: var(--text-muted); font-weight: 500; }
+.title-edit__ta--done { text-decoration: line-through; text-decoration-thickness: 1px; opacity: 0.5; }
 .title-check__text { transition: color 0.16s ease, opacity 0.16s ease; }
 .title-check__text--done { text-decoration: line-through; text-decoration-thickness: 1px; opacity: 0.5; }
 

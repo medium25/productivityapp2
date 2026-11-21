@@ -4,8 +4,8 @@ import { useTasksStore } from '../store/useTasksStore'
 import { useHabitsStore } from '../store/useHabitsStore'
 import { useIdeasStore } from '../store/useIdeasStore'
 import { useDragReorder } from '../features/tasks/useDragReorder'
-import { useAutoGrowTextarea } from '../features/tasks/useAutoGrowTextarea'
-import { getProjectColor, todayISO, isTaskLine, isTaskLineDone, taskLineText, toggleTaskLineInText, insertTaskContinuation, applyTaskBulletTrigger } from '../features/tasks/taskLogic'
+import ChecklistEditor from '../features/tasks/ChecklistEditor'
+import { getProjectColor, todayISO, isTaskLine, isTaskLineDone, taskLineText, toggleTaskLineInText } from '../features/tasks/taskLogic'
 import { syncHabitForTask } from '../features/tasks/habitTaskSync'
 import { ROW_PALETTE } from '../features/tasks/rowPalette'
 import { brightTagColor, projectRowColors, projectRole, groupProjectRows, projectLinks } from '../features/tasks/projectParent'
@@ -22,20 +22,8 @@ import { SideIconMyDay, SideIconTasks } from '../layout/sidebarIcons'
 const isRecurring = (task) => !!task.recurrence && task.recurrence !== 'none'
 const capitalizeAfterSpace = (v) => (/\s/.test(v) && v ? v.charAt(0).toUpperCase() + v.slice(1) : v)
 
-// A text field that grows with its content, so a long (or multi-line) title is
-// fully visible at once instead of scrolling inside one line. Enter confirms,
-// Shift+Enter starts a new line.
-function GrowArea({ value, inputRef, ...props }) {
-  const own = useAutoGrowTextarea(value)
-  return (
-    <textarea
-      rows={1}
-      value={value}
-      ref={(el) => { own.current = el; if (inputRef) inputRef.current = el }}
-      {...props}
-    />
-  )
-}
+// A title ready to save: empty checklist lines dropped, outer blank space trimmed.
+const cleanTitle = (v) => v.split('\n').filter((l) => !(isTaskLine(l) && taskLineText(l).trim() === '')).join('\n').trim()
 
 // Checklist lines in a title («--» makes a «○ » line, like Apple Notes): a ring
 // that ticks the item off and strikes it through. The state lives in the title
@@ -63,50 +51,6 @@ function renderTitle(title, onToggleLine) {
   })
 }
 
-// Keys / typing for a title field: «--» starts a checklist line; Enter on a
-// checklist line starts the next one (on an empty one it ends the list);
-// otherwise Enter confirms and Shift+Enter is a new line.
-function titleFieldHandlers(setValue, onConfirm, onEscape) {
-  return {
-    onChange: (e) => {
-      const el = e.target
-      const hit = applyTaskBulletTrigger(el.value, el.selectionStart)
-      if (hit) {
-        setValue(hit.value)
-        requestAnimationFrame(() => el.setSelectionRange(hit.cursor, hit.cursor))
-        return
-      }
-      setValue(capitalizeAfterSpace(el.value))
-    },
-    onKeyDown: (e) => {
-      if (e.key === 'Escape') { onEscape(); return }
-      if (e.key === 'Backspace') {
-        // Backspace right after an empty bullet takes the bullet away (as in Notes).
-        const { value, selectionStart, selectionEnd } = e.target
-        const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1
-        const lineBefore = value.slice(lineStart, selectionStart)
-        if (selectionStart === selectionEnd && isTaskLine(lineBefore) && taskLineText(lineBefore) === '') {
-          e.preventDefault()
-          const el = e.target
-          setValue(value.slice(0, lineStart) + value.slice(selectionStart))
-          requestAnimationFrame(() => el.setSelectionRange(lineStart, lineStart))
-        }
-        return
-      }
-      if (e.key !== 'Enter') return
-      const cont = insertTaskContinuation(e.target.value, e.target.selectionStart)
-      if (cont) {
-        e.preventDefault()
-        setValue(cont.value)
-        const el = e.target
-        requestAnimationFrame(() => el.setSelectionRange(cont.cursor, cont.cursor))
-        return
-      }
-      if (!e.shiftKey) { e.preventDefault(); onConfirm(e.currentTarget) }
-    },
-  }
-}
-
 const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
@@ -120,7 +64,7 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
   const stop = (e) => e.stopPropagation() // taps on buttons must not start a row drag
 
   const commit = () => {
-    const title = value.trim()
+    const title = cleanTitle(value)
     if (title && title !== task.title) onSetTitle(task, title)
     setEditing(false)
   }
@@ -143,12 +87,14 @@ function TaskRow({ task, number, role, links, onPlus, inMyDay, project, onToggle
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
-              <GrowArea
-                className="timed-inline timed-inline--title"
+              <ChecklistEditor
+                className="timed-inline"
                 value={value}
+                onChange={setValue}
                 autoFocus
-                onBlur={commit}
-                {...titleFieldHandlers(setValue, (el) => el.blur(), () => { setValue(task.title); setEditing(false) })}
+                onConfirm={commit}
+                onBlurOut={commit}
+                onCancel={() => { setValue(task.title); setEditing(false) }}
               />
               <button
                 type="button"
@@ -235,7 +181,7 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
   const stop = (e) => e.stopPropagation()
 
   const commit = () => {
-    const title = value.trim()
+    const title = cleanTitle(value)
     if (title && title !== idea.title) onSetTitle(idea.id, title)
     setEditing(false)
   }
@@ -248,12 +194,14 @@ function IdeaRow({ idea, number, onSetTitle, onDelete, onPromote, dragHandleProp
           <span className="timed-row__num">{number}.</span>
           {editing ? (
             <>
-              <GrowArea
-                className="timed-inline timed-inline--title"
+              <ChecklistEditor
+                className="timed-inline"
                 value={value}
+                onChange={setValue}
                 autoFocus
-                onBlur={commit}
-                {...titleFieldHandlers(setValue, (el) => el.blur(), () => { setValue(idea.title); setEditing(false) })}
+                onConfirm={commit}
+                onBlurOut={commit}
+                onCancel={() => { setValue(idea.title); setEditing(false) }}
               />
               <button
                 type="button"
@@ -417,7 +365,7 @@ export default function TasksListPage() {
   useEffect(() => { if (adding) draftRef.current?.focus() }, [adding])
   // Quick add: Enter creates the task at once (no project) and keeps the field open for the next one.
   const submitDraft = () => {
-    const title = draft.trim()
+    const title = cleanTitle(draft)
     if (!title) return
     addTask({ title, stage: 'tasks', projectId: null, createdIn: 'tasks' })
     setDraft('')
@@ -432,8 +380,9 @@ export default function TasksListPage() {
   const ideaDraftRef = useRef(null)
   useEffect(() => { if (addingIdea) ideaDraftRef.current?.focus() }, [addingIdea])
   const submitIdea = () => {
-    if (!ideaDraft.trim()) return
-    addIdea(ideaDraft)
+    const title = cleanTitle(ideaDraft)
+    if (!title) return
+    addIdea(title)
     setIdeaDraft('')
     ideaDraftRef.current?.focus()
   }
@@ -539,15 +488,17 @@ export default function TasksListPage() {
               {adding ? (
                 <div className="timed-row timed-ghost timed-ghost--simple">
                   <span className="timed-row__title">
-                    <GrowArea
-                      inputRef={draftRef}
+                    <ChecklistEditor
+                      ref={draftRef}
                       className="timed-ghost__title"
                       value={draft}
+                      onChange={setDraft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
-                      {...titleFieldHandlers(setDraft, submitDraft, finishAdd)}
+                      onConfirm={submitDraft}
+                      onCancel={finishAdd}
                     />
                   </span>
-                  <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!draft.trim()} onClick={submitDraft}>
+                  <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!cleanTitle(draft)} onClick={submitDraft}>
                     {t('tasksActivity.addBtn')}
                   </button>
                   <button type="button" className="timed-ghost__cancel" onClick={finishAdd} aria-label={t('tasks.cancel')} title={t('tasks.cancel')}>×</button>
@@ -583,15 +534,17 @@ export default function TasksListPage() {
               {addingIdea ? (
                 <div className="timed-row timed-ghost timed-ghost--simple">
                   <span className="timed-row__title">
-                    <GrowArea
-                      inputRef={ideaDraftRef}
+                    <ChecklistEditor
+                      ref={ideaDraftRef}
                       className="timed-ghost__title"
                       value={ideaDraft}
+                      onChange={setIdeaDraft}
                       placeholder={t('tasks.gtd.inboxQuickAddPlaceholder')}
-                      {...titleFieldHandlers(setIdeaDraft, submitIdea, finishIdea)}
+                      onConfirm={submitIdea}
+                      onCancel={finishIdea}
                     />
                   </span>
-                  <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!ideaDraft.trim()} onClick={submitIdea}>
+                  <button type="button" className="timed-ghost__add timed-ghost__add--inline" disabled={!cleanTitle(ideaDraft)} onClick={submitIdea}>
                     {t('tasksActivity.addBtn')}
                   </button>
                   <button type="button" className="timed-ghost__cancel" onClick={finishIdea} aria-label={t('tasks.cancel')} title={t('tasks.cancel')}>×</button>
