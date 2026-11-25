@@ -548,7 +548,7 @@ export default function UpcomingPage() {
   const setHabitCompletion = useHabitsStore((s) => s.setCompletion)
   const toggleHabitCompletion = useHabitsStore((s) => s.toggleCompletion)
   const convertTaskToProject = useTasksStore((s) => s.convertToProject)
-  const reorderTasks = useTasksStore((s) => s.reorderTasks)
+  const reorderDay = useTasksStore((s) => s.reorderDay)
   // Re-read at local midnight / on refocus so an unfinished Today task falls
   // into "Надо сделать" even when the page was left open overnight.
   const [today, setToday] = useState(todayISO)
@@ -701,7 +701,7 @@ export default function UpcomingPage() {
       else id = addTask({ title, stage: 'tasks', createdIn: 'myday', ...fields })
       const order = others.map((r) => r.id)
       order.splice(index, 0, id)
-      reorderTasks(order)
+      reorderDay(order)
     }
     if (startMinute == null) { apply(others.length, null); return }
     const end = startMinute + minutes
@@ -726,7 +726,7 @@ export default function UpcomingPage() {
   })
 
   const todayIds = todayRows.map((tsk) => tsk.id)
-  const todayDrag = useDragReorder(todayIds, reorderTasks)
+  const todayDrag = useDragReorder(todayIds, reorderDay)
 
   const todayNode = (
     <BucketColumn
@@ -751,7 +751,7 @@ export default function UpcomingPage() {
               const order = todayRows.map((r) => r.id)
               const idx = order.indexOf(p.insertAfterId)
               order.splice(idx + 1, 0, id)
-              reorderTasks(order)
+              reorderDay(order)
               return
             }
             placeInColumn({ taskId: p.taskId, title: title || p.title, minutes, startMinute, rows: todayRows, dateFields: { whenDate: today, deadline: null }, tone: 'today' })

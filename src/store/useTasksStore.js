@@ -345,6 +345,19 @@ export const useTasksStore = create(
           })
         },
 
+        // Manual order of «Мой день»: every listed row gets its place in `dayOrder`,
+        // whatever its kind — repeating and one-step tasks can sit in any order
+        // (see buildTodayRows). Rows with no dayOrder yet follow the ordered ones.
+        reorderDay: (orderedIds) => {
+          snapshotForUndo()
+          set((state) => {
+            const rank = new Map(orderedIds.map((id, i) => [id, i]))
+            return {
+              tasks: state.tasks.map((t) => (rank.has(t.id) ? { ...t, dayOrder: rank.get(t.id), dayRank: null } : t)),
+            }
+          })
+        },
+
         // Same reslot-a-subset behavior as reorderTasks above, not a
         // wholesale replace — ActionColumnBoard.jsx now drags project rows
         // too (per user request), and its own `orderedIds` there is just

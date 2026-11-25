@@ -25,12 +25,17 @@ export function buildTodayRows(tasks, projects, today) {
       todayList.push(task)
     }
   })
-  // Repeating tasks first, then the one-step ones; tasks just sent over from «Задачи»
-  // (dayRank) go to the end, oldest first, until the list is reordered by hand.
-  const oneStep = todayList.filter((task) => !isRecurring(task))
+  // Rows the user has placed by hand (dayOrder) come first in that order, whatever their kind.
+  // The rest follow in the default order: repeating tasks first, then the one-step ones; tasks
+  // just sent over from «Задачи» (dayRank) go to the end, oldest first, until the list is
+  // reordered by hand.
+  const placed = todayList.filter((task) => task.dayOrder != null).sort((a, b) => a.dayOrder - b.dayOrder)
+  const rest = todayList.filter((task) => task.dayOrder == null)
+  const oneStep = rest.filter((task) => !isRecurring(task))
   // Rows of a project made from a task stay together: the parent row, then its tasks.
   return groupProjectRows([
-    ...todayList.filter(isRecurring),
+    ...placed,
+    ...rest.filter(isRecurring),
     ...oneStep.filter((task) => task.dayRank == null),
     ...oneStep.filter((task) => task.dayRank != null).sort((a, b) => a.dayRank - b.dayRank),
   ], projects)
