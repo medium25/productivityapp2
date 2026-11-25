@@ -8360,6 +8360,15 @@ span.project-flow__dot { cursor: default; border-style: dashed; }
 .timed-inline--num { width: 58px; text-align: center; font-size: 0.78rem; }
 .timed-row__time, .timed-row__title { cursor: text; }
 
+/* «Мой день»: the done circle sits BEFORE the card, so the project link lines run on the left. */
+.timed-row--lead.timed-row--link-prev::before,
+.timed-row--lead.timed-row--link-next::after,
+.timed-row--lead.timed-row--plink-prev::before,
+.timed-row--lead.timed-row--plink-next::after { right: auto; left: 25px; }
+
+/* Repeating task: a small repeat sign right after its title (one-step tasks have none). */
+.timed-row__repeat { display: inline-flex; vertical-align: -2px; margin-left: 8px; opacity: 0.8; }
+
 /* Titles on the Tasks page («Задачи» / «Идеи»): every word visible at once — the
    text wraps, line breaks typed in the title are kept, the row grows with it, and
    the edit field is a textarea that grows too (rows need not be the same height). */

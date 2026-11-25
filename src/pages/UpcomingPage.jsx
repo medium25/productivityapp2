@@ -18,7 +18,6 @@ import { buildTodayRows } from '../features/tasks/todayRows'
 import { projectRowColors, projectRole, projectLinks, groupProjectRows } from '../features/tasks/projectParent'
 import MissedHabitBell, { lastMissedDay } from '../features/tasks/MissedHabitBell'
 import OneStepBadge, { daysLeftUndone } from '../features/tasks/OneStepBadge'
-import PlusChoiceMenu from '../features/tasks/PlusChoiceMenu'
 
 // Replaced the old Projects/one-step-tasks 2-column board (per user
 // request — "старое содержимое нужно убрать из раздела задач") with the
@@ -143,32 +142,15 @@ const DragGrip = () => (
   <span className="drag-grip" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
 )
 
-function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetEnd, onSetStart, onSetTitle, onSetMinutes, seriesFor, seenMiss, onDismissMiss, onMarkMissed, onToggleDay, selecting, selected, onSelect, dragHandleProps, dragging }) {
+function TimedRow({ task, number, role, plinks, linkPrev, linkNext, onToggleDone, onEdit, onSetCycle, onSetTitle, seriesFor, seenMiss, onDismissMiss, onMarkMissed, onToggleDay, selecting, selected, onSelect, dragHandleProps, dragging }) {
   const [editing, setEditing] = useState(null)
-  const [dragPreview, setDragPreview] = useState(null)
   const [cycleOpen, setCycleOpen] = useState(false)
   const closeCycle = useCallback(() => setCycleOpen(false), [])
   const done = task.status === 'done'
   const stop = () => setEditing(null)
   const startEdit = (what) => (e) => { e.stopPropagation(); setEditing(what) }
 
-  // No auto-assigned clock times (per user request): a task shows start/end
-  // only when its start was set by hand; otherwise just its minutes — or a
-  // button to add them.
-  const pinned = task.startMinute != null
-  const hasMinutes = !!task.estimateMinutes
-  const start = dragPreview?.edge === 'start' ? dragPreview.value : slot.start
-  const end = dragPreview?.edge === 'end' ? dragPreview.value : slot.end
   const color = role ? projectRowColors(role.project) : ROW_PALETTE[(number - 1) % ROW_PALETTE.length]
-
-  const startHandle = useTimeDrag(
-    (delta) => setDragPreview({ edge: 'start', value: Math.max(0, Math.min(slot.end - 5, slot.start + delta)) }),
-    (delta) => { setDragPreview(null); const m = Math.max(0, Math.min(slot.end - 5, slot.start + delta)); if (m !== slot.start) onSetStart(task, m) }
-  )
-  const endHandle = useTimeDrag(
-    (delta) => setDragPreview({ edge: 'end', value: Math.max(slot.start + 5, slot.end + delta) }),
-    (delta) => { setDragPreview(null); const m = Math.max(slot.start + 5, slot.end + delta); if (m !== slot.end) onSetEnd(task, slot.start, m) }
-  )
 
   const results = isRecurring(task) ? cycleResults(task) : null
   const { t, i18n } = useTranslation()
@@ -176,12 +158,35 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
   return (
     <>
     <div
-      className={'timed-row' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '') + (plinks?.prev ? ' timed-row--plink-prev' : '') + (plinks?.next ? ' timed-row--plink-next' : '')}
-      style={{ minHeight: pinned ? Math.max(34, (end - start) * PX_PER_MIN) : 34, ...(role ? { '--proj-line': color.line } : null) }}
+      className={'timed-row timed-row--lead' + (done ? ' timed-row--done' : '') + (linkPrev ? ' timed-row--link-prev' : '') + (linkNext ? ' timed-row--link-next' : '') + (dragging ? ' timed-row--dragging' : '') + (selecting ? ' timed-row--selecting' : '') + (selected ? ' timed-row--selected' : '') + (plinks?.prev ? ' timed-row--plink-prev' : '') + (plinks?.next ? ' timed-row--plink-next' : '')}
+      style={{ minHeight: 34, ...(role ? { '--proj-line': color.line } : null) }}
       onDoubleClick={selecting ? undefined : (e) => { if (!e.target.closest('button, input')) onEdit(task) }}
       onClick={selecting ? () => onSelect(task.id) : undefined}
       {...(selecting ? null : dragHandleProps)}
     >
+      <span className="timed-row__actions">
+        {role?.kind === 'parent' && role.locked ? (
+          <button
+            type="button"
+            className="timed-row__done-btn timed-row__done-btn--lock"
+            disabled
+            title={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+            aria-label={t('tasksList.projectLocked', { done: role.done, total: role.total })}
+          >
+            {role.done}/{role.total}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '') + (role?.kind === 'parent' && !done ? ' timed-row__done-btn--ready' : '')}
+            onClick={() => onToggleDone(task.id)}
+            aria-label={done ? 'Выполнено' : 'Выполнить'}
+            title={role?.kind === 'parent' && !done ? t('tasksList.projectReady') : undefined}
+          >
+            {done ? '✓' : ''}
+          </button>
+        )}
+      </span>
       <span className="timed-row__body" style={{ background: color.bg, color: color.text, '--h': color.hue, '--row-bg-light': color.bg }}>
         {selecting ? (
           <span className={'task-sel' + (selected ? ' task-sel--on' : '')} aria-hidden="true">
@@ -194,6 +199,11 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
             <InlineField initial={task.title} className="timed-inline--title" onCancel={stop} onCommit={(v) => { const tt = v.trim(); if (tt && tt !== task.title) onSetTitle(task, tt); stop() }} />
           ) : (
             <span className="timed-row__title-text" onDoubleClick={startEdit('title')}>{task.title}</span>
+          )}
+          {isRecurring(task) && editing !== 'title' && (
+            <span className="timed-row__repeat" title={t('tasksHub.cycleTitle')} aria-label={t('tasksHub.cycleTitle')}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h15" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H3" /></svg>
+            </span>
           )}
         </span>
         {role?.kind === 'parent' && <span className="proj-pill">{t('tasksList.projectPill')}</span>}
@@ -229,78 +239,6 @@ function TimedRow({ task, number, role, plinks, onPlus, slot, linkPrev, linkNext
         >
           {CYCLE_ICON}
         </button>
-        <button
-          type="button"
-          className="plus-btn"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => onPlus(task, e.currentTarget.getBoundingClientRect())}
-          title={t('tasksList.plusAddToProject')}
-          aria-label={t('tasksList.plusAddToProject')}
-          aria-haspopup="menu"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
-        </button>
-        {!pinned ? (
-          <span className="timed-row__time timed-row__time--mins">
-            {editing === 'mins' ? (
-              <InlineField type="number" min={5} max={480} step={5} initial={String(slot.duration)} className="timed-inline--num" onCancel={stop} onCommit={(v) => { const m = Math.round(Number(v)); if (Number.isFinite(m) && m > 0) onSetMinutes(task, m); stop() }} />
-            ) : hasMinutes ? (
-              <span className="timed-row__mins-label" onDoubleClick={startEdit('mins')} title="Двойной клик — изменить">
-                <b>{minutesFigure(slot.duration).n}</b>
-                <small>{minutesFigure(slot.duration).u}</small>
-              </span>
-            ) : (
-              <button type="button" className="timed-row__addtime" onPointerDown={(e) => e.stopPropagation()} onClick={() => setEditing('mins')}>+ время</button>
-            )}
-          </span>
-        ) : (
-        <span className="timed-row__time">
-          <span className="timed-row__time-pair">
-            {editing === 'start' ? (
-              <InlineField type="time" initial={fmtTime(start)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetStart(task, m); stop() }} />
-            ) : (
-              <span className="timed-row__start" onDoubleClick={startEdit('start')} onPointerDown={startHandle}>
-                {fmtTime(start)}
-                <i className="timed-row__handle" />
-              </span>
-            )}
-          </span>
-          <span className="timed-row__time-line" />
-          <span className="timed-row__time-pair">
-            {editing === 'end' ? (
-              <InlineField type="time" initial={fmtTime(end)} onCancel={stop} onCommit={(v) => { const m = toMinutes(v); if (m != null) onSetEnd(task, slot.start, m); stop() }} />
-            ) : (
-              <small className="timed-row__end" onDoubleClick={startEdit('end')} onPointerDown={endHandle}>
-                {fmtTime(end)}
-                <i className="timed-row__handle" />
-              </small>
-            )}
-          </span>
-        </span>
-        )}
-      </span>
-      <span className="timed-row__actions">
-        {role?.kind === 'parent' && role.locked ? (
-          <button
-            type="button"
-            className="timed-row__done-btn timed-row__done-btn--lock"
-            disabled
-            title={t('tasksList.projectLocked', { done: role.done, total: role.total })}
-            aria-label={t('tasksList.projectLocked', { done: role.done, total: role.total })}
-          >
-            {role.done}/{role.total}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={'timed-row__done-btn' + (done ? ' timed-row__done-btn--done' : '') + (role?.kind === 'parent' && !done ? ' timed-row__done-btn--ready' : '')}
-            onClick={() => onToggleDone(task.id)}
-            aria-label={done ? 'Выполнено' : 'Выполнить'}
-            title={role?.kind === 'parent' && !done ? t('tasksList.projectReady') : undefined}
-          >
-            {done ? '✓' : ''}
-          </button>
-        )}
       </span>
     </div>
     {cycleOpen && <CyclePicker task={task} t={t} onSet={(rec, d) => onSetCycle(task, rec, d)} onClose={closeCycle} />}
@@ -351,24 +289,9 @@ function BucketColumn({ icon: Icon, title, tone, rows: baseRows, language, taskP
     onDeleteMany(rows.filter((r) => selected.has(r.id)).map((r) => r.id))
     exitSelect()
   }
-  // Remaining time (per user request): finishing a task takes its minutes off
-  // the header total; it stays visible, at 0, once everything is done.
-  const plannedMinutes = rows.reduce((sum, r) => sum + (r.estimateMinutes || 0), 0)
-  const totalMinutes = rows.reduce((sum, r) => sum + (r.status === 'done' ? 0 : (r.estimateMinutes || 0)), 0)
-
   return (
     <div className="tasks-column tasks-column--bucket">
       <div className={'tasks-column__header tasks-column__header--' + tone}>
-        {/* The day's total minutes sit above the times column (per user pick,
-            variant A — same look as the row times), the title is centred. */}
-        <span className="tasks-column__total">
-          {plannedMinutes > 0 && (
-            <span className="timed-row__mins-label">
-              <b>{minutesFigure(totalMinutes).n}</b>
-              <small>{minutesFigure(totalMinutes).u}</small>
-            </span>
-          )}
-        </span>
         <span className="tasks-column__header-title tasks-column__header-title--center"><Icon size={15} />{title}</span>
         {onDeleteMany && rows.length > 0 && (
           <button type="button" className={'tasks-select-btn' + (selecting ? ' tasks-select-btn--on' : '')} onClick={() => (selecting ? exitSelect() : setSelecting(true))} title={selecting ? t('tasksList.selectDone') : t('tasksList.select')} aria-label={selecting ? t('tasksList.selectDone') : t('tasksList.select')}>
@@ -582,16 +505,6 @@ export default function UpcomingPage() {
   const [schedulePrompt, setSchedulePrompt] = useState(null)
   const [conflict, setConflict] = useState(null)
   const dayStart = useUiPreferencesStore((s) => s.dayStartMinutes)
-  // «+» on a row: create a project from the task, or add it to an existing one (it stays in today's list,
-  // so it goes onto the project's map).
-  const [plusMenu, setPlusMenu] = useState(null)
-  const setProjectFlow = useTasksStore((s) => s.setProjectFlow)
-  const openProjectAddTask = useTasksStore((s) => s.openProjectAddTask)
-  const assignProject = (task, projectId) => {
-    updateTask(task.id, { projectId })
-    const project = projects.find((p) => p.id === projectId)
-    if (project && !(project.flow || []).includes(task.id)) setProjectFlow(projectId, [...(project.flow || []), task.id])
-  }
   // «Понял» on a missed-habit card hides its bell until the next miss (kept per device, by title).
   const [seenMiss, setSeenMiss] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arkad:missedSeen') || '{}') } catch { return {} }
@@ -638,7 +551,6 @@ export default function UpcomingPage() {
     })
   }
   const taskProps = {
-    onPlus: (task, rect) => setPlusMenu({ task, rect }),
     projects,
     allTasks: tasks,
     seriesFor,
@@ -785,19 +697,6 @@ export default function UpcomingPage() {
     <>
       {body}
       {todayDrag.dragGhost}
-      {plusMenu && (
-        <PlusChoiceMenu
-          rect={plusMenu.rect}
-          projects={projects}
-          tasks={tasks}
-          parentProject={projectRole(plusMenu.task, tasks, projects)?.kind === 'parent' ? projectRole(plusMenu.task, tasks, projects).project : null}
-          taskProject={null}
-          onAddOwn={() => { openProjectAddTask(projectRole(plusMenu.task, tasks, projects).project.id); setPlusMenu(null) }}
-          onCreateProject={() => { convertTaskToProject(plusMenu.task.id); setPlusMenu(null) }}
-          onPickProject={(projectId) => { assignProject(plusMenu.task, projectId); setPlusMenu(null) }}
-          onClose={() => setPlusMenu(null)}
-        />
-      )}
       <button
         type="button"
         className="tasks-table__pomodoro-btn tasks-table__pomodoro-btn--floating"
